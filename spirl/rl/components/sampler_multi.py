@@ -14,7 +14,6 @@ class SamplerMulti(Sampler):
 
     def sample_batch(self, batch_size, is_train=True, global_step=None):
         na = self._hp.number_of_agents
-        self._obs = [None] * na
 
         experience_batch = [[] for _ in range(na)]
         step = 0
@@ -47,7 +46,7 @@ class SamplerMulti(Sampler):
 
                         # reset if episode ends
                         if np.any(done) or self._episode_step >= self._max_episode_len:
-                            if not np.any(done):    # force done to be True for timeout
+                            if not np.all(done):    # force done to be True for timeout
                                 for agent_index in range(na): 
                                     experience_batch[agent_index][-1].done = True
                             self._episode_reset(global_step)
