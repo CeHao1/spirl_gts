@@ -72,10 +72,10 @@ class GTSEnv_Base(GymEnv):
 
     def step(self, actions):
         obs, rew, done, info = self._env.step([actions])
-        return self._wrap_observation(obs), rew[0], done[0], info
+        return self._wrap_observation(obs[0]), rew[0], done[0], info
 
     def _wrap_observation(self, obs):
-        return super()._wrap_observation(raw_observation_to_true_observation(obs[0]))
+        return super()._wrap_observation(raw_observation_to_true_observation(obs))
 
     def _get_course_length(self):
         course_length, course_code, course_name = self._env.get_course_meta()

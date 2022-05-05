@@ -15,6 +15,8 @@ from spirl.utils.gts_utils import reward_function, sampling_done_function
 
 class GTSEnv_Multi(GTSEnv_Base):
 
+# we can run 20 cars at the same time, but we need to separate the trajectory, 
+# just like sampler
 
     def _default_hparams(self):
         default_dict = ParamDict({
@@ -26,6 +28,9 @@ class GTSEnv_Multi(GTSEnv_Base):
         })
         return super()._default_hparams().overwrite(default_dict)
 
-    
+    def _wrap_observation(self, obs):
+        return super()._wrap_observation(raw_observation_to_true_observation(obs[0]))
+
+        
 
     
