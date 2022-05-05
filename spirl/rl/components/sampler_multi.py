@@ -8,9 +8,9 @@ class SamplerMulti(Sampler):
 
     # config must have a argument: number_of_agents
 
-    def sample_action(self, obs):
-        actions = [self._agent.act(obs_single) for obs_single in obs]
-        return actions
+    # def sample_action(self, obs):
+    #     actions = [self._agent.act(obs_single) for obs_single in obs]
+    #     return actions
 
     def sample_batch(self, batch_size, is_train=True, global_step=None):
         na = self._hp.number_of_agents
@@ -27,7 +27,8 @@ class SamplerMulti(Sampler):
                             self._episode_reset(global_step)
                             continue
 
-                        obs, reward, done, info = self._env.step(agent_output.action)
+                        actions = [agent_output[agent_index].action for agent_index in range(na)]
+                        obs, reward, done, info = self._env.step(actions)
 
                         for agent_index in range(na): 
                             experience_batch[agent_index].append(AttrDict(
@@ -42,7 +43,7 @@ class SamplerMulti(Sampler):
 
                         self._obs = obs
                         step += na
-                        self._episode_step += na;
+                        self._episode_step += na
 
                         # reset if episode ends
                         if np.any(done) or self._episode_step >= self._max_episode_len:
@@ -72,7 +73,8 @@ class SamplerMulti(Sampler):
                         if render:
                             render_obs = self._env.render()
 
-                        obs, reward, done, info = self._env.step(agent_output.action)
+                        actions = [agent_output[agent_index].action for agent_index in range(na)]
+                        obs, reward, done, info = self._env.step(actions)
 
                         for agent_index in range(na): 
                             episode[agent_index].append(AttrDict(
@@ -101,7 +103,7 @@ class SamplerMulti(Sampler):
             self._logger.log_scalar_dict(self.get_episode_info(),
                                          prefix='train' if self._agent._is_train else 'val',
                                          step=global_step)
-        self._episode_step,  = 0
+        self._episode_step = 0
         self._episode_reward = [0] * self._hp.number_of_agents
         self._obs = self._reset_env()
         self._agent.reset()

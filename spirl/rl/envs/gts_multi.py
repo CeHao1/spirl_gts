@@ -18,6 +18,15 @@ class GTSEnv_Multi(GTSEnv_Base):
 # we can run 20 cars at the same time, but we need to separate the trajectory, 
 # just like sampler
 
+    def _game_hp(self):
+        game_hp = ParamDict({
+            'builtin_controlled' : [],
+            'do_init' : False,
+            'reward_function' : reward_function,
+            'done_function' : sampling_done_function
+        })
+        return game_hp
+
     def _default_hparams(self):
         default_dict = ParamDict({
             'ip_address' : '192.168.124.14',
@@ -33,7 +42,7 @@ class GTSEnv_Multi(GTSEnv_Base):
         return self._wrap_observation(obs)
 
     def step(self, actions):
-        obs, rew, done, info = self._env.step([actions])
+        obs, rew, done, info = self._env.step(actions)
         return self._wrap_observation(obs), rew, done, info
 
     def _wrap_observation(self, obs):

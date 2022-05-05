@@ -32,11 +32,15 @@ configuration = {
     # 'n_steps_per_epoch': 256,
     'n_warmup_steps': 10000,
 
-    'number_of_agents':20,
+    
     'sampler':SamplerMulti
 }
 
 configuration = AttrDict(configuration)
+
+sampler_config = AttrDict(
+    number_of_agents = 20,
+)
 
 # Policy
 policy_params = AttrDict(
