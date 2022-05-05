@@ -28,8 +28,34 @@ class GTSEnv_Multi(GTSEnv_Base):
         })
         return super()._default_hparams().overwrite(default_dict)
 
+    def reset(self, start_conditions=None):
+        obs = self._env.reset(start_conditions=start_conditions)
+        return self._wrap_observation(obs)
+
+    def step(self, actions):
+        obs, rew, done, info = self._env.step([actions])
+        return self._wrap_observation(obs), rew, done, info
+
     def _wrap_observation(self, obs):
-        return super()._wrap_observation(raw_observation_to_true_observation(obs[0]))
+        converted_obs = [raw_observation_to_true_observation(obs_single) for obs_single in obs]
+        return GymEnv._wrap_observation(self, converted_obs) 
+
+
+if __name__ == "__main__":
+    from spirl.utils.general_utils import AttrDict
+    conf = AttrDict({'do_init' : True})
+    # conf = AttrDict({'do_init' : False})
+    env  = GTSEnv_Multi(conf)
+    obs = env.reset()
+    obs, rew, done, info = env.step([0, -1])
+    print('obs shape', obs.shape)
+    print('rew shape', rew)
+    print('done shape', done)
+
+
+    # python spirl/rl/envs/gts_multi.py
+
+    
 
         
 
