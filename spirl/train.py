@@ -23,8 +23,8 @@ from spirl.components.trainer_base import BaseTrainer
 from spirl.utils.wandb import WandBLogger
 from spirl.components.params import get_args
 
-WANDB_PROJECT_NAME = 'your_project_name'
-WANDB_ENTITY_NAME = 'your_entity_name'
+WANDB_PROJECT_NAME = 'sp4'
+WANDB_ENTITY_NAME = 'cehao'
 
 
 class ModelTrainer(BaseTrainer):
@@ -64,11 +64,15 @@ class ModelTrainer(BaseTrainer):
         self.optimizer = self.get_optimizer_class()(filter(lambda p: p.requires_grad, self.model.parameters()), lr=self._hp.lr)
         self.evaluator = self._hp.evaluator(self._hp, self.log_dir, self._hp.top_of_n_eval,
                                             self._hp.top_comp_metric, tb_logger=self.logger_test)
-        
+
         # load model params from checkpoint
         self.global_step, start_epoch = 0, 0
         if args.resume or conf.ckpt_path is not None:
             start_epoch = self.resume(args.resume, conf.ckpt_path)
+
+
+        print('start epch is ', start_epoch)
+        # self._hp.num_epochs = 2
 
         if args.val_sweep:
             self.run_val_sweep()
@@ -212,6 +216,8 @@ class ModelTrainer(BaseTrainer):
     def setup_device(self):
         self.use_cuda = torch.cuda.is_available() and not self.args.debug
         self.device = torch.device('cuda') if self.use_cuda else torch.device('cpu')
+        # print('================================== Now device is ', self.device)
+        # print('self.args.gpu is ', self.args.gpu)
         if self.args.gpu != -1:
             os.environ["CUDA_VISIBLE_DEVICES"] = str(self.args.gpu)
 
@@ -290,10 +296,8 @@ class ModelTrainer(BaseTrainer):
             logger = None
         model = params.model_class(self.conf.model, logger)
         if torch.cuda.device_count() > 1:
-            raise ValueError("Detected {} devices. Currently only single-GPU training is supported!".format(torch.cuda.device_count()),
-                             "Set CUDA_VISIBLE_DEVICES=<desired_gpu_id>.")
-            #print("\nUsing {} GPUs!\n".format(torch.cuda.device_count()))
-            #model = DataParallelWrapper(model)
+            print("\nUsing {} GPUs!\n".format(torch.cuda.device_count()))
+            model = DataParallelWrapper(model)
         model = model.to(self.device)
         model.device = self.device
         loader = self.get_dataset(self.args, model, self.conf.data, phase, params.n_repeat, params.dataset_size)
