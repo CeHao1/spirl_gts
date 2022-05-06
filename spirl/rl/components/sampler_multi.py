@@ -37,14 +37,15 @@ class SamplerMulti(Sampler):
                                 observation_next=obs[agent_index],
                             ))
 
-                            self._episode_reward += reward[agent_index]
+                            self._episode_reward += reward[agent_index] / na # average reward of one car
 
                         self._obs = obs
                         step += na
                         self._episode_step += na
 
                         # reset if episode ends
-                        if np.any(done) or self._episode_step >= self._max_episode_len:
+                        if np.any(done) : # must sample the complete trajectory
+                        # or self._episode_step >= self._max_episode_len:
                             if not np.all(done):    # force done to be True for timeout
                                 for agent_index in range(na): 
                                     experience_batch[agent_index][-1].done = True

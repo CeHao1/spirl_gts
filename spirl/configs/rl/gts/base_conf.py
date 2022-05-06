@@ -25,11 +25,10 @@ configuration = {
     # 'environment': GTSEnv_Base,
     'environment': GTSEnv_Multi,
     'data_dir': '.',
-    'num_epochs': 100,
-    'max_rollout_len': 10000,
-    'n_steps_per_epoch': 20000,
-    # 'n_warmup_steps': 160000,
-    'n_warmup_steps': 1000,
+    'num_epochs': 200,
+    'max_rollout_len': 20000,
+    'n_steps_per_epoch': 40000,
+    'n_warmup_steps': 160000,
     
     'sampler':SamplerMulti
 }
