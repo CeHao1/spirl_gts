@@ -38,7 +38,7 @@ class SamplerMulti(Sampler):
                                 observation_next=obs[agent_index],
                             ))
 
-                            self._episode_reward[agent_index] += reward[agent_index]
+                            self._episode_reward += reward[agent_index]
 
                         self._obs = obs
                         step += na
@@ -97,13 +97,3 @@ class SamplerMulti(Sampler):
             episode_final += episode[agent_index]
         return listdict2dictlist(episode_final)
 
-    def _episode_reset(self, global_step=None):
-        """Resets sampler at the end of an episode."""
-        if global_step is not None and self._logger is not None:    # logger is none in non-master threads
-            self._logger.log_scalar_dict(self.get_episode_info(),
-                                         prefix='train' if self._agent._is_train else 'val',
-                                         step=global_step)
-        self._episode_step = 0
-        self._episode_reward = [0] * self._hp.number_of_agents
-        self._obs = self._reset_env()
-        self._agent.reset()
