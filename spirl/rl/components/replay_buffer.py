@@ -175,6 +175,7 @@ class RolloutStorage:
             stats.update(AttrDict(
                 avg_reward=np.stack(rollout.reward).sum()
             ))
+        print("stats", stats)
         return stats.avg
 
     def reset(self):
