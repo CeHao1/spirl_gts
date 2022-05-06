@@ -5,8 +5,10 @@ from spirl.rl.policies.mlp_policies import MLPPolicy
 from spirl.rl.components.critic import MLPCritic
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.rl.envs.gts import GTSEnv_Base
+from spirl.rl.envs.gts_multi import GTSEnv_Multi
 
 from spirl.rl.agents.ac_agent import SACAgent
+from spirl.rl.components.sampler_multi import SamplerMulti
 
 from spirl.rl.components.normalization import Normalizer
 from spirl.configs.default_data_configs.gts import data_spec
@@ -20,17 +22,23 @@ notes = 'non-hierarchical RL experiments in gts env'
 configuration = {
     'seed': 2,
     'agent': SACAgent,
-    'environment': GTSEnv_Base,
+    # 'environment': GTSEnv_Base,
+    'environment': GTSEnv_Multi,
     'data_dir': '.',
     'num_epochs': 100,
-    'max_rollout_len': 2000,
-    'n_steps_per_epoch': 10000,
+    'max_rollout_len': 10000,
+    'n_steps_per_epoch': 20000,
     # 'n_warmup_steps': 160000,
-    # 'n_steps_per_epoch': 256,
-    'n_warmup_steps': 10000,
+    'n_warmup_steps': 1000,
+    
+    'sampler':SamplerMulti
 }
 
 configuration = AttrDict(configuration)
+
+sampler_config = AttrDict(
+    number_of_agents = 20,
+)
 
 # Policy
 policy_params = AttrDict(

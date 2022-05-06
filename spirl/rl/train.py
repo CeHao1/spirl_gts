@@ -29,7 +29,6 @@ class RLTrainer:
         self.conf = self.get_config()
         update_with_mpi_config(self.conf)   # self.conf.mpi = AttrDict(is_chef=True)
         self._hp = self._default_hparams()
-        print('initial hp, the n step ', self._hp.n_steps_per_update)
 
         self._hp.overwrite(self.conf.general)  # override defaults with config file
         self._hp.exp_path = make_path(self.conf.exp_dir, args.path, args.prefix, args.new_dir)
@@ -167,12 +166,11 @@ class RLTrainer:
                 with timing("Eval rollout time: "):
                     for _ in range(WandBLogger.N_LOGGED_SAMPLES):   # for efficiency instead of self.args.n_val_samples
                         val_rollout_storage.append(self.sampler.sample_episode(is_train=False, render=True))
-
         rollout_stats = val_rollout_storage.rollout_stats()
         if self.is_chef:
             with timing("Eval log time: "):
                 self.agent.log_outputs(rollout_stats, val_rollout_storage,
-                                       self.logger, log_images=True, step=self.global_step)
+                                       self.logger, log_images=False, step=self.global_step)
             print("Evaluation Avg_Reward: {}".format(rollout_stats.avg_reward))
         del val_rollout_storage
 
@@ -277,6 +275,12 @@ class RLTrainer:
                                          path=self._hp.exp_path, conf=conf)
                 else:
                     raise NotImplementedError   # TODO implement alternative logging (e.g. TB)
+
+            elif self.args.mode == 'val':
+                exp_name = f"{os.path.basename(self.args.path)}_{self.args.prefix}" if self.args.prefix \
+                    else os.path.basename(self.args.path)
+                logger = WandBLogger(exp_name, WANDB_PROJECT_NAME, entity=WANDB_ENTITY_NAME,
+                                        path=self._hp.exp_path, conf=conf)
             return logger
 
     def setup_device(self):

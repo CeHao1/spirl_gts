@@ -245,7 +245,6 @@ def gts_state_2_cartesian(gts_state):
 
 def raw_observation_to_true_observation(raw_obs):
     gts_states = gts_observation_2_state(raw_obs, RL_OBS_1)
-
     states = gts_state_2_cartesian(gts_states)
     return states_2_obs(states)
 
