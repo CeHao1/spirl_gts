@@ -92,6 +92,7 @@ class SamplerMulti(Sampler):
         for agent_index in range(na): 
             episode[agent_index][-1].done = True
 
+        episode_final = []
         for agent_index in range(na): 
             episode_final += episode[agent_index]
         return listdict2dictlist(episode_final)

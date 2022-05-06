@@ -29,7 +29,7 @@ configuration = {
     'max_rollout_len': 20000,
     'n_steps_per_epoch': 10000,
     # 'n_warmup_steps': 160000,
-    'n_steps_per_epoch': 256,
+    'n_warmup_steps': 10000,
     
     'sampler':SamplerMulti
 }
