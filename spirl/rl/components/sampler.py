@@ -44,7 +44,6 @@ class Sampler:
                         agent_output = self.sample_action(self._obs)
                         if agent_output.action is None:
                             self._episode_reset(global_step)
-                            print("============================!!!")
                             continue
                         agent_output = self._postprocess_agent_output(agent_output)
                         obs, reward, done, info = self._env.step(agent_output.action)

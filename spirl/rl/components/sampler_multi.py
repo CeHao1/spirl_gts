@@ -14,7 +14,6 @@ class SamplerMulti(Sampler):
 
     def sample_batch(self, batch_size, is_train=True, global_step=None):
         na = self._hp.number_of_agents
-
         experience_batch = [[] for _ in range(na)]
         step = 0
         with self._env.val_mode() if not is_train else contextlib.suppress():

@@ -21,7 +21,7 @@ class GTSEnv_Multi(GTSEnv_Base):
     def _game_hp(self):
         game_hp = ParamDict({
             'builtin_controlled' : [],
-            'do_init' : True,
+            'do_init' : False,
             'reward_function' : reward_function,
             'done_function' : sampling_done_function
         })
