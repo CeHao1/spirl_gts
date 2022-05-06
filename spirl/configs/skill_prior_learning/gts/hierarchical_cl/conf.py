@@ -26,13 +26,13 @@ model_config = AttrDict(
     state_dim=data_spec.state_dim,
     action_dim=data_spec.n_actions,
     n_rollout_steps=10,
-    kl_div_weight=1e-2,
-    prior_input_res=data_spec.res,
-    n_input_frames=2,
+    kl_div_weight=5e-4,
+    nz_mid=128,
+    n_processing_layers=5,
     cond_decode=True,
 )
 
 # Dataset
 data_config = AttrDict()
 data_config.dataset_spec = data_spec
-data_config.dataset_spec.subseq_len = model_config.n_rollout_steps + model_config.n_input_frames
+data_config.dataset_spec.subseq_len = model_config.n_rollout_steps + 1
