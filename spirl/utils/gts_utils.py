@@ -1,6 +1,6 @@
 
 import numpy as np
-from gym_gts import GTSApi
+
 import gym
 
 #  =========================== env setup utils ================================
@@ -83,6 +83,7 @@ def BoP_formulator(num_cars, car_name, weight_percentage, power_percentage):
     return bops
 
 def initialize_gts(ip, num_cars, car_codes, course_code, tire_type, bops):
+    from gym_gts import GTSApi
     with GTSApi(ip=ip) as gts_api:
         gts_api.set_race(
             num_cars = num_cars,
