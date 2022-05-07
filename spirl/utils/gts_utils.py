@@ -82,7 +82,7 @@ DEFAULT_FEATURE_KEYS = (
 chosen_feature_keys = DEFAULT_FEATURE_KEYS
 
 
-state_dim = len(DEFAULT_FEATURE_KEYS)
+state_dim = len(ego_obs)
 
 def start_condition_formulator(num_cars, course_v, speed):
     conditions = []
