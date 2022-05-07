@@ -273,7 +273,10 @@ class SACAgent(ACAgent):
 
     @property
     def alpha(self):
-        return self._log_alpha().exp()
+        if self._hp.fixed_alpha is not None:
+            return self._hp.fixed_alpha
+        else:
+            return self._log_alpha().exp()
 
     @property
     def schedule_steps(self):

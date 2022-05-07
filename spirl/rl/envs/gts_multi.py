@@ -49,6 +49,8 @@ class GTSEnv_Multi(GTSEnv_Base):
         converted_obs = [raw_observation_to_true_observation(obs_single) for obs_single in obs]
         return GymEnv._wrap_observation(self, converted_obs) 
 
+        # return GymEnv._wrap_observation(self, obs)
+
     def render(self, mode='rgb_array'):
         return [[0,0,0] for _ in range(self._hp.num_cars)]
 

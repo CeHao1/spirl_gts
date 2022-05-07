@@ -8,6 +8,7 @@ from spirl.utils.general_utils import ParamDict, AttrDict
 
 from spirl.utils.gts_utils import make_env, initialize_gts
 from spirl.utils.gts_utils import RL_OBS_1, CAR_CODE, COURSE_CODE, TIRE_TYPE, BOP
+from spirl.utils.gts_utils import DEFAULT_FEATURE_KEYS
 from spirl.utils.gts_utils import raw_observation_to_true_observation
 
 from spirl.utils.gts_utils import reward_function, sampling_done_function
@@ -38,7 +39,8 @@ class GTSEnv_Base(GymEnv):
             'builtin_controlled' : [],
             'do_init' : True,
             'reward_function' : reward_function,
-            'done_function' : sampling_done_function
+            'done_function' : sampling_done_function,
+            'standardize_observations' : False
         })
         return game_hp
 
@@ -58,10 +60,13 @@ class GTSEnv_Base(GymEnv):
             ip = self._hp.ip_address, 
             min_frames_per_action=6, 
             feature_keys = RL_OBS_1, 
+            # feature_keys = DEFAULT_FEATURE_KEYS,
+
             builtin_controlled = self._hp.builtin_controlled, 
             spectator_mode = self._hp.spectator_mode,
             reward_function = self._hp.reward_function,
-            done_function = self._hp.done_function
+            done_function = self._hp.done_function,
+            standardize_observations=self._hp.done_function,
         )
 
         self.course_length = self._get_course_length()

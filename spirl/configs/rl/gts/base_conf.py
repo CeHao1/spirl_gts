@@ -27,8 +27,8 @@ configuration = {
     'data_dir': '.',
     'num_epochs': 300,
     'max_rollout_len': 20000,
-    'n_steps_per_epoch': 40000,
-    'n_warmup_steps': 160000,
+    'n_steps_per_epoch': 21000,
+    'n_warmup_steps': 80000,
     
     'sampler':SamplerMulti
 }
@@ -82,7 +82,9 @@ agent_config = AttrDict(
     batch_size=256,
     log_videos=False,
 
-    discount_factor = 0.98
+    discount_factor = 0.98,
+
+    fixed_alpha = 0.01,
 )
 
 # Dataset - Random data
