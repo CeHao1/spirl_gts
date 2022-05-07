@@ -325,8 +325,8 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         return inputs.states[:, 0]
 
     def _regression_targets(self, inputs):
-        return inputs.actions[:, (self._hp.n_input_frames-1):]
-        # return inputs.actions
+        # return inputs.actions[:, (self._hp.n_input_frames-1):]
+        return inputs.actions
 
     def evaluate_prior_divergence(self, state):
         """Evaluates prior divergence as mean pairwise KL divergence of ensemble of priors."""

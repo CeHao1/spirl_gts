@@ -25,7 +25,7 @@ configuration = {
     # 'environment': GTSEnv_Base,
     'environment': GTSEnv_Multi,
     'data_dir': '.',
-    'num_epochs': 200,
+    'num_epochs': 300,
     'max_rollout_len': 20000,
     'n_steps_per_epoch': 40000,
     'n_warmup_steps': 160000,
