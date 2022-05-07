@@ -12,6 +12,7 @@ from spirl.rl.policies.prior_policies import LearnedPriorAugmentedPIPolicy
 
 from spirl.rl.envs.gts import GTSEnv_Base
 from spirl.rl.envs.gts_multi import GTSEnv_Multi
+from spirl.rl.components.sampler_multi import HierarchicalSamplerMulti
 
 from spirl.rl.components.sampler import HierarchicalSampler
 
@@ -25,15 +26,25 @@ configuration = {
     'seed': 42,
     'agent': FixedIntervalHierarchicalAgent,
     'environment': GTSEnv_Base,
-    'sampler': HierarchicalSampler,
+
     'data_dir': '.',
-    'num_epochs': 100,
-    'max_rollout_len': 350,
-    'n_steps_per_epoch': 1e5,
-    'n_warmup_steps': 2e3,
+    # 'num_epochs': 100,
+    # 'max_rollout_len': 350,
+    # 'n_steps_per_epoch': 1e5,
+    # 'n_warmup_steps': 2e3,
+
+    'num_epochs': 300,
+    'max_rollout_len': 20000,
+    'n_steps_per_epoch': 21000,
+    'n_warmup_steps': 80000,
+    
+    'sampler':HierarchicalSampler
 }
 configuration = AttrDict(configuration)
 
+sampler_config = AttrDict(
+    number_of_agents = 20,
+)
 
 # Replay Buffer
 replay_params = AttrDict(

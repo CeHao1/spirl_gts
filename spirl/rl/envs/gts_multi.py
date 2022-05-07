@@ -23,7 +23,8 @@ class GTSEnv_Multi(GTSEnv_Base):
             'builtin_controlled' : [],
             'do_init' : True,
             'reward_function' : reward_function,
-            'done_function' : sampling_done_function
+            'done_function' : sampling_done_function,
+            'standardize_observations' : False
         })
         return game_hp
 

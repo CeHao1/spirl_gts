@@ -66,7 +66,7 @@ class GTSEnv_Base(GymEnv):
             spectator_mode = self._hp.spectator_mode,
             reward_function = self._hp.reward_function,
             done_function = self._hp.done_function,
-            standardize_observations=self._hp.done_function,
+            standardize_observations=self._hp.standardize_observations,
         )
 
         self.course_length = self._get_course_length()
