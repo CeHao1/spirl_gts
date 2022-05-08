@@ -102,12 +102,14 @@ class HierarchicalSamplerMulti(SamplerMulti):
         """Samples the required number of high-level transitions. Number of LL transitions can be higher."""
         na = self._hp.number_of_agents
 
-        hl_experience_batch, ll_experience_batch = [], []
+        hl_experience_batch = [[] for _ in range(na)]
+        ll_experience_batch = [[] for _ in range(na)]
+
         env_steps, hl_step = 0, 0
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
-                    while hl_step < batch_size or len(ll_experience_batch) <= 1:
+                    while hl_step < batch_size or len(ll_experience_batch[0]) <= 1:
                         # perform one rollout step
                         # agent_output = self.sample_action(self._obs)
                         # agent_output = self._postprocess_agent_output(agent_output)
@@ -121,31 +123,35 @@ class HierarchicalSamplerMulti(SamplerMulti):
                         # update last step's 'observation_next' with HL action
                         if store_ll:
                             if ll_experience_batch:
-                                ll_experience_batch[-1].observation_next = \
-                                    self._agent.make_ll_obs(ll_experience_batch[-1].observation_next, agent_output.hl_action)
+                                for agent_index in range(na):
+                                    ll_experience_batch[agent_index][-1].observation_next = \
+                                        self._agent.make_ll_obs(ll_experience_batch[agent_index][-1].observation_next, agent_output[agent_index].hl_action)
 
                             # store current step in ll_experience_batch
-                            ll_experience_batch.append(AttrDict(
-                                observation=self._agent.make_ll_obs(self._obs, agent_output.hl_action),
-                                reward=reward,
-                                done=done,
-                                action=agent_output.action,
-                                observation_next=obs,       # this will get updated in the next step
-                            ))
+                            for agent_index in range(na): 
+                                ll_experience_batch[agent_index].append(AttrDict(
+                                    observation=self._agent.make_ll_obs(self._obs[agent_index], agent_output[agent_index].hl_action),
+                                    reward=reward[agent_index],
+                                    done=done[agent_index],
+                                    action=agent_output[agent_index].action,
+                                    observation_next=obs[agent_index],       # this will get updated in the next step
+                                ))
 
                         # store HL experience batch if this was HL action or episode is done
-                        if agent_output.is_hl_step or (done or self._episode_step >= self._max_episode_len-1):
+                        if agent_output[0].is_hl_step or (np.any(done) or self._episode_step >= self._max_episode_len-1):
                             if self.last_hl_obs is not None and self.last_hl_action is not None:
-                                hl_experience_batch.append(AttrDict(
-                                    observation=self.last_hl_obs,
-                                    reward=self.reward_since_last_hl,
-                                    done=done,
-                                    action=self.last_hl_action,
-                                    observation_next=obs,
-                                ))
-                                hl_step += 1
-                                if done:
-                                    hl_experience_batch[-1].reward += reward  # add terminal reward
+                                for agent_index in range(na): 
+                                    hl_experience_batch[agent_index].append(AttrDict(
+                                        observation=self.last_hl_obs[agent_index],
+                                        reward=self.reward_since_last_hl[agent_index],
+                                        done=done[agent_index],
+                                        action=self.last_hl_action[agent_index],
+                                        observation_next=obs[agent_index],
+                                    ))
+                                hl_step += na
+                                if np.any(done):
+                                    for agent_index in range(na): 
+                                        hl_experience_batch[agent_index][-1].reward += reward  # add terminal reward
                                 if hl_step % 1000 == 0:
                                     print("Sample step {}".format(hl_step))
                             self.last_hl_obs = self._obs if self._episode_step == 0 else obs
@@ -154,19 +160,33 @@ class HierarchicalSamplerMulti(SamplerMulti):
 
                         # update stored observation
                         self._obs = obs
-                        env_steps += 1; self._episode_step += 1; self._episode_reward += reward
-                        self.reward_since_last_hl += reward
+                        env_steps += na
+                        self._episode_step += na
+
+                        for agent_index in range(na): 
+                            self._episode_reward += reward[agent_index] / na
+                            self.reward_since_last_hl += reward[agent_index] / na
 
                         # reset if episode ends
-                        if done or self._episode_step >= self._max_episode_len:
-                            if not done:    # force done to be True for timeout
-                                ll_experience_batch[-1].done = True
+                        if np.any(done) or self._episode_step >= self._max_episode_len:
+                            if not np.all(done):    # force done to be True for timeout
+                                for agent_index in range(na): 
+                                    ll_experience_batch[agent_index][-1].done = True
                                 if hl_experience_batch:   # can potentially be empty 
-                                    hl_experience_batch[-1].done = True
+                                    for agent_index in range(na): 
+                                        hl_experience_batch[agent_index][-1].done = True
                             self._episode_reset(global_step)
+
+        final_hl_experience_batch = []
+        final_ll_experience_batch = []
+
+        for agent_index in range(na):
+            final_hl_experience_batch += hl_experience_batch[agent_index]
+            final_ll_experience_batch += ll_experience_batch[agent_index]
+
         return AttrDict(
-            hl_batch=listdict2dictlist(hl_experience_batch),
-            ll_batch=listdict2dictlist(ll_experience_batch[:-1]),   # last element does not have updated obs_next!
+            hl_batch=listdict2dictlist(final_hl_experience_batch),
+            ll_batch=listdict2dictlist(final_ll_experience_batch[:-1]),   # last element does not have updated obs_next!
         ), env_steps
 
 
