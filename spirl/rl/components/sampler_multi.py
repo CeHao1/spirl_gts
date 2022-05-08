@@ -182,15 +182,15 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
 
         for agent_index in range(na):
             final_hl_experience_batch += hl_experience_batch[agent_index]
-            final_ll_experience_batch += ll_experience_batch[agent_index]
+            final_ll_experience_batch += ll_experience_batch[agent_index][:-1]
 
         return AttrDict(
             hl_batch=listdict2dictlist(final_hl_experience_batch),
-            ll_batch=listdict2dictlist(final_ll_experience_batch[:-1]),   # last element does not have updated obs_next!
+            ll_batch=listdict2dictlist(final_ll_experience_batch),   # last element does not have updated obs_next!
         ), env_steps
 
 
     def _episode_reset(self, global_step=None):
         super()._episode_reset(global_step)
         self.last_hl_obs, self.last_hl_action = None, None
-        self.reward_since_last_hl = 0
+        self.reward_since_last_hl = [0] * self._hp.number_of_agents

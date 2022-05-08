@@ -38,6 +38,7 @@ configuration = {
     'max_rollout_len': 20000,
     'n_steps_per_epoch': 21000,
     'n_warmup_steps': 80000,
+    # 'n_warmup_steps': 2000,
     
     # 'sampler':HierarchicalSampler
     'sampler':HierarchicalSamplerMulti
@@ -154,5 +155,6 @@ data_config.dataset_spec = data_spec
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
+    # do_init = False
 )
 
