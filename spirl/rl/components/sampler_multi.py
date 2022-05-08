@@ -1,7 +1,7 @@
 import numpy as np
 import contextlib
 
-from spirl.rl.components.sampler import Sampler
+from spirl.rl.components.sampler import Sampler, HierarchicalSampler
 from spirl.utils.general_utils import listdict2dictlist, AttrDict, ParamDict, obj2np
 
 class SamplerMulti(Sampler):
@@ -92,11 +92,11 @@ class SamplerMulti(Sampler):
         return listdict2dictlist(episode_final)
 
 
-class HierarchicalSamplerMulti(SamplerMulti):
+class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last_hl_obs, self.last_hl_action = None, None  # stores observation when last hl action was taken
-        self.reward_since_last_hl = 0  # accumulates the reward since the last HL step for HL transition
+        self.reward_since_last_hl = [0] * self._hp.number_of_agents  # accumulates the reward since the last HL step for HL transition
 
     def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True):
         """Samples the required number of high-level transitions. Number of LL transitions can be higher."""
@@ -122,7 +122,7 @@ class HierarchicalSamplerMulti(SamplerMulti):
 
                         # update last step's 'observation_next' with HL action
                         if store_ll:
-                            if ll_experience_batch:
+                            if ll_experience_batch[0]:
                                 for agent_index in range(na):
                                     ll_experience_batch[agent_index][-1].observation_next = \
                                         self._agent.make_ll_obs(ll_experience_batch[agent_index][-1].observation_next, agent_output[agent_index].hl_action)
@@ -152,11 +152,11 @@ class HierarchicalSamplerMulti(SamplerMulti):
                                 if np.any(done):
                                     for agent_index in range(na): 
                                         hl_experience_batch[agent_index][-1].reward += reward  # add terminal reward
-                                if hl_step % 1000 == 0:
-                                    print("Sample step {}".format(hl_step))
+                                # if hl_step % 1000 == 0:
+                                #     print("Sample step {}".format(hl_step))
                             self.last_hl_obs = self._obs if self._episode_step == 0 else obs
-                            self.last_hl_action = agent_output.hl_action
-                            self.reward_since_last_hl = 0
+                            self.last_hl_action = [agent_output[agent_index].hl_action for agent_index in range(na)]
+                            self.reward_since_last_hl = [0] * na
 
                         # update stored observation
                         self._obs = obs
@@ -165,14 +165,14 @@ class HierarchicalSamplerMulti(SamplerMulti):
 
                         for agent_index in range(na): 
                             self._episode_reward += reward[agent_index] / na
-                            self.reward_since_last_hl += reward[agent_index] / na
+                            self.reward_since_last_hl[agent_index] += reward[agent_index]
 
                         # reset if episode ends
                         if np.any(done) or self._episode_step >= self._max_episode_len:
                             if not np.all(done):    # force done to be True for timeout
                                 for agent_index in range(na): 
                                     ll_experience_batch[agent_index][-1].done = True
-                                if hl_experience_batch:   # can potentially be empty 
+                                if hl_experience_batch[0]:   # can potentially be empty 
                                     for agent_index in range(na): 
                                         hl_experience_batch[agent_index][-1].done = True
                             self._episode_reset(global_step)

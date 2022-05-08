@@ -25,7 +25,8 @@ notes = 'hierarchical RL on the gts env'
 configuration = {
     'seed': 42,
     'agent': FixedIntervalHierarchicalAgent,
-    'environment': GTSEnv_Base,
+    # 'environment': GTSEnv_Base,
+    'environment': GTSEnv_Multi,
 
     'data_dir': '.',
     # 'num_epochs': 100,
@@ -38,7 +39,8 @@ configuration = {
     'n_steps_per_epoch': 21000,
     'n_warmup_steps': 80000,
     
-    'sampler':HierarchicalSampler
+    # 'sampler':HierarchicalSampler
+    'sampler':HierarchicalSamplerMulti
 }
 configuration = AttrDict(configuration)
 
