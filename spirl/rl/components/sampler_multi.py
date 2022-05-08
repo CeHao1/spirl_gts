@@ -151,7 +151,7 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
                                 hl_step += na
                                 if np.any(done):
                                     for agent_index in range(na): 
-                                        hl_experience_batch[agent_index][-1].reward += reward  # add terminal reward
+                                        hl_experience_batch[agent_index][-1].reward += reward[agent_index]  # add terminal reward
                                 # if hl_step % 1000 == 0:
                                 #     print("Sample step {}".format(hl_step))
                             self.last_hl_obs = self._obs if self._episode_step == 0 else obs
@@ -191,6 +191,7 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
 
 
     def _episode_reset(self, global_step=None):
-        super()._episode_reset(global_step)
+        print("=======================reset ep hier, multi, global_step", global_step)
+        Sampler._episode_reset(self, global_step)
         self.last_hl_obs, self.last_hl_action = None, None
         self.reward_since_last_hl = [0] * self._hp.number_of_agents
