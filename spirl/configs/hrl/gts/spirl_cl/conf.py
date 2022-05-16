@@ -155,6 +155,6 @@ data_config.dataset_spec = data_spec
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    # do_init = False
+    do_init = False
 )
 

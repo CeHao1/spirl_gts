@@ -98,6 +98,7 @@ class GTSEnv_Base(GymEnv):
         
         import os
         from sklearn.preprocessing import StandardScaler
+        import pickle
         try:
             file_path = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/standard_table")
             f = open(file_path, "rb")
@@ -109,6 +110,7 @@ class GTSEnv_Base(GymEnv):
             self.scaler.var_ = var
             self.scaler.scale_ = np.sqrt(var)
 
+            print(mean.shape, var.shape)
             print("load standard table successful")
         except:
             print("not standard table")
