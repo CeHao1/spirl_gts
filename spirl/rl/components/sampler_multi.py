@@ -191,7 +191,6 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
 
 
     def _episode_reset(self, global_step=None):
-        print("=======================reset ep hier, multi, global_step", global_step)
         Sampler._episode_reset(self, global_step)
         self.last_hl_obs, self.last_hl_action = None, None
         self.reward_since_last_hl = [0] * self._hp.number_of_agents
