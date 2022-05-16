@@ -23,6 +23,9 @@ class GTSEnv_Base(GymEnv):
             self._initialize()
         self._make_env()
 
+        self.scaler = None
+        self.load_standard_table()
+
     
     def _default_hparams(self):
         default_dict = ParamDict({
@@ -80,7 +83,9 @@ class GTSEnv_Base(GymEnv):
         return self._wrap_observation(obs[0]), rew[0], done[0], info
 
     def _wrap_observation(self, obs):
-        return super()._wrap_observation(raw_observation_to_true_observation(obs))
+        if self.scaler:
+            std_obs = self.scaler.transform(raw_observation_to_true_observation(obs))
+        return super()._wrap_observation(std_obs)
 
     def _get_course_length(self):
         course_length, course_code, course_name = self._env.get_course_meta()
@@ -88,6 +93,27 @@ class GTSEnv_Base(GymEnv):
 
     def render(self, mode='rgb_array'):
         return [0,0,0]
+
+    def load_standard_table(self):
+        
+        import os
+        from sklearn.preprocessing import StandardScaler
+        try:
+            file_path = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/standard_table")
+            f = open(file_path, "rb")
+            standard_table = pickle.load(f)
+            f.close()
+            mean, var = standard_table
+            self.scaler = StandardScaler()
+            self.scaler.mean_ = mean
+            self.scaler.var_ = var
+            self.scaler.scale_ = np.sqrt(var)
+
+            print("load standard table successful")
+        except:
+            print("not standard table")
+
+        
 
 if __name__ == "__main__":
     from spirl.utils.general_utils import AttrDict
