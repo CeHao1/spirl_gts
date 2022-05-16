@@ -7,6 +7,8 @@ import numpy as np
 import torch.utils.data as data
 import itertools
 
+from sklearn.preprocessing import StandardScaler
+
 from spirl.utils.general_utils import AttrDict, map_dict, maybe_retrieve, shuffle_with_seed
 from spirl.utils.pytorch_utils import RepeatedDataLoader
 from spirl.utils.video_utils import resize_video
@@ -278,14 +280,40 @@ class PreloadVideoDataset(VideoDataset):
 class GlobalSplitVideoDataset(VideoDataset, GlobalSplitDataset):
     pass
 
-
-class GTSStandardDataset(GlobalSplitVideoDataset):
-    def __init__(self)
-
-
 class PreloadGlobalSplitVideoDataset(PreloadVideoDataset, GlobalSplitDataset):
     pass
 
+class GTSDataset(GlobalSplitVideoDataset):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.scaler = self.standardlize()
+
+    def standardlize(self):
+        file_number = len(self)
+        sampler_number = int(file_number * 0.1)
+        data_list = []
+
+        for i in range(sampler_number):
+            data = super().__getitem__(np.randint(0, file_number))
+            data_list.append(data.states)
+
+        mean = np.mean(data_list, axis=0)
+        var = np.var(data_list, axis=0)
+
+        scaler = StandardScaler()
+        scaler.mean_ = mean
+        scaler.var_ = var
+        scaler.scale_ = np.sqrt(var)
+
+        print("======================= standard ===================")
+        print("mean {}, var {}".format(mean, var))
+
+        return scaler
+        
+    def __getitem__(self, item):
+        data = super().__getitem__(item)
+        data.states = self.scaler.transform(data.states)
+        return data
 
 class GlobalSplitStateSequenceDataset(GlobalSplitVideoDataset):
     """Outputs observation in data dict, not images."""
