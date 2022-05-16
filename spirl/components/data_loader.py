@@ -286,29 +286,65 @@ class PreloadGlobalSplitVideoDataset(PreloadVideoDataset, GlobalSplitDataset):
 class GTSDataset(GlobalSplitVideoDataset):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.scaler = self.standardlize()
+
+        file_path = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/standard_table")
+        
+        import pickle
+        if (self.phase == 'train'):
+            mean, var = self.standardlize()
+            standard_table =  [mean, var]
+            f = open(file_path, "wb")
+            pickle.dump(standard_table, f)
+            f.close()
+        elif (self.phase == 'val'):
+            f = open(file_path, "rb")
+            standard_table = pickle.load(f)
+            f.close()
+            mean, var = standard_table
+
+        self.scaler = StandardScaler()
+        self.scaler.mean_ = mean
+        self.scaler.var_ = var
+        self.scaler.scale_ = np.sqrt(var)
 
     def standardlize(self):
         file_number = len(self)
-        sampler_number = int(file_number * 0.1)
+        sampler_number = int(file_number * 1)
         data_list = []
+        
 
         for i in range(sampler_number):
-            data = super().__getitem__(np.randint(0, file_number))
+            data = super().__getitem__(i)
             data_list.append(data.states)
 
-        mean = np.mean(data_list, axis=0)
-        var = np.var(data_list, axis=0)
 
-        scaler = StandardScaler()
-        scaler.mean_ = mean
-        scaler.var_ = var
-        scaler.scale_ = np.sqrt(var)
+        data_list = np.array(data_list)
+        shapes = data_list.shape
+        dim1 = shapes[0] * shapes[1]
+        dim2 = shapes[2]
+
+        data_list = data_list.reshape(dim1, dim2)
+
+        mean = data_list.mean(axis=0)
+        var = data_list.var(axis=0)
+
+        for i in range(mean.shape[0]):
+ 
+            if (var[i] < 0.01 * abs(mean[i]) ): # the var is too small
+                var[i] = 1.0
+                print("The {} variance is too small".format(i))       
+
+            elif  (abs(mean[i]) < 1e-5 and abs(var[i]) < 1e-5):
+                var[i] = 1.0
+                print("The {} mean, var are too small".format(i))  
 
         print("======================= standard ===================")
-        print("mean {}, var {}".format(mean, var))
+        print("file_number", file_number, "shape ", data_list.shape)
+        print("mean {}, var {}".format(mean.shape, var.shape))
+        print(mean)
+        print(var)
 
-        return scaler
+        return mean, var
         
     def __getitem__(self, item):
         data = super().__getitem__(item)
