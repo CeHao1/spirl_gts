@@ -279,6 +279,10 @@ class GlobalSplitVideoDataset(VideoDataset, GlobalSplitDataset):
     pass
 
 
+class GTSStandardDataset(GlobalSplitVideoDataset):
+    def __init__(self)
+
+
 class PreloadGlobalSplitVideoDataset(PreloadVideoDataset, GlobalSplitDataset):
     pass
 
