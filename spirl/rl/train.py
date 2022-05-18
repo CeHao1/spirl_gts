@@ -77,6 +77,8 @@ class RLTrainer:
             self.train(start_epoch)
         elif args.mode == 'val':
             self.val()
+        elif args.mode == 'viz':
+            self.viz()
         else:
             self.generate_rollouts()
 
@@ -173,6 +175,9 @@ class RLTrainer:
                                        self.logger, log_images=False, step=self.global_step)
             print("Evaluation Avg_Reward: {}".format(rollout_stats.avg_reward))
         del val_rollout_storage
+
+    def viz():
+        print('visualize!!')
 
     def generate_rollouts(self):
         """Generate rollouts and save to hdf5 files."""
