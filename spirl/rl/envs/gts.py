@@ -110,7 +110,7 @@ class GTSEnv_Base(GymEnv):
             self.scaler.var_ = var
             self.scaler.scale_ = np.sqrt(var)
 
-            print(mean.shape, var.shape)
+            # print(mean.shape, var.shape)
             print("load standard table successful")
         except:
             print("not standard table")
