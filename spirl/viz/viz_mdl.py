@@ -27,6 +27,7 @@ class MDLVisualizer(ModelTrainer):
         self.model, self.train_loader = self.build_vizer(train_params, 'viz')
 
         print('get model and data')
+        self.test_once()
 
         
 
@@ -40,6 +41,10 @@ class MDLVisualizer(ModelTrainer):
         model.device = self.device
         loader = self.get_dataset(self.args, model, self.conf.data, phase, params.n_repeat, params.dataset_size)
         return model, loader
+
+    def test_once(self):
+        for self.batch_idx, sample_batched in enumerate(self.train_loader):
+            print(sample_batched)
 
 
 if __name__ == '__main__':
