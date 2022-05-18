@@ -86,7 +86,8 @@ class GlobalSplitDataset(Dataset):
         if not filenames:
             raise RuntimeError('No filenames found in {}'.format(self.data_dir))
         filenames = shuffle_with_seed(filenames)
-        filenames = self._split_with_percentage(self.spec.split, filenames)
+        if (self.phase != 'viz'):
+            filenames = self._split_with_percentage(self.spec.split, filenames)
         return filenames
 
     def _load_h5_files(self, dir):
@@ -296,7 +297,7 @@ class GTSDataset(GlobalSplitVideoDataset):
             f = open(file_path, "wb")
             pickle.dump(standard_table, f)
             f.close()
-        elif (self.phase == 'val'):
+        elif (self.phase == 'val' or self.phase =='viz'):
             f = open(file_path, "rb")
             standard_table = pickle.load(f)
             f.close()

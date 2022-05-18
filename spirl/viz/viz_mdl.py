@@ -24,9 +24,22 @@ class MDLVisualizer(ModelTrainer):
                                 model_class=self._hp.model,
                                 n_repeat=self._hp.epoch_cycles_train,
                                 dataset_size=-1)
-        self.logger, self.model, self.train_loader = self.build_phase(train_params, 'train')
+        self.model, self.train_loader = self.build_vizer(train_params, 'viz')
 
         print('get model and data')
+
+        
+
+    def build_vizer(self, params, phase):
+
+        model = params.model_class(self.conf.model)
+        if torch.cuda.device_count() > 1:
+            print("\nUsing {} GPUs!\n".format(torch.cuda.device_count()))
+            model = DataParallelWrapper(model)
+        model = model.to(self.device)
+        model.device = self.device
+        loader = self.get_dataset(self.args, model, self.conf.data, phase, params.n_repeat, params.dataset_size)
+        return model, loader
 
 
 if __name__ == '__main__':
