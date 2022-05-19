@@ -43,14 +43,15 @@ class GTSEnv_Multi(GTSEnv_Base):
         return self._wrap_observation(obs)
 
     def step(self, actions):
+        actions = self.descaler_actions(actions)
         obs, rew, done, info = self._env.step(actions)
         return self._wrap_observation(obs), rew, done, info
 
     def _wrap_observation(self, obs):
         converted_obs = [raw_observation_to_true_observation(obs_single) for obs_single in obs]
-        if self.scaler:
+        if self.state_scaler:
 
-            std_obs = self.scaler.transform(converted_obs)
+            std_obs = self.state_scaler.transform(converted_obs)
             # std_obs = converted_obs
             # std_obs[0] = std_obs0[0]
         else:

@@ -44,7 +44,9 @@ class GTSEnv_Base(GymEnv):
             'do_init' : True,
             'reward_function' : reward_function,
             'done_function' : sampling_done_function,
-            'standardize_observations' : False
+            'standardize_observations' : False,
+            'state_standard': True,
+            'action_standard':False
         })
         return game_hp
 
@@ -96,8 +98,10 @@ class GTSEnv_Base(GymEnv):
         return [0,0,0]
 
     def descaler_actions(self, actions):
-        descaldered_actions = self.action_scaler.inverse_transform(actions)
-        return descaldered_actions
+        if self._hp.action_standard:
+            return self.action_scaler.inverse_transform(actions)
+        else:
+            return actions
 
 
     def load_standard_table(self):
