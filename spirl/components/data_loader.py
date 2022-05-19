@@ -300,6 +300,7 @@ class GTSDataset(GlobalSplitVideoDataset):
             f = open(file_path, "rb")
             standard_table = pickle.load(f)
             f.close()
+            print('load standard_table')
         self.state_scaler = standard_table['state']
         self.action_scaler = standard_table['action']
 
