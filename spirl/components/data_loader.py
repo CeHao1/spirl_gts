@@ -295,14 +295,15 @@ class GTSDataset(GlobalSplitVideoDataset):
             f = open(file_path, "wb")
             pickle.dump(standard_table, f)
             f.close()
+            print('save standard_table')
         elif (self.phase == 'val' or self.phase =='viz'):
             f = open(file_path, "rb")
             standard_table = pickle.load(f)
             f.close()
             # state_mean, state_var = standard_table['state']
             # action_mean, action_var = standard_table['action']
-            self.state_scale = standard_table['state']
-            self.action_scaler = standard_table['action']
+        self.state_scaler = standard_table['state']
+        self.action_scaler = standard_table['action']
 
         # self.state_scaler = StandardScaler()
         # self.state_scaler.mean_ = state_mean
@@ -334,36 +335,24 @@ class GTSDataset(GlobalSplitVideoDataset):
         data_state_list = data_state_list.reshape(state_shapes[0] * state_shapes[1], state_shapes[2])
         data_action_list = data_action_list.reshape(action_shapes[0] * action_shapes[1], action_shapes[2])
 
-        # state_mean = data_state_list.mean(axis=0)
-        # state_var = data_state_list.var(axis=0)
-        # action_mean = data_action_list.mean(axis=0)
-        # action_var = data_action_list.var(axis=0)
-
-        # for i in range(state_mean.shape[0]):
- 
-        #     if (state_var[i] < 0.01 * abs(state_mean[i]) ): # the var is too small
-        #         state_var[i] = 1.0
-        #         print("The {} variance is too small".format(i))       
-
-        #     elif  (abs(state_mean[i]) < 1e-5 and abs(state_var[i]) < 1e-5):
-        #         state_var[i] = 1.0
-        #         print("The {} mean, var are too small".format(i))  
-
-        # print("======================= standard state===================")
-        # print("file_number", file_number, "shape ", data_state_list.shape)
-        # print("mean {}, var {}".format(state_var.shape, state_var.shape))
-        # print(state_mean)
-        # print(state_var)
 
         state_scaler = StandardScaler()
         state_scaler.fit(data_state_list)
-        action_scaler = MinMaxScaler()
+        action_scaler = MinMaxScaler(feature_range=(-1, 1))
         action_scaler.fit(data_action_list)
 
         standard_table = {
             'state' : state_scaler,
             'action': action_scaler
         }
+
+        print("============= strandard =================")
+        print('states:')
+        print(state_scaler.mean_, state_scaler.scale_)
+
+        print('actions:')
+        print(action_scaler.data_min_, action_scaler.data_max_)
+
 
         return standard_table
         
