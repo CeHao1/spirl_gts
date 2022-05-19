@@ -300,24 +300,13 @@ class GTSDataset(GlobalSplitVideoDataset):
             f = open(file_path, "rb")
             standard_table = pickle.load(f)
             f.close()
-            # state_mean, state_var = standard_table['state']
-            # action_mean, action_var = standard_table['action']
         self.state_scaler = standard_table['state']
         self.action_scaler = standard_table['action']
 
-        # self.state_scaler = StandardScaler()
-        # self.state_scaler.mean_ = state_mean
-        # self.state_scaler.var_ = state_var
-        # self.state_scaler.scale_ = np.sqrt(state_var)
-
-        # self.action_scaler = StandardScaler()
-        # self.action_scaler.mean_  = action_mean
-        # self.action_scaler.var = action_var
-        # self.action_scaler.scale_ = np.sqrt(action_var)
 
     def standardlize(self):
         file_number = len(self)
-        sampler_number = int(file_number * 1)
+        sampler_number = int(file_number * 0.01)
         data_state_list = []
         data_action_list = []
         
@@ -335,11 +324,15 @@ class GTSDataset(GlobalSplitVideoDataset):
         data_state_list = data_state_list.reshape(state_shapes[0] * state_shapes[1], state_shapes[2])
         data_action_list = data_action_list.reshape(action_shapes[0] * action_shapes[1], action_shapes[2])
 
+        # convert steer to [0] by dividing pi/6
+        data_action_list[:,0] /= np.pi / 6
 
         state_scaler = StandardScaler()
         state_scaler.fit(data_state_list)
         action_scaler = MinMaxScaler(feature_range=(-1, 1))
-        action_scaler.fit(data_action_list)
+        # action_scaler.fit(data_action_list)
+        action_scaler.min_ = [0.0, 0.0]
+        action_scaler.scale_ = [1/3, 1.0]
 
         standard_table = {
             'state' : state_scaler,
@@ -351,7 +344,7 @@ class GTSDataset(GlobalSplitVideoDataset):
         print(state_scaler.mean_, state_scaler.scale_)
 
         print('actions:')
-        print(action_scaler.data_min_, action_scaler.data_max_)
+        print(action_scaler.min_, action_scaler.scale_)
 
 
         return standard_table
