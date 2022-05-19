@@ -19,8 +19,6 @@ configuration = {
     'evaluator': TopOfNSequenceEvaluator,
     'top_of_n_eval': 100,
     'top_comp_metric': 'mse',
-
-    'batch_size': 2,
 }
 configuration = AttrDict(configuration)
 

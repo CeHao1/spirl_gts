@@ -18,6 +18,8 @@ class MDLVisualizer(ModelTrainer):
         self._hp = self._default_hparams()
         self._hp.overwrite(conf.general)  # override defaults with config file
         self._hp.exp_path = make_path(conf.exp_dir, args.path, args.prefix, args.new_dir)
+
+        self._hp.batch_size = 2
         self.log_dir = log_dir = os.path.join(self._hp.exp_path, 'events')
         print('using log dir: ', log_dir)
 
@@ -28,8 +30,13 @@ class MDLVisualizer(ModelTrainer):
                                 n_repeat=self._hp.epoch_cycles_train,
                                 dataset_size=-1)
         self.model, self.loader = self.build_vizer(train_params, 'viz')
+        self.optimizer = self.get_optimizer_class()(filter(lambda p: p.requires_grad, self.model.parameters()), lr=self._hp.lr)
+        
+        if args.resume or conf.ckpt_path is not None:
+            start_epoch = self.resume(args.resume, conf.ckpt_path)
 
         print('get model and data')
+
         self.test_once()
 
         
@@ -55,13 +62,17 @@ class MDLVisualizer(ModelTrainer):
             # print('input', inputs.actions[0])
             # print('output', output.reconstruction[0])
             plots(to_numpy(inputs.actions[0]), to_numpy(output.reconstruction[0]))
-            break
+            if batch_idx > 5:
+                break
         print('finish')
 
 
 def plots(input, output):
-    plt.figure(figsize=(15,5))
-    titles = ['steering', 'pedal']
+
+    # print('input', input)
+    # print('output', output)
+    plt.figure(figsize=(8,3))
+    titles = ['action 0', 'action 1']
     for idx in range(2):
         plt.subplot(1,2, idx+1)
         plt.plot(input[:,idx], 'b', label='input action series')
