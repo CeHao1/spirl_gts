@@ -7,7 +7,7 @@ import numpy as np
 import torch.utils.data as data
 import itertools
 
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 from spirl.utils.general_utils import AttrDict, map_dict, maybe_retrieve, shuffle_with_seed
 from spirl.utils.pytorch_utils import RepeatedDataLoader
@@ -291,8 +291,7 @@ class GTSDataset(GlobalSplitVideoDataset):
         
         import pickle
         if (self.phase == 'train'):
-            mean, var = self.standardlize()
-            standard_table =  [mean, var]
+            standard_table = self.standardlize()
             f = open(file_path, "wb")
             pickle.dump(standard_table, f)
             f.close()
@@ -300,55 +299,78 @@ class GTSDataset(GlobalSplitVideoDataset):
             f = open(file_path, "rb")
             standard_table = pickle.load(f)
             f.close()
-            mean, var = standard_table
+            # state_mean, state_var = standard_table['state']
+            # action_mean, action_var = standard_table['action']
+            self.state_scale = standard_table['state']
+            self.action_scaler = standard_table['action']
 
-        self.scaler = StandardScaler()
-        self.scaler.mean_ = mean
-        self.scaler.var_ = var
-        self.scaler.scale_ = np.sqrt(var)
+        # self.state_scaler = StandardScaler()
+        # self.state_scaler.mean_ = state_mean
+        # self.state_scaler.var_ = state_var
+        # self.state_scaler.scale_ = np.sqrt(state_var)
+
+        # self.action_scaler = StandardScaler()
+        # self.action_scaler.mean_  = action_mean
+        # self.action_scaler.var = action_var
+        # self.action_scaler.scale_ = np.sqrt(action_var)
 
     def standardlize(self):
         file_number = len(self)
         sampler_number = int(file_number * 1)
-        data_list = []
+        data_state_list = []
+        data_action_list = []
         
 
         for i in range(sampler_number):
             data = super().__getitem__(i)
-            data_list.append(data.states)
+            data_state_list.append(data.states)
+            data_action_list.append(data.actions)
 
+        data_state_list = np.array(data_state_list)
+        data_action_list = np.array(data_action_list)
+        state_shapes = data_state_list.shape
+        action_shapes = data_action_list.shape
 
-        data_list = np.array(data_list)
-        shapes = data_list.shape
-        dim1 = shapes[0] * shapes[1]
-        dim2 = shapes[2]
+        data_state_list = data_state_list.reshape(state_shapes[0] * state_shapes[1], state_shapes[2])
+        data_action_list = data_action_list.reshape(action_shapes[0] * action_shapes[1], action_shapes[2])
 
-        data_list = data_list.reshape(dim1, dim2)
+        # state_mean = data_state_list.mean(axis=0)
+        # state_var = data_state_list.var(axis=0)
+        # action_mean = data_action_list.mean(axis=0)
+        # action_var = data_action_list.var(axis=0)
 
-        mean = data_list.mean(axis=0)
-        var = data_list.var(axis=0)
-
-        for i in range(mean.shape[0]):
+        # for i in range(state_mean.shape[0]):
  
-            if (var[i] < 0.01 * abs(mean[i]) ): # the var is too small
-                var[i] = 1.0
-                print("The {} variance is too small".format(i))       
+        #     if (state_var[i] < 0.01 * abs(state_mean[i]) ): # the var is too small
+        #         state_var[i] = 1.0
+        #         print("The {} variance is too small".format(i))       
 
-            elif  (abs(mean[i]) < 1e-5 and abs(var[i]) < 1e-5):
-                var[i] = 1.0
-                print("The {} mean, var are too small".format(i))  
+        #     elif  (abs(state_mean[i]) < 1e-5 and abs(state_var[i]) < 1e-5):
+        #         state_var[i] = 1.0
+        #         print("The {} mean, var are too small".format(i))  
 
-        print("======================= standard ===================")
-        print("file_number", file_number, "shape ", data_list.shape)
-        print("mean {}, var {}".format(mean.shape, var.shape))
-        print(mean)
-        print(var)
+        # print("======================= standard state===================")
+        # print("file_number", file_number, "shape ", data_state_list.shape)
+        # print("mean {}, var {}".format(state_var.shape, state_var.shape))
+        # print(state_mean)
+        # print(state_var)
 
-        return mean, var
+        state_scaler = StandardScaler()
+        state_scaler.fit(data_state_list)
+        action_scaler = MinMaxScaler()
+        action_scaler.fit(data_action_list)
+
+        standard_table = {
+            'state' : state_scaler,
+            'action': action_scaler
+        }
+
+        return standard_table
         
     def __getitem__(self, item):
         data = super().__getitem__(item)
-        data.states = self.scaler.transform(data.states)
+        data.states = self.state_scaler.transform(data.states)
+        data.actions = self.action_scaler.transform(data.actions)
         return data
 
 class GlobalSplitStateSequenceDataset(GlobalSplitVideoDataset):

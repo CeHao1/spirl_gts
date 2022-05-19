@@ -23,7 +23,8 @@ class GTSEnv_Base(GymEnv):
             self._initialize()
         self._make_env()
 
-        self.scaler = None
+        self.state_scaler = None
+        self.action_scaler = None
         self.load_standard_table()
 
     
@@ -83,8 +84,8 @@ class GTSEnv_Base(GymEnv):
         return self._wrap_observation(obs[0]), rew[0], done[0], info
 
     def _wrap_observation(self, obs):
-        if self.scaler:
-            std_obs = self.scaler.transform(raw_observation_to_true_observation(obs))
+        if self.state_scaler:
+            std_obs = self.state_scaler.transform(raw_observation_to_true_observation(obs))
         return super()._wrap_observation(std_obs)
 
     def _get_course_length(self):
@@ -94,21 +95,37 @@ class GTSEnv_Base(GymEnv):
     def render(self, mode='rgb_array'):
         return [0,0,0]
 
+    def descaler_actions(self, actions):
+        descaldered_actions = self.action_scaler.inverse_transform(actions)
+        return descaldered_actions
+
+
     def load_standard_table(self):
         
         import os
-        from sklearn.preprocessing import StandardScaler
+        # from sklearn.preprocessing import StandardScaler
         import pickle
         try:
             file_path = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/standard_table")
             f = open(file_path, "rb")
             standard_table = pickle.load(f)
             f.close()
-            mean, var = standard_table
-            self.scaler = StandardScaler()
-            self.scaler.mean_ = mean
-            self.scaler.var_ = var
-            self.scaler.scale_ = np.sqrt(var)
+
+            self.state_scale = standard_table['state']
+            self.action_scaler = standard_table['action']
+
+            # state_mean, state_var = standard_table['state']
+            # action_mean, action_var = standard_table['action']
+
+            # self.state_scaler = StandardScaler()
+            # self.state_scaler.mean_ = state_mean
+            # self.state_scaler.var_ = state_var
+            # self.state_scaler.scale_ = np.sqrt(state_var)
+
+            # self.action_scaler = StandardScaler()
+            # self.action_scaler.mean_  = action_mean
+            # self.action_scaler.var = action_var
+            # self.action_scaler.scale_ = np.sqrt(action_var)
 
             # print(mean.shape, var.shape)
             print("load standard table successful")
