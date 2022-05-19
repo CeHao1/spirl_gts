@@ -1,6 +1,9 @@
+import os
+import matplotlib
+# matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 from spirl.train import *
 
-import os
 
 
 class MDLVisualizer(ModelTrainer):
@@ -24,7 +27,7 @@ class MDLVisualizer(ModelTrainer):
                                 model_class=self._hp.model,
                                 n_repeat=self._hp.epoch_cycles_train,
                                 dataset_size=-1)
-        self.model, self.train_loader = self.build_vizer(train_params, 'viz')
+        self.model, self.loader = self.build_vizer(train_params, 'viz')
 
         print('get model and data')
         self.test_once()
@@ -43,9 +46,33 @@ class MDLVisualizer(ModelTrainer):
         return model, loader
 
     def test_once(self):
-        for self.batch_idx, sample_batched in enumerate(self.train_loader):
-            print(sample_batched)
+        # sample_batched = self.loader.dataset[0]
+        for batch_idx, sample_batched in enumerate(self.loader):
+            inputs = AttrDict(map_dict(lambda x: x.to(self.device), sample_batched))
+            output = self.model(inputs)
 
+            print("=============== index", batch_idx)
+            # print('input', inputs.actions[0])
+            # print('output', output.reconstruction[0])
+            plots(to_numpy(inputs.actions[0]), to_numpy(output.reconstruction[0]))
+            break
+        print('finish')
+
+
+def plots(input, output):
+    plt.figure(figsize=(15,5))
+    titles = ['steering', 'pedal']
+    for idx in range(2):
+        plt.subplot(1,2, idx+1)
+        plt.plot(input[:,idx], 'b', label='input action series')
+        plt.plot(output[:,idx], 'r', label='output reconstruction')
+        plt.title(titles[idx])
+        plt.legend()
+
+    plt.show()
+
+def to_numpy(t):
+    return t.cpu().detach().numpy()
 
 if __name__ == '__main__':
     MDLVisualizer(args=get_args())

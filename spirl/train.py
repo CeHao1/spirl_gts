@@ -1,4 +1,4 @@
-import matplotlib; matplotlib.use('Agg')
+# import matplotlib; matplotlib.use('Agg')
 import torch
 import os
 import time
