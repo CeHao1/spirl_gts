@@ -90,7 +90,7 @@ class GTSEnv_Base(GymEnv):
     def _wrap_observation(self, obs):
         converted_obs = raw_observation_to_true_observation(obs)
         if self.state_scaler:
-        # if False:
+            # print("scale obs")
             std_obs = self.state_scaler.transform([converted_obs])[0]
         else:
             std_obs = converted_obs

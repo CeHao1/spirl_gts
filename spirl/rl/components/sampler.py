@@ -83,6 +83,8 @@ class Sampler:
                         agent_output = self._postprocess_agent_output(agent_output)
                         if render:
                             render_obs = self._env.render()
+
+                        # print(agent_output.action)
                         obs, reward, done, info = self._env.step(agent_output.action)
                         obs = self._postprocess_obs(obs)
                         episode.append(AttrDict(

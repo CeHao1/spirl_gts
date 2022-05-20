@@ -9,7 +9,7 @@ from torch.nn import init
 
 def init_weights_xavier(m):
     if isinstance(m, nn.Linear):
-        nn.init.xavier_normal(m.weight.data)
+        nn.init.xavier_normal_(m.weight.data)
         if m.bias is not None:
             m.bias.data.fill_(0)
     if isinstance(m, nn.Conv2d):

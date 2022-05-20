@@ -96,6 +96,7 @@ class RLTrainer:
             'log_images_per_epoch': 4,    # log images/videos N times per epoch
             'logging_target': 'wandb',    # where to log results to
             'n_warmup_steps': 0,    # steps of warmup experience collection before training
+            'dump_interval': 10,
         })
         return default_dict
 
@@ -113,7 +114,8 @@ class RLTrainer:
             print("Epoch {}".format(epoch))
             self.train_epoch(epoch)
 
-            if not self.args.dont_save and self.is_chef:
+            if not self.args.dont_save and self.is_chef and (epoch % self._hp.dump_replay)==0:
+                print("save checkpoint at epoch", epoch)
                 save_checkpoint({
                     'epoch': epoch,
                     'global_step': self.global_step,

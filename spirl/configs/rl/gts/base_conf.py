@@ -19,6 +19,11 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 notes = 'non-hierarchical RL experiments in gts env'
 
+# Environment
+env_config = AttrDict(
+    reward_norm=1.,
+    # do_init = False
+)
 
 configuration = {
     'seed': 2,
@@ -65,7 +70,7 @@ critic_params = AttrDict(
 # Replay Buffer
 replay_params = AttrDict(
     capacity=10000000,
-    dump_replay=False,
+    # dump_replay=False,
 )
 
 # Observation Normalization
@@ -95,8 +100,4 @@ agent_config = AttrDict(
 data_config = AttrDict()
 data_config.dataset_spec = data_spec
 
-# Environment
-env_config = AttrDict(
-    reward_norm=1.,
-    do_init = False
-)
+

@@ -22,6 +22,7 @@ class SamplerMulti(Sampler):
                         actions = [agent_output[agent_index].action for agent_index in range(na)]
                         # print(actions[0])
                         obs, reward, done, info = self._env.step(actions)
+                        # print(done)
 
                         for agent_index in range(na): 
                             experience_batch[agent_index].append(AttrDict(

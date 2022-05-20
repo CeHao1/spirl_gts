@@ -82,6 +82,8 @@ class ReplayBuffer:
         idx_size = np.load(os.path.join(save_dir, "idx_size.npy"))
         self._idx, self._size = int(idx_size[0]), int(idx_size[1])
 
+        print('!!!!!!!!!!!load replay buffer and size is ', self.size)
+
     @staticmethod
     def _get_n_samples(batch):
         """Retrieves the number of samples in batch."""
