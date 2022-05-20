@@ -316,6 +316,8 @@ def sampling_done_function(state):
 def evaluation_done_function(state):
     return state["lap_count"] > 2 or state["current_lap_time_msec"]/1000.0 > max_eval_lap if state else False
 
+def eval_time_trial_done_function(state):
+    return state["lap_count"] > 2 and state["current_lap_time_msec"]/1000.0 > 5.0 if state else False
 
 def reward_function(state, previous_state, course_length):
     if previous_state \
@@ -332,3 +334,13 @@ def reward_function(state, previous_state, course_length):
                  ) * (maf/(state["frame_count"] - previous_state["frame_count"]))  # correcting too long steps
 
         return reward
+
+def eval_time_trial_reward_function(state, previous_state, course_length):
+    if previous_state \
+            and isinstance(previous_state["course_v"], float) \
+            and isinstance(previous_state["lap_count"], int):
+
+            if (previous_state["lap_count"] == 1 and state["lap_count"] == 2):
+                return previous_state["current_lap_time_msec"]/1000.0
+            else:
+                return 0

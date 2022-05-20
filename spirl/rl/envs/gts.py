@@ -6,12 +6,13 @@ import numpy as np
 from spirl.rl.components.environment import GymEnv
 from spirl.utils.general_utils import ParamDict, AttrDict
 
-from spirl.utils.gts_utils import make_env, initialize_gts
+from spirl.utils.gts_utils import eval_time_trial_done_function, eval_time_trial_reward_function, make_env, initialize_gts
 from spirl.utils.gts_utils import RL_OBS_1, CAR_CODE, COURSE_CODE, TIRE_TYPE, BOP
 from spirl.utils.gts_utils import DEFAULT_FEATURE_KEYS
 from spirl.utils.gts_utils import raw_observation_to_true_observation
 
 from spirl.utils.gts_utils import reward_function, sampling_done_function
+from spirl.utils.gts_utils import eval_time_trial_done_function, eval_time_trial_reward_function
 
 class GTSEnv_Base(GymEnv):
     def __init__(self, config):
@@ -42,8 +43,8 @@ class GTSEnv_Base(GymEnv):
         game_hp = ParamDict({
             'builtin_controlled' : [],
             'do_init' : True,
-            'reward_function' : reward_function,
-            'done_function' : sampling_done_function,
+            'reward_function' : eval_time_trial_reward_function,
+            'done_function' : eval_time_trial_done_function,
             'standardize_observations' : False,
             'state_standard': True,
             'action_standard':False
@@ -82,7 +83,8 @@ class GTSEnv_Base(GymEnv):
         return self._wrap_observation(obs[0])
 
     def step(self, actions):
-        obs, rew, done, info = self._env.step([actions])
+        actions = self.descaler_actions([actions])
+        obs, rew, done, info = self._env.step(actions)
         return self._wrap_observation(obs[0]), rew[0], done[0], info
 
     def _wrap_observation(self, obs):
