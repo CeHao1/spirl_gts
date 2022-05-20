@@ -88,8 +88,12 @@ class GTSEnv_Base(GymEnv):
         return self._wrap_observation(obs[0]), rew[0], done[0], info
 
     def _wrap_observation(self, obs):
+        converted_obs = raw_observation_to_true_observation(obs)
         if self.state_scaler:
-            std_obs = self.state_scaler.transform(raw_observation_to_true_observation(obs))
+        # if False:
+            std_obs = self.state_scaler.transform([converted_obs])[0]
+        else:
+            std_obs = converted_obs
         return super()._wrap_observation(std_obs)
 
     def _get_course_length(self):
@@ -117,7 +121,7 @@ class GTSEnv_Base(GymEnv):
             standard_table = pickle.load(f)
             f.close()
 
-            self.state_scale = standard_table['state']
+            self.state_scaler = standard_table['state']
             self.action_scaler = standard_table['action']
 
             # state_mean, state_var = standard_table['state']

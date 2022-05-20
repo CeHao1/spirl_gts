@@ -8,6 +8,7 @@ from spirl.rl.envs.gts import GTSEnv_Base
 from spirl.rl.envs.gts_multi import GTSEnv_Multi
 
 from spirl.rl.agents.ac_agent import SACAgent
+from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.sampler_multi import SamplerMulti
 
 from spirl.rl.components.normalization import Normalizer
@@ -22,15 +23,18 @@ notes = 'non-hierarchical RL experiments in gts env'
 configuration = {
     'seed': 2,
     'agent': SACAgent,
-    # 'environment': GTSEnv_Base,
-    'environment': GTSEnv_Multi,
+    
     'data_dir': '.',
     'num_epochs': 300,
     'max_rollout_len': 20000,
     'n_steps_per_epoch': 21000,
     'n_warmup_steps': 40000,
+
+    'environment': GTSEnv_Base,
+    'sampler' : Sampler,
     
-    'sampler':SamplerMulti
+    # 'environment': GTSEnv_Multi,
+    # 'sampler':SamplerMulti
 }
 
 configuration = AttrDict(configuration)
