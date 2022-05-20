@@ -24,7 +24,9 @@ class GTSEnv_Multi(GTSEnv_Base):
             'do_init' : True,
             'reward_function' : reward_function,
             'done_function' : sampling_done_function,
-            'standardize_observations' : False
+            'standardize_observations' : False,
+            'state_standard': True,
+            'action_standard':False,
         })
         return game_hp
 

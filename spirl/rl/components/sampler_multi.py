@@ -20,6 +20,7 @@ class SamplerMulti(Sampler):
                             continue
 
                         actions = [agent_output[agent_index].action for agent_index in range(na)]
+                        # print(actions[0])
                         obs, reward, done, info = self._env.step(actions)
 
                         for agent_index in range(na): 
@@ -116,6 +117,8 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
 
                         agent_output = [self.sample_action(self._obs[agent_index]) for agent_index in range(na)]
                         actions = [agent_output[agent_index].action for agent_index in range(na)]
+
+                        # print(actions[0])
 
                         obs, reward, done, info = self._env.step(actions)
                         # obs = self._postprocess_obs(obs)
