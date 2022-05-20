@@ -98,11 +98,13 @@ class Sampler:
                         if render:
                             episode[-1].update(AttrDict(image=render_obs))
 
+                        
                         # update stored observation
                         self._obs = obs
                         self._episode_step += 1
-        episode[-1].done = True     # make sure episode is marked as done at final time step
+                        self._episode_reward += reward
 
+        episode[-1].done = True     # make sure episode is marked as done at final time step
         return listdict2dictlist(episode)
 
     def get_episode_info(self):

@@ -6,7 +6,7 @@ import numpy as np
 from spirl.rl.components.environment import GymEnv
 from spirl.utils.general_utils import ParamDict, AttrDict
 
-from spirl.utils.gts_utils import eval_time_trial_done_function, eval_time_trial_reward_function, make_env, initialize_gts
+from spirl.utils.gts_utils import make_env, initialize_gts
 from spirl.utils.gts_utils import RL_OBS_1, CAR_CODE, COURSE_CODE, TIRE_TYPE, BOP
 from spirl.utils.gts_utils import DEFAULT_FEATURE_KEYS
 from spirl.utils.gts_utils import raw_observation_to_true_observation

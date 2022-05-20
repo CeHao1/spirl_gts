@@ -340,7 +340,12 @@ def eval_time_trial_reward_function(state, previous_state, course_length):
             and isinstance(previous_state["course_v"], float) \
             and isinstance(previous_state["lap_count"], int):
 
-            if (previous_state["lap_count"] == 1 and state["lap_count"] == 2):
-                return previous_state["current_lap_time_msec"]/1000.0
+            if (previous_state["lap_count"] == 2 and state["lap_count"] == 3):
+                last_t = previous_state["current_lap_time_msec"]/1000.0
+                now_t = state["current_lap_time_msec"]/1000.0
+
+                print('now is the second lap time, ', last_t, now_t)
+
+                return max(last_t, now_t)
             else:
                 return 0

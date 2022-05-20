@@ -14,6 +14,9 @@ from spirl.rl.components.sampler_multi import SamplerMulti
 from spirl.rl.components.normalization import Normalizer
 from spirl.configs.default_data_configs.gts import data_spec
 
+from spirl.utils.gts_utils import reward_function, sampling_done_function
+from spirl.utils.gts_utils import eval_time_trial_done_function, eval_time_trial_reward_function
+
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -22,7 +25,10 @@ notes = 'non-hierarchical RL experiments in gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    do_init = False
+    do_init = False,
+
+    # reward_function = eval_time_trial_reward_function,
+    # done_function = eval_time_trial_done_function,
 )
 
 configuration = {

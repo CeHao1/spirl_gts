@@ -62,7 +62,8 @@ class SamplerMulti(Sampler):
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
-                    while not np.any(done) and self._episode_step < self._max_episode_len:
+                    while not np.all(done) :
+                    # and self._episode_step < self._max_episode_len:
                         agent_output = [self.sample_action(self._obs[agent_index]) for agent_index in range(na)]
 
                         if render:
