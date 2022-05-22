@@ -75,7 +75,7 @@ critic_params = AttrDict(
 
 # Replay Buffer
 replay_params = AttrDict(
-    capacity=10000000,
+    capacity=4000000,
     # dump_replay=False,
 )
 
@@ -99,7 +99,7 @@ agent_config = AttrDict(
 
     discount_factor = 0.98,
 
-    fixed_alpha = 0.01,
+    fixed_alpha = 0.1,
 )
 
 # Dataset - Random data
