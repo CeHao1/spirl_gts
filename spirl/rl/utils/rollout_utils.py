@@ -2,6 +2,7 @@ import os
 import cv2
 import h5py
 import numpy as np
+from spirl.utils.general_utils import AttrDict
 
 
 class RolloutSaver(object):
@@ -24,8 +25,10 @@ class RolloutSaver(object):
         # store trajectory info in traj0 group
         traj_data = f.create_group("traj0")
         traj_data.create_dataset("states", data=np.array(episode.observation))
-        traj_data.create_dataset("images", data=np.array(episode.image, dtype=np.uint8))
+        # traj_data.create_dataset("images", data=np.array(episode.image, dtype=np.uint8))
         traj_data.create_dataset("actions", data=np.array(episode.action))
+        traj_data.create_dataset("reward", data=np.array(episode.reward))
+        traj_data.create_dataset("done", data=np.array(episode.done))
 
         terminals = np.array(episode.done)
         if np.sum(terminals) == 0:
@@ -40,6 +43,20 @@ class RolloutSaver(object):
         f.close()
 
         self.counter += 1
+
+    def load_roolout_to_file(self, counter):
+        # get save path
+        save_path = os.path.join(self.save_dir, "rollout_{}.h5".format(counter))
+        F = h5py.File(save_path, "r")
+                
+        data = AttrDict()
+        key = "traj0"
+        for name in F[key].keys():
+                if name in ['states', 'actions', 'pad_mask', 'reward', 'done']:
+                    data[name] = F[key + '/' + name][()].astype(np.float32)
+
+        return data
+
 
     def _resize_video(self, images, dim=64):
         """Resize a video in numpy array form to target dimension."""

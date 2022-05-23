@@ -5,7 +5,7 @@ from spirl.rl.train import RLTrainer
 from spirl.rl.components.params import get_args
 from spirl.train import  set_seeds, make_path
 from spirl.utils.general_utils import AttrDict, ParamDict, AverageTimer, timing, pretty_print
-
+from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.utils.mpi import update_with_mpi_config, set_shutdown_hooks
 
 import matplotlib.pyplot as plt
@@ -56,16 +56,18 @@ class RLVisualizer(RLTrainer):
 
         # if self.conf.ckpt_path is not None:
         start_epoch = self.resume(args.resume, self.conf.ckpt_path)
-
+        saver = RolloutSaver(self.args.save_dir)
+        sampled_data = saver.load_roolout_to_file(0)
         print('set up the viz')
-        self.replay2actions()
+        self.replay2actions(sampled_data)
 
-    def replay2actions(self):
+    def replay2actions(self, sampled_data):
         num_of_samples = 1000
-        sampled_data = self.agent.replay_buffer.sample(num_of_samples, random=False)
-        obs = sampled_data.observation
+        # sampled_data = self.agent.replay_buffer.sample(num_of_samples, random=False)
+
+        obs = sampled_data.states
         rew = sampled_data.reward
-        act = sampled_data.action
+        act = sampled_data.actions
         done = sampled_data.done
         done_at = np.where(done == True)[0]
 
