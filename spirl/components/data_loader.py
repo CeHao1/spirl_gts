@@ -290,13 +290,16 @@ class GTSDataset(GlobalSplitVideoDataset):
         file_path = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/standard_table")
         
         import pickle
-        if (self.phase == 'train'):
+        if not os.path.exists(file_path):
+
+        # if (self.phase == 'train'):
             standard_table = self.standardlize()
             f = open(file_path, "wb")
             pickle.dump(standard_table, f)
             f.close()
             print('save standard_table')
-        elif (self.phase == 'val' or self.phase =='viz'):
+        # elif (self.phase == 'val' or self.phase =='viz'):
+        else:
             f = open(file_path, "rb")
             standard_table = pickle.load(f)
             f.close()
