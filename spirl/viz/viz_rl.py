@@ -91,6 +91,10 @@ class RLVisualizer(RLTrainer):
 
         plt.show()
 
+        plt.figure(figsize=(7,5))
+        plt.plot(rew, 'b.')
+        plt.title('rewards')
+        plt.plot()
 
 
 
