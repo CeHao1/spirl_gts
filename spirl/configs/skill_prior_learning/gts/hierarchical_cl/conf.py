@@ -30,7 +30,9 @@ model_config = AttrDict(
     nz_enc=128,
     nz_mid=128,
     n_processing_layers=5,
-    # cond_decode=True,
+    cond_decode=True,
+
+    learned_prior_weight = 1e-2,
 )
 
 # Dataset
