@@ -81,8 +81,7 @@ class ReplayBuffer:
             self._replay_buffer = pickle.load(f)
         idx_size = np.load(os.path.join(save_dir, "idx_size.npy"))
         self._idx, self._size = int(idx_size[0]), int(idx_size[1])
-
-        print('!!!!!!!!!!!load replay buffer and size is ', self.size)
+        print('load replay buffer', self.size)
 
     @staticmethod
     def _get_n_samples(batch):
@@ -104,10 +103,14 @@ class ReplayBuffer:
 
 class UniformReplayBuffer(ReplayBuffer):
     """Samples batch uniformly from all experience samples in the buffer."""
-    def sample(self, n_samples, filter=None):
+    def sample(self, n_samples, filter=None, random=True):
         assert n_samples <= self.size      # need enough samples in replay buffer
         assert isinstance(self.size, int)   # need integer-valued size
-        idxs = np.random.choice(np.arange(self.size), size=n_samples)
+        if random:
+            idxs = np.random.choice(np.arange(self.size), size=n_samples)
+        else:
+            st = np.random.randint(0, self.size-n_samples)
+            idxs = np.arange(st, st+n_samples)
 
         sampled_transitions = AttrDict()
         for key in self._replay_buffer:

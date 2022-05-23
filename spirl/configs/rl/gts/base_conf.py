@@ -100,6 +100,7 @@ agent_config = AttrDict(
     discount_factor = 0.98,
 
     fixed_alpha = 0.1,
+    
 )
 
 # Dataset - Random data
