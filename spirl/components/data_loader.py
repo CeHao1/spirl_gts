@@ -307,15 +307,16 @@ class GTSDataset(GlobalSplitVideoDataset):
 
     def standardlize(self):
         file_number = len(self)
-        sampler_number = int(file_number * 0.01)
+        iterate_times = 5
+        sampler_number = int(file_number)
         data_state_list = []
         data_action_list = []
         
-
-        for i in range(sampler_number):
-            data = super().__getitem__(i)
-            data_state_list.append(data.states)
-            data_action_list.append(data.actions)
+        for _ in range(iterate_times):
+            for i in range(sampler_number):
+                data = super().__getitem__(i)
+                data_state_list.append(data.states)
+                data_action_list.append(data.actions)
 
         data_state_list = np.array(data_state_list)
         data_action_list = np.array(data_action_list)
@@ -330,10 +331,13 @@ class GTSDataset(GlobalSplitVideoDataset):
 
         state_scaler = StandardScaler()
         state_scaler.fit(data_state_list)
-        action_scaler = MinMaxScaler(feature_range=(-1, 1))
-        # action_scaler.fit(data_action_list)
-        action_scaler.min_ = [0.0, 0.0]
-        action_scaler.scale_ = [1/3, 1.0]
+
+        # action_scaler = MinMaxScaler(feature_range=(-1, 1))
+        # action_scaler.min_ = [0.0, 0.0]
+        # action_scaler.scale_ = [1/3, 1.0]
+
+        action_scaler = StandardScaler()
+        action_scaler.fit(data_action_list)
 
         standard_table = {
             'state' : state_scaler,
@@ -345,7 +349,8 @@ class GTSDataset(GlobalSplitVideoDataset):
         print(state_scaler.mean_, state_scaler.scale_)
 
         print('actions:')
-        print(action_scaler.min_, action_scaler.scale_)
+        # print(action_scaler.min_, action_scaler.scale_)
+        print(action_scaler.mean_, action_scaler.scale_)
 
 
         return standard_table
