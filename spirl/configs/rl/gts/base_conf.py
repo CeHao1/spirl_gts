@@ -27,7 +27,7 @@ env_config = AttrDict(
     reward_norm=1.,
     # do_init = False,
 
-    reward_function = eval_time_trial_reward_function,
+    # reward_function = eval_time_trial_reward_function,
     done_function = eval_time_trial_done_function,
 )
 

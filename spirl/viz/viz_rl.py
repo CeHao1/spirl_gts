@@ -61,16 +61,20 @@ class RLVisualizer(RLTrainer):
         print('set up the viz')
         self.replay2actions(sampled_data)
 
+        print(self.agent.policy.net)
+
     def replay2actions(self, sampled_data):
         num_of_samples = 1000
         # sampled_data = self.agent.replay_buffer.sample(num_of_samples, random=False)
-
+        print('keys', sampled_data.keys())
+    
         obs = sampled_data.states[-num_of_samples:-1]
         rew = sampled_data.reward[-num_of_samples:-1]
         act = sampled_data.actions[-num_of_samples:-1]
         done = sampled_data.done[-num_of_samples:-1]
         done_at = np.where(done == True)[0]
 
+        # print('rew', rew)
 
         obs_t = torch.from_numpy(obs).to(self.device)
         output = self.agent.policy.net(obs_t).detach().cpu().numpy()
@@ -109,10 +113,10 @@ class RLVisualizer(RLTrainer):
         plt.show()
 
         # reward
-        plt.figure(figsize=(7,5))
+        plt.figure(figsize=(10,5))
         plt.plot(rew, 'b.')
         plt.title('rewards')
-        plt.plot()
+        plt.show()
 
 
 

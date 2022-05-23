@@ -43,8 +43,8 @@ class GTSEnv_Base(GymEnv):
         game_hp = ParamDict({
             'builtin_controlled' : [],
             'do_init' : True,
-            'reward_function' : eval_time_trial_reward_function,
-            'done_function' : eval_time_trial_done_function,
+            'reward_function' : reward_function,
+            'done_function' : sampling_done_function,
             'standardize_observations' : False,
             'state_standard': True,
             'action_standard':False
