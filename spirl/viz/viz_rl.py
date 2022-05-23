@@ -56,7 +56,7 @@ class RLVisualizer(RLTrainer):
 
         # if self.conf.ckpt_path is not None:
         start_epoch = self.resume(args.resume, self.conf.ckpt_path)
-        saver = RolloutSaver(self.args.save_dir)
+        saver = RolloutSaver('./sample')
         sampled_data = saver.load_roolout_to_file(0)
         print('set up the viz')
         self.replay2actions(sampled_data)
@@ -65,10 +65,10 @@ class RLVisualizer(RLTrainer):
         num_of_samples = 1000
         # sampled_data = self.agent.replay_buffer.sample(num_of_samples, random=False)
 
-        obs = sampled_data.states
-        rew = sampled_data.reward
-        act = sampled_data.actions
-        done = sampled_data.done
+        obs = sampled_data.states[-num_of_samples:-1]
+        rew = sampled_data.reward[-num_of_samples:-1]
+        act = sampled_data.actions[-num_of_samples:-1]
+        done = sampled_data.done[-num_of_samples:-1]
         done_at = np.where(done == True)[0]
 
 
@@ -78,19 +78,37 @@ class RLVisualizer(RLTrainer):
         titles = ['steering mean', 'pedal mean', 'steering std', 'pedal std']
 
 
-
-        plt.figure(figsize=(15,10))
-        for i in range(4):
-            plt.subplot(2,2, i+1)
-
-            data = output[:, i]
-            if i >= 2:
-                data = np.exp(data)
-            plt.plot(data, 'b.')
-            plt.title(titles[i])
-
+        # mean
+        plt.figure(figsize=(17,5))
+        plt.subplot(1,2, 1)
+        plt.plot(output[:, 0], 'b.')
+        plt.title(titles[0])
+        plt.subplot(1, 2, 2)
+        plt.plot(output[:, 1], 'b.')
+        plt.title(titles[1])
         plt.show()
 
+        # std
+        plt.figure(figsize=(17,5))
+        plt.subplot(1,2, 1)
+        plt.plot(np.exp(output[:, 2]), 'b.')
+        plt.title(titles[2])
+        plt.subplot(1, 2, 2)
+        plt.plot(np.exp(output[:, 3]), 'b.')
+        plt.title(titles[3])
+        plt.show()
+
+        # action
+        plt.figure(figsize=(17,5))
+        plt.subplot(1,2, 1)
+        plt.plot(act[:, 0], 'b.')
+        plt.title('steer action')
+        plt.subplot(1, 2, 2)
+        plt.plot(act[:, 1], 'b.')
+        plt.title('pedal action')
+        plt.show()
+
+        # reward
         plt.figure(figsize=(7,5))
         plt.plot(rew, 'b.')
         plt.title('rewards')

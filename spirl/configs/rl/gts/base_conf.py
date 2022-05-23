@@ -76,7 +76,7 @@ critic_params = AttrDict(
 # Replay Buffer
 replay_params = AttrDict(
     capacity=4000000,
-    # dump_replay=False,
+    dump_replay=False,
 )
 
 # Observation Normalization
