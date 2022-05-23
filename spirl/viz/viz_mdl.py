@@ -32,6 +32,7 @@ class MDLVisualizer(ModelTrainer):
         self.model, self.loader = self.build_vizer(train_params, 'viz')
         self.optimizer = self.get_optimizer_class()(filter(lambda p: p.requires_grad, self.model.parameters()), lr=self._hp.lr)
         
+        print('conf.ckpt_path', conf.ckpt_path)
         if args.resume or conf.ckpt_path is not None:
             start_epoch = self.resume(args.resume, conf.ckpt_path)
 

@@ -14,6 +14,9 @@ from spirl.rl.components.sampler_multi import SamplerMulti
 from spirl.rl.components.normalization import Normalizer
 from spirl.configs.default_data_configs.gts import data_spec
 
+from spirl.utils.gts_utils import reward_function, sampling_done_function
+from spirl.utils.gts_utils import eval_time_trial_done_function, eval_time_trial_reward_function
+
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -22,7 +25,10 @@ notes = 'non-hierarchical RL experiments in gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    do_init = False
+    # do_init = False,
+
+    reward_function = eval_time_trial_reward_function,
+    done_function = eval_time_trial_done_function,
 )
 
 configuration = {
@@ -33,7 +39,7 @@ configuration = {
     'num_epochs': 300,
     'max_rollout_len': 20000,
     'n_steps_per_epoch': 21000,
-    'n_warmup_steps': 40000,
+    'n_warmup_steps': 80000,
 
     'environment': GTSEnv_Base,
     'sampler' : Sampler,
@@ -69,8 +75,8 @@ critic_params = AttrDict(
 
 # Replay Buffer
 replay_params = AttrDict(
-    capacity=10000000,
-    # dump_replay=False,
+    capacity=4000000,
+    dump_replay=False,
 )
 
 # Observation Normalization
@@ -91,9 +97,10 @@ agent_config = AttrDict(
     batch_size=4096,
     log_videos=False,
 
-    discount_factor = 0.99,
+    discount_factor = 0.98,
 
-    fixed_alpha = 0.01,
+    fixed_alpha = 0.1,
+    
 )
 
 # Dataset - Random data
