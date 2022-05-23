@@ -22,7 +22,7 @@ class Loss():
         :param targets:
         :return:
         """
-        weights = self.weight
+        # weights = self.weight
         error = self.compute(*args, **kwargs) * weights
         if reduction != 'mean':
             raise NotImplementedError
