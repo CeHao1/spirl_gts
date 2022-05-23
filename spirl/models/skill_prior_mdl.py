@@ -303,8 +303,10 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
 
     def _compute_learned_prior_loss(self, model_output, weight=1.0):
         if self._hp.nll_prior_train:
+            # print('using NLL!!!!!!!!!!!!!!!!')
             loss = NLL(weight=weight, breakdown=0)(model_output.q_hat, model_output.z_q.detach())
         else:
+            # print('using KLD!!!!!!!!!!!!!!!!')
             loss = KLDivLoss(weight=weight, breakdown=0)(model_output.q.detach(), model_output.q_hat)
         # aggregate loss breakdown for each of the priors in the ensemble
         loss.breakdown = torch.stack([chunk.mean() for chunk in torch.chunk(loss.breakdown, self._hp.n_prior_nets)])
