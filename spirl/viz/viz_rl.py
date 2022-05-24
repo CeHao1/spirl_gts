@@ -60,6 +60,7 @@ class RLVisualizer(RLTrainer):
         sampled_data = saver.load_roolout_to_file(0)
         print('set up the viz')
         # self.replay2actions(sampled_data)
+        self.replay2Q(sampled_data)
 
         print('policy', self.agent.policy.net)
         print('critics', self.agent.critics)
@@ -121,8 +122,36 @@ class RLVisualizer(RLTrainer):
 
 
     def replay2Q(self, sampled_data):
-        pass
+        num_of_samples = 1000
+        experience_batch = AttrDict()
+        experience_batch.observation = torch.from_numpy(sampled_data.states[-num_of_samples:-1]).to(self.device)
+        experience_batch.action = torch.from_numpy(sampled_data.actions[-num_of_samples:-1]).to(self.device)
 
+        qs = self.agent._compute_q_estimates(experience_batch)
+        q1 = qs[0].detach().cpu().numpy()
+        q2 = qs[1].detach().cpu().numpy()
+
+        # policy_output_next = self._run_policy(experience_batch.observation_next)
+        # value_next = self._compute_next_value(experience_batch, policy_output_next)
+        # q_target = experience_batch.reward * self._hp.reward_scale + \
+        #                 (1 - experience_batch.done) * self._hp.discount_factor * value_next
+        # if self._hp.clip_q_target:
+        #     q_target = self._clip_q_target(q_target)
+        # q_target = q_target.detach()
+
+
+        plt.figure(figsize=(17,5))
+        plt.plot(q1, 'b.')
+        plt.title('q1')
+        plt.show()
+
+        plt.figure(figsize=(17,5))
+        plt.plot(q2, 'b.')
+        plt.title('q2')
+        plt.show()
+
+
+        # print('qs !!', qs)
 
 if __name__ == '__main__':
     RLVisualizer(args=get_args())
