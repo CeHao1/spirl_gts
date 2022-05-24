@@ -59,9 +59,10 @@ class RLVisualizer(RLTrainer):
         saver = RolloutSaver('./sample')
         sampled_data = saver.load_roolout_to_file(0)
         print('set up the viz')
-        self.replay2actions(sampled_data)
+        # self.replay2actions(sampled_data)
 
-        print(self.agent.policy.net)
+        print('policy', self.agent.policy.net)
+        print('critics', self.agent.critics)
 
     def replay2actions(self, sampled_data):
         num_of_samples = 1000
@@ -86,30 +87,30 @@ class RLVisualizer(RLTrainer):
         plt.figure(figsize=(17,5))
         plt.subplot(1,2, 1)
         plt.plot(output[:, 0], 'b.')
-        plt.title(titles[0])
+        plt.title(titles[0], fontsize=20)
         plt.subplot(1, 2, 2)
         plt.plot(output[:, 1], 'b.')
-        plt.title(titles[1])
+        plt.title(titles[1], fontsize=20)
         plt.show()
 
         # std
         plt.figure(figsize=(17,5))
         plt.subplot(1,2, 1)
         plt.plot(np.exp(output[:, 2]), 'b.')
-        plt.title(titles[2])
+        plt.title(titles[2], fontsize=20)
         plt.subplot(1, 2, 2)
         plt.plot(np.exp(output[:, 3]), 'b.')
-        plt.title(titles[3])
+        plt.title(titles[3], fontsize=20)
         plt.show()
 
         # action
         plt.figure(figsize=(17,5))
         plt.subplot(1,2, 1)
         plt.plot(act[:, 0], 'b.')
-        plt.title('steer action')
+        plt.title('steer action', fontsize=20)
         plt.subplot(1, 2, 2)
         plt.plot(act[:, 1], 'b.')
-        plt.title('pedal action')
+        plt.title('pedal action', fontsize=20)
         plt.show()
 
         # reward
@@ -119,8 +120,8 @@ class RLVisualizer(RLTrainer):
         plt.show()
 
 
-
-        # print(output)
+    def replay2Q(self, sampled_data):
+        pass
 
 
 if __name__ == '__main__':
