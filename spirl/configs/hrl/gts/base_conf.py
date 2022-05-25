@@ -28,7 +28,7 @@ configuration = {
     'num_epochs': 300,
     'max_rollout_len': 20000,
     'n_steps_per_epoch': 21000,
-    'n_warmup_steps': 2000,
+    'n_warmup_steps': 80000,
     
     # 'sampler':HierarchicalSampler
     'sampler':HierarchicalSamplerMulti
@@ -41,6 +41,7 @@ sampler_config = AttrDict(
 
 # Replay Buffer
 replay_params = AttrDict(
+    dump_replay=True,
 )
 
 # Observation Normalization
