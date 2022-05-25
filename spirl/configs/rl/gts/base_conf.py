@@ -28,7 +28,7 @@ env_config = AttrDict(
     # do_init = False,
 
     # reward_function = eval_time_trial_reward_function,
-    done_function = eval_time_trial_done_function,
+    # done_function = eval_time_trial_done_function,
 )
 
 configuration = {
@@ -41,11 +41,11 @@ configuration = {
     'n_steps_per_epoch': 21000,
     'n_warmup_steps': 80000,
 
-    'environment': GTSEnv_Base,
-    'sampler' : Sampler,
+    # 'environment': GTSEnv_Base,
+    # 'sampler' : Sampler,
     
-    # 'environment': GTSEnv_Multi,
-    # 'sampler':SamplerMulti
+    'environment': GTSEnv_Multi,
+    'sampler':SamplerMulti
 }
 
 configuration = AttrDict(configuration)
@@ -76,7 +76,7 @@ critic_params = AttrDict(
 # Replay Buffer
 replay_params = AttrDict(
     capacity=4000000,
-    dump_replay=False,
+    dump_replay=True,
 )
 
 # Observation Normalization
