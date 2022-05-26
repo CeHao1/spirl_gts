@@ -32,7 +32,7 @@ env_config = AttrDict(
 )
 
 configuration = {
-    'seed': 2,
+    'seed': -1,
     'agent': SACAgent,
     
     'data_dir': '.',
@@ -40,6 +40,7 @@ configuration = {
     'max_rollout_len': 20000,
     'n_steps_per_epoch': 21000,
     'n_warmup_steps': 80000,
+    'use_update_after_sampling':True,
 
     # 'environment': GTSEnv_Base,
     # 'sampler' : Sampler,
@@ -100,6 +101,7 @@ agent_config = AttrDict(
     discount_factor = 0.98,
 
     fixed_alpha = 0.1,
+    update_iterations = 64 * 20
     
 )
 

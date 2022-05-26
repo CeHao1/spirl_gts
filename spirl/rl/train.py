@@ -96,6 +96,7 @@ class RLTrainer:
             'log_images_per_epoch': 4,    # log images/videos N times per epoch
             'logging_target': 'wandb',    # where to log results to
             'n_warmup_steps': 0,    # steps of warmup experience collection before training
+            'use_update_after_sampling': False, # call another function
         })
         return default_dict
 
@@ -111,7 +112,10 @@ class RLTrainer:
 
         for epoch in range(start_epoch, self._hp.num_epochs):
             print("Epoch {}".format(epoch))
-            self.train_epoch(epoch)
+            if (self._hp.use_update_after_sampling):
+                self.train_epoch_with_after_sampling_rollout(epoch)
+            else:
+                self.train_epoch(epoch)
 
             if not self.args.dont_save and self.is_chef:
                 save_checkpoint({
@@ -157,6 +161,42 @@ class RLTrainer:
                         self.agent.log_outputs(agent_outputs, None, self.logger,
                                                log_images=False, step=self.global_step)
                         self.print_train_update(epoch, agent_outputs, timers)
+
+    def train_epoch_with_after_sampling_rollout(self, epoch):
+        # initialize timing
+        timers = defaultdict(lambda: AverageTimer())
+
+        self.sampler.init(is_train=True)
+        # ep_start_step = self.global_step
+
+        with timers['batch'].time():
+            # collect experience
+            with timers['rollout'].time(): # collect all sample for each epoch
+                experience_batch, env_steps = self.sampler.sample_batch(batch_size=self._hp.n_steps_per_epoch,
+                                                                        global_step=self.global_step)
+                if self.use_multiple_workers:
+                    experience_batch = mpi_gather_experience(experience_batch)
+                self.global_step += mpi_sum(env_steps)
+
+        print('!! global step is', self.global_step)
+
+        # update policy
+        with timers['update'].time():
+            if self.is_chef:
+                agent_outputs = self.agent.update(experience_batch)
+            if self.use_multiple_workers:
+                self.agent.sync_networks()
+            self.n_update_steps += self.agent.update_iterations
+
+        print('!! update step is', self.n_update_steps)
+
+        # log results
+        with timers['log'].time():
+            if self.is_chef and self.log_outputs_now:
+                self.agent.log_outputs(agent_outputs, None, self.logger,
+                                        log_images=False, step=self.global_step)
+                self.print_train_update(epoch, agent_outputs, timers)
+
 
     def val(self):
         """Evaluate agent."""
