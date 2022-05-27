@@ -28,25 +28,25 @@ env_config = AttrDict(
     # do_init = False,
 
     # reward_function = eval_time_trial_reward_function,
-    # done_function = eval_time_trial_done_function,
+    done_function = eval_time_trial_done_function,
 )
 
 configuration = {
-    'seed': -1,
+    'seed': 42,
     'agent': SACAgent,
     
     'data_dir': '.',
-    'num_epochs': 300,
+    'num_epochs': 2000,
     'max_rollout_len': 20000,
-    'n_steps_per_epoch': 21000,
+    'n_steps_per_epoch': 20000,
     'n_warmup_steps': 80000,
     'use_update_after_sampling':True,
 
-    # 'environment': GTSEnv_Base,
-    # 'sampler' : Sampler,
+    'environment': GTSEnv_Base,
+    'sampler' : Sampler,
     
-    'environment': GTSEnv_Multi,
-    'sampler':SamplerMulti
+    # 'environment': GTSEnv_Multi,
+    # 'sampler':SamplerMulti
 }
 
 configuration = AttrDict(configuration)
@@ -69,7 +69,7 @@ critic_params = AttrDict(
     action_dim=policy_params.action_dim,
     input_dim=policy_params.input_dim,
     output_dim=1,
-    n_layers=2,      #  number of policy network layers
+    n_layers=1,      #  number of critic network layers
     nz_mid=256,
     action_input=True,
 )

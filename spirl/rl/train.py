@@ -124,7 +124,7 @@ class RLTrainer:
                     'state_dict': self.agent.state_dict(),
                 }, os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name(epoch))
                 self.agent.save_state(self._hp.exp_path)
-                self.val()
+                # self.val()
 
     def train_epoch(self, epoch):
         """Run inner training loop."""
@@ -192,10 +192,10 @@ class RLTrainer:
 
         # log results
         with timers['log'].time():
-            if self.is_chef and self.log_outputs_now:
-                self.agent.log_outputs(agent_outputs, None, self.logger,
-                                        log_images=False, step=self.global_step)
-                self.print_train_update(epoch, agent_outputs, timers)
+            # if self.is_chef and self.log_outputs_now:
+            self.agent.log_outputs(agent_outputs, None, self.logger,
+                                    log_images=False, step=self.global_step)
+            self.print_train_update(epoch, agent_outputs, timers)
 
 
     def val(self):

@@ -44,7 +44,7 @@ class RolloutSaver(object):
 
         self.counter += 1
 
-    def load_roolout_to_file(self, counter):
+    def load_rollout_to_file(self, counter):
         # get save path
         save_path = os.path.join(self.save_dir, "rollout_{}.h5".format(counter))
         F = h5py.File(save_path, "r")
