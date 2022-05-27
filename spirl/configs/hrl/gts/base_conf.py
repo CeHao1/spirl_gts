@@ -20,6 +20,14 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 notes = 'hierarchical RL on the gts env'
 
+# Environment
+env_config = AttrDict(
+    reward_norm=1.,
+    do_init = False,
+    action_standard = True,
+    
+)
+
 configuration = {
     'seed': 42,
     'agent': FixedIntervalHierarchicalAgent,
@@ -124,8 +132,3 @@ agent_config = AttrDict(
 data_config = AttrDict()
 data_config.dataset_spec = data_spec
 
-# Environment
-env_config = AttrDict(
-    reward_norm=1.,
-    do_init = False
-)
