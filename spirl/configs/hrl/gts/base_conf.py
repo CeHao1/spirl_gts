@@ -14,6 +14,7 @@ from spirl.configs.default_data_configs.gts import data_spec
 from spirl.rl.envs.gts_multi import GTSEnv_Multi
 from spirl.rl.components.sampler_multi import HierarchicalSamplerMulti
 
+from spirl.rl.envs.gts import GTSEnv_Base
 from spirl.rl.components.sampler import HierarchicalSampler
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -23,7 +24,7 @@ notes = 'hierarchical RL on the gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    do_init = False,
+    # do_init = False,
     action_standard = True,
     
 )
@@ -31,15 +32,19 @@ env_config = AttrDict(
 configuration = {
     'seed': 42,
     'agent': FixedIntervalHierarchicalAgent,
-    'environment': GTSEnv_Multi,
+    
     'data_dir': '.',
     'num_epochs': 300,
     'max_rollout_len': 20000,
     'n_steps_per_epoch': 21000,
     'n_warmup_steps': 80000,
-    
-    # 'sampler':HierarchicalSampler
-    'sampler':HierarchicalSamplerMulti
+
+    # 'environment': GTSEnv_Multi,
+    # 'sampler':HierarchicalSamplerMulti,
+
+    'environment':GTSEnv_Base,
+    'sampler':HierarchicalSampler
+
 }
 configuration = AttrDict(configuration)
 
@@ -49,7 +54,7 @@ sampler_config = AttrDict(
 
 # Replay Buffer
 replay_params = AttrDict(
-    dump_replay=True,
+    # dump_replay=True,
 )
 
 # Observation Normalization
