@@ -107,7 +107,7 @@ class GTSEnv_Base(GymEnv):
         if self._hp.action_standard:
             return self.action_scaler.inverse_transform(actions)
         else:
-            print('not using standard actions')
+            # print('not using standard actions')
             return actions
 
 
