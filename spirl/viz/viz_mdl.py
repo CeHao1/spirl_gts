@@ -55,44 +55,52 @@ class MDLVisualizer(ModelTrainer):
 
     def test_once(self):
         # sample_batched = self.loader.dataset[0]
+        
         for batch_idx, sample_batched in enumerate(self.loader):
             inputs = AttrDict(map_dict(lambda x: x.to(self.device), sample_batched))
             output = self.model(inputs)
+            output_prior = self.model(inputs, use_learned_prior=True)
 
             input_actions = to_numpy(inputs.actions)
             output_reconstruction = to_numpy(output.reconstruction)
+            output_prior_recon = to_numpy(output_prior.reconstruction)
 
             input_actions = self.loader.dataset.action_scaler.inverse_transform(input_actions)
             output_reconstruction = self.loader.dataset.action_scaler.inverse_transform(output_reconstruction)
+            output_prior_recon = self.loader.dataset.action_scaler.inverse_transform(output_prior_recon)
 
             print("=============== index", batch_idx)
             # print('input', inputs.actions[0])
             # print('output', output.reconstruction[0])
             # plots(to_numpy(inputs.actions[0]), to_numpy(output.reconstruction[0]))
-            plots(input_actions[0], output_reconstruction[0])
+            n = 0
+
+            plots(input_actions[n], output_reconstruction[n], output_prior_recon[n])
             if batch_idx > 5:
                 break
         print('finish')
 
 
-def plots(input, output):
+def plots(input, output, out_prior):
 
     # print('input', input)
     # print('output', output)
     
     rad2deg = 180.0 / np.pi
 
-    plt.figure(figsize=(8,3))
+    plt.figure(figsize=(10,4))
     titles = ['steering angle (deg)', 'pedal command']
 
     plt.subplot(1,2, 1)
     plt.plot(input[:,0] * rad2deg, 'b')
     plt.plot(output[:,0] *rad2deg, 'r')
+    plt.plot(out_prior[:,0] *rad2deg, 'g')
     plt.title(titles[0])
 
     plt.subplot(1,2, 2)
     plt.plot(input[:,1], 'b', label='input action series')
     plt.plot(output[:,1], 'r', label='output reconstruction')
+    plt.plot(out_prior[:,1], 'g', label='prior')
     plt.title(titles[1])
 
     plt.legend()
