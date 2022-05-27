@@ -40,4 +40,10 @@ class HRLVisualizer(RLTrainer):
 
         # have a look at the replay buffer
 
+        replay_buffer = self.agent.hl_agent.replay_buffer
+        print(replay_buffer.sample(1))
         
+
+
+if __name__ == '__main__':
+    HRLVisualizer(args=get_args())
