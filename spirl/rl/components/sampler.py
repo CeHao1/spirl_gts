@@ -32,7 +32,7 @@ class Sampler:
     def sample_action(self, obs):
         return self._agent.act(obs)
 
-    def sample_batch(self, batch_size, is_train=True, global_step=None):
+    def sample_batch(self, batch_size, is_train=True, global_step=None, deterministic_action=False):
         """Samples an experience batch of the required size."""
         experience_batch = []
         step = 0
@@ -45,7 +45,7 @@ class Sampler:
                         if agent_output.action is None:
                             self._episode_reset(global_step)
                             continue
-                        agent_output = self._postprocess_agent_output(agent_output)
+                        agent_output = self._postprocess_agent_output(agent_output, deterministic_action)
                         obs, reward, done, info = self._env.step(agent_output.action)
                         obs = self._postprocess_obs(obs)
                         experience_batch.append(AttrDict(
@@ -131,8 +131,11 @@ class Sampler:
         """Optionally post-process observation."""
         return obs
 
-    def _postprocess_agent_output(self, agent_output):
+    def _postprocess_agent_output(self, agent_output, deterministic_action=False):
         """Optionally post-process / store agent output."""
+        if deterministic_action:
+            agent_output.ori_action = agent_output.action
+            agent_output.action = agent_output.dist.mu
         return agent_output
 
 
