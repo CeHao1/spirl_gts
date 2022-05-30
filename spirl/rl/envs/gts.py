@@ -9,6 +9,7 @@ from spirl.utils.general_utils import ParamDict, AttrDict
 from spirl.utils.gts_utils import make_env, initialize_gts
 from spirl.utils.gts_utils import RL_OBS_1, CAR_CODE, COURSE_CODE, TIRE_TYPE, BOP
 from spirl.utils.gts_utils import DEFAULT_FEATURE_KEYS
+from spirl.utils.gts_utils import start_condition_formulator
 from spirl.utils.gts_utils import raw_observation_to_true_observation
 
 from spirl.utils.gts_utils import reward_function, sampling_done_function
@@ -79,6 +80,9 @@ class GTSEnv_Base(GymEnv):
         self.course_length = self._get_course_length()
 
     def reset(self, start_conditions=None):
+        if not start_conditions:
+            course_v = self.course_length * np.random.randn()
+            start_conditions = start_condition_formulator(num_cars=1, course_v=course_v, speed=[144])
         obs = self._env.reset(start_conditions=start_conditions)
         return self._wrap_observation(obs[0])
 

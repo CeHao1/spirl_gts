@@ -2,6 +2,7 @@ from gym_gts import GTSApi
 import gym
 
 import numpy as np
+import math
 
 from spirl.rl.components.environment import GymEnv
 from spirl.rl.envs.gts import GTSEnv_Base
@@ -9,6 +10,7 @@ from spirl.utils.general_utils import ParamDict, AttrDict
 
 from spirl.utils.gts_utils import make_env, initialize_gts
 from spirl.utils.gts_utils import RL_OBS_1, CAR_CODE, COURSE_CODE, TIRE_TYPE, BOP
+from spirl.utils.gts_utils import start_condition_formulator
 from spirl.utils.gts_utils import raw_observation_to_true_observation
 
 from spirl.utils.gts_utils import reward_function, sampling_done_function
@@ -41,6 +43,13 @@ class GTSEnv_Multi(GTSEnv_Base):
         return super()._default_hparams().overwrite(default_dict)
 
     def reset(self, start_conditions=None):
+
+        if not start_conditions:
+            course_gap = math.floor(self.course_length / self._hp.num_cars)
+            course_init = np.random.rand() * self.course_length
+            course_v = [(course_init + course_gap*i)% self.course_length  for i in range(self._hp.num_cars)]
+            speed = [144] * self._hp.num_cars
+            start_conditions = start_condition_formulator(num_cars=self._hp.num_cars, course_v=course_v, speed=speed)
         obs = self._env.reset(start_conditions=start_conditions)
         return self._wrap_observation(obs)
 
