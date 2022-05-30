@@ -103,8 +103,8 @@ agent_config = AttrDict(
     fixed_alpha = 0.1,
     update_iterations = 64 * 20,
 
-    critic_lr = 1e-3,
-    policy_lr = 1e-3,
+    # critic_lr = 1e-3,
+    # policy_lr = 1e-3,
 
     
 )
