@@ -1,6 +1,8 @@
 import os
 import torch
 import numpy as np
+from spirl.utils.pytorch_utils import map2torch, map2np
+
 from spirl.rl.train import RLTrainer
 from spirl.rl.components.params import get_args
 from spirl.train import  set_seeds, make_path
@@ -8,6 +10,7 @@ from spirl.utils.general_utils import AttrDict, ParamDict, AverageTimer, timing,
 from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.utils.mpi import update_with_mpi_config, set_shutdown_hooks
 
+from spirl.utils.gts_utils import load_standard_table
 import matplotlib.pyplot as plt
 
 
@@ -38,11 +41,70 @@ class HRLVisualizer(RLTrainer):
         # if self.conf.ckpt_path is not None:
         start_epoch = self.resume(args.resume, self.conf.ckpt_path)
 
-        # have a look at the replay buffer
+        self.state_scaler, self.action_scaler = load_standard_table()
 
-        replay_buffer = self.agent.hl_agent.replay_buffer
-        print(replay_buffer.sample(1))
+        # this is real observation, and action(z)
+        # dict_keys(['action', 'reward', 'done', 'observation', 'observation_next'])
+
+        # replay_buffer = self.agent.hl_agent.replay_buffer
+        # one_sample = replay_buffer.sample(1)
+        # self.decode_hl_actions(one_sample)
+
+
+        # this is real action(steering and pedal)
+        # dict_keys(['actions', 'done', 'pad_mask', 'reward', 'states'])
+        saver = RolloutSaver('./sample/hrl/no_prior/')
+        inputs = saver.load_rollout_to_file(0)
+        self.test_policy_and_prior(inputs)
+
+
+    def test_policy_and_prior(self, inputs):
+        obs = inputs['states']
+        obs = torch.from_numpy(obs).to(self.device)
         
+        # from obs to hl actions z 
+        hl_policy_musig = self.agent.hl_agent.policy.net(obs).detach().cpu().numpy()
+        hl_output = self.agent.hl_agent.act(obs)
+        # print(hl_output)
+
+        hl_action = hl_output['action']
+        # from obs, z to 
+        ll_actions = self.decode_hl_actions(obs, hl_action)
+        ll_actions = self.action_scaler.inverse_transform(ll_actions)
+        for idx in np.random.choice(ll_actions.shape[0], 20, False):
+            ll_action = ll_actions[idx]
+            self.plot_action_series(ll_action)
+        
+
+    def decode_hl_actions(self, obs, hl_action):
+        # obs = one_sample['observation']
+        # hl_action = one_sample['action']
+        if (isinstance(obs, np.ndarray)):
+            obs = torch.from_numpy(obs).to(self.device)
+        hl_action = torch.from_numpy(hl_action).to(self.device)
+        
+        # print('obs', obs)
+        # print('hl action', hl_action)
+
+        output = self.agent.ll_agent._policy.decode(hl_action, hl_action, self.agent.ll_agent._policy.n_rollout_steps)
+        ll_actions = map2np(output)
+        return ll_actions
+
+        # print('ll_actions', ll_actions)
+
+    def plot_action_series(self, action):
+        
+        plt.figure(figsize=(12,4))
+        plt.subplot(1,2,1)
+        plt.plot(action[:,0], label='steering')
+
+        plt.subplot(1,2,2)
+        plt.plot(action[:,1], label='pedal')
+
+        plt.legend()
+        plt.show()
+
+
 
 
 if __name__ == '__main__':

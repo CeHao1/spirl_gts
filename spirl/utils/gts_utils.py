@@ -296,6 +296,24 @@ def states_2_obs(states):
         observation.append(states[key])
     return observation
 
+def load_standard_table():
+    
+    import os
+    # from sklearn.preprocessing import StandardScaler
+    import pickle
+    try:
+        file_path = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/standard_table")
+        f = open(file_path, "rb")
+        standard_table = pickle.load(f)
+        f.close()
+
+        state_scaler = standard_table['state']
+        action_scaler = standard_table['action']
+
+        print("load standard table successful")
+        return state_scaler, action_scaler
+    except:
+        print("not standard table")
 
 # ======================================== reward function =====================================
 

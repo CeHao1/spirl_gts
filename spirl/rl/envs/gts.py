@@ -26,7 +26,7 @@ class GTSEnv_Base(GymEnv):
 
         self.state_scaler = None
         self.action_scaler = None
-        self.load_standard_table()
+        self._load_standard_table()
 
     
     def _default_hparams(self):
@@ -110,40 +110,9 @@ class GTSEnv_Base(GymEnv):
             # print('not using standard actions')
             return actions
 
-
-    def load_standard_table(self):
-        
-        import os
-        # from sklearn.preprocessing import StandardScaler
-        import pickle
-        try:
-            file_path = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/standard_table")
-            f = open(file_path, "rb")
-            standard_table = pickle.load(f)
-            f.close()
-
-            self.state_scaler = standard_table['state']
-            self.action_scaler = standard_table['action']
-
-            # state_mean, state_var = standard_table['state']
-            # action_mean, action_var = standard_table['action']
-
-            # self.state_scaler = StandardScaler()
-            # self.state_scaler.mean_ = state_mean
-            # self.state_scaler.var_ = state_var
-            # self.state_scaler.scale_ = np.sqrt(state_var)
-
-            # self.action_scaler = StandardScaler()
-            # self.action_scaler.mean_  = action_mean
-            # self.action_scaler.var = action_var
-            # self.action_scaler.scale_ = np.sqrt(action_var)
-
-            # print(mean.shape, var.shape)
-            print("load standard table successful")
-        except:
-            print("not standard table")
-
-        
+    def _load_standard_table(self):
+        from spirl.utils.gts_utils import load_standard_table
+        self.state_scaler, self.action_scaler = load_standard_table()
 
 if __name__ == "__main__":
     from spirl.utils.general_utils import AttrDict
