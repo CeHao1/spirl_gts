@@ -30,8 +30,8 @@ class ACAgent(BaseAgent):
         obs = map2torch(self._obs_normalizer(obs), self._hp.device)
         if len(obs.shape) == 1:     # we need batched inputs for policy
             policy_output = self._remove_batch(self.policy(obs[None]))
-            if 'dist' in policy_output:
-                del policy_output['dist']
+            # if 'dist' in policy_output:
+            #     del policy_output['dist']
             return map2np(policy_output)
         return map2np(self.policy(obs))
 

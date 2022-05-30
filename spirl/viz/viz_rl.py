@@ -56,14 +56,14 @@ class RLVisualizer(RLTrainer):
 
         # if self.conf.ckpt_path is not None:
         start_epoch = self.resume(args.resume, self.conf.ckpt_path)
-        saver = RolloutSaver('./sample')
+        saver = RolloutSaver('./sample/rl/sac')
         sampled_data = saver.load_rollout_to_file(0)
         print('set up the viz')
-        # self.replay2actions(sampled_data)
+        self.replay2actions(sampled_data)
         # self.replay2Q(sampled_data)
 
-        print('policy', self.agent.policy.net)
-        print('critics', self.agent.critics)
+        # print('policy', self.agent.policy.net)
+        # print('critics', self.agent.critics)
 
         # self.show_replay_buffer()
 

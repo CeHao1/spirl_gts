@@ -32,7 +32,7 @@ class Sampler:
     def sample_action(self, obs):
         return self._agent.act(obs)
 
-    def sample_batch(self, batch_size, is_train=True, global_step=None, deterministic_action=False):
+    def sample_batch(self, batch_size, is_train=True, global_step=None):
         """Samples an experience batch of the required size."""
         experience_batch = []
         step = 0
@@ -45,7 +45,7 @@ class Sampler:
                         if agent_output.action is None:
                             self._episode_reset(global_step)
                             continue
-                        agent_output = self._postprocess_agent_output(agent_output, deterministic_action)
+                        agent_output = self._postprocess_agent_output(agent_output)
                         obs, reward, done, info = self._env.step(agent_output.action)
                         obs = self._postprocess_obs(obs)
                         experience_batch.append(AttrDict(
@@ -68,7 +68,7 @@ class Sampler:
 
         return listdict2dictlist(experience_batch), step
 
-    def sample_episode(self, is_train, render=False):
+    def sample_episode(self, is_train, render=False, deterministic_action=False):
         """Samples one episode from the environment."""
         self.init(is_train)
         episode, done = [], False
@@ -80,7 +80,7 @@ class Sampler:
                         agent_output = self.sample_action(self._obs)
                         if agent_output.action is None:
                             break
-                        agent_output = self._postprocess_agent_output(agent_output)
+                        agent_output = self._postprocess_agent_output(agent_output, deterministic_action=deterministic_action)
                         if render:
                             render_obs = self._env.render()
 
@@ -135,9 +135,12 @@ class Sampler:
         """Optionally post-process / store agent output."""
         if deterministic_action:
             if isinstance(agent_output.dist, MultivariateGaussian):
-                print('change the action to determin')
+                # print('change the action to determin')
                 agent_output.ori_action = agent_output.action
-                agent_output.action = agent_output.dist.mu
+                agent_output.action = agent_output.dist.mean[0]
+
+                # print('ori action',agent_output.ori_action )
+                # print('new action', agent_output.action)
         return agent_output
 
 

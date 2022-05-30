@@ -27,8 +27,8 @@ env_config = AttrDict(
     reward_norm=1.,
     # do_init = False,
 
-    reward_function = eval_time_trial_reward_function,
-    done_function = eval_time_trial_done_function,
+    # reward_function = eval_time_trial_reward_function,
+    # done_function = eval_time_trial_done_function,
 )
 
 configuration = {
@@ -42,11 +42,11 @@ configuration = {
     'n_warmup_steps': 80000,
     'use_update_after_sampling':True,
 
-    'environment': GTSEnv_Base,
-    'sampler' : Sampler,
+    # 'environment': GTSEnv_Base,
+    # 'sampler' : Sampler,
     
-    # 'environment': GTSEnv_Multi,
-    # 'sampler':SamplerMulti
+    'environment': GTSEnv_Multi,
+    'sampler':SamplerMulti
 }
 
 configuration = AttrDict(configuration)
@@ -100,11 +100,11 @@ agent_config = AttrDict(
 
     discount_factor = 0.98,
 
-    fixed_alpha = 0.1,
+    fixed_alpha = 0.01,
     update_iterations = 64 * 20,
 
-    critic_lr = 1e-3,
-    policy_lr = 1e-3,
+    # critic_lr = 1e-3,
+    # policy_lr = 1e-3,
 
     
 )
