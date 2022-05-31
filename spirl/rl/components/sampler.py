@@ -78,6 +78,7 @@ class Sampler:
                     while not done and self._episode_step < self._max_episode_len:
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
+                        print('agent_output', agent_output)
                         if agent_output.action is None:
                             break
                         agent_output = self._postprocess_agent_output(agent_output, deterministic_action=deterministic_action)

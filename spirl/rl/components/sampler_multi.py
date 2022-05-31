@@ -52,7 +52,7 @@ class SamplerMulti(Sampler):
             experience_batch_final += experience_batch[agent_index]
         return listdict2dictlist(experience_batch_final), step
 
-    def sample_episode(self, is_train, render=False):
+    def sample_episode(self, is_train, render=False, deterministic_action=False):
         na = self._hp.number_of_agents
 
         self.init(is_train)

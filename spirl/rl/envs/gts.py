@@ -81,8 +81,8 @@ class GTSEnv_Base(GymEnv):
 
     def reset(self, start_conditions=None):
         if not start_conditions:
-            course_v = self.course_length * np.random.randn()
-            start_conditions = start_condition_formulator(num_cars=1, course_v=course_v, speed=[144])
+            course_v = self.course_length * np.random.rand()
+            start_conditions = start_condition_formulator(num_cars=1, course_v=[course_v], speed=[144])
         obs = self._env.reset(start_conditions=start_conditions)
         return self._wrap_observation(obs[0])
 

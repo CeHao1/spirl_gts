@@ -61,10 +61,7 @@ class GTSEnv_Multi(GTSEnv_Base):
     def _wrap_observation(self, obs):
         converted_obs = [raw_observation_to_true_observation(obs_single) for obs_single in obs]
         if self.state_scaler:
-
             std_obs = self.state_scaler.transform(converted_obs)
-            # std_obs = converted_obs
-            # std_obs[0] = std_obs0[0]
         else:
             std_obs = converted_obs
         return GymEnv._wrap_observation(self, std_obs) 

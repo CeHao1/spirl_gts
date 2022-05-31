@@ -15,7 +15,7 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'SAC01'
+WANDB_PROJECT_NAME = 'HRL01'
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -225,7 +225,7 @@ class RLTrainer:
             with torch.no_grad():
                 for _ in tqdm(range(self.args.n_val_samples)):
                     while True:     # keep producing rollouts until we get a valid one
-                        episode = self.sampler.sample_episode(is_train=False, render=True, deterministic_action=True)
+                        episode = self.sampler.sample_episode(is_train=False, render=True, deterministic_action=False)
                         valid = not hasattr(self.agent, 'rollout_valid') or self.agent.rollout_valid
                         n_total += 1
                         if valid:
