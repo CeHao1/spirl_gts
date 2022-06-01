@@ -10,7 +10,7 @@ from spirl.utils.general_utils import AttrDict, ParamDict, AverageTimer, timing,
 from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.utils.mpi import update_with_mpi_config, set_shutdown_hooks
 
-from spirl.utils.gts_utils import load_standard_table
+from spirl.utils.gts_utils import load_standard_table, obs2name
 import matplotlib.pyplot as plt
 
 
@@ -21,6 +21,7 @@ class HRLVisualizer(RLTrainer):
 
         # set up params
         self.conf = self.get_config()
+
         update_with_mpi_config(self.conf)   # self.conf.mpi = AttrDict(is_chef=True)
         self._hp = self._default_hparams()
 
@@ -55,7 +56,11 @@ class HRLVisualizer(RLTrainer):
         # dict_keys(['actions', 'done', 'pad_mask', 'reward', 'states'])
         saver = RolloutSaver('./sample/hrl/no_prior/')
         inputs = saver.load_rollout_to_file(0)
+        print('inputs', inputs.states.shape)
         self.test_policy_and_prior(inputs)
+        # self.plot_actions(inputs)
+
+        
 
 
     def test_policy_and_prior(self, inputs):
@@ -63,7 +68,11 @@ class HRLVisualizer(RLTrainer):
         obs = torch.from_numpy(obs).to(self.device)
         
         # from obs to hl actions z 
-        hl_policy_musig = self.agent.hl_agent.policy.net(obs).detach().cpu().numpy()
+        # hl_policy_musig = self.agent.hl_agent.policy.net(obs).detach().cpu().numpy()
+
+        idx = np.random.choice(obs.shape[0], 20, False)
+        obs = obs[idx, :]
+        act = inputs['actions'][idx, :]
         hl_output = self.agent.hl_agent.act(obs)
         # print(hl_output)
 
@@ -71,10 +80,27 @@ class HRLVisualizer(RLTrainer):
         # from obs, z to 
         ll_actions = self.decode_hl_actions(obs, hl_action)
         ll_actions = self.action_scaler.inverse_transform(ll_actions)
-        for idx in np.random.choice(ll_actions.shape[0], 20, False):
-            ll_action = ll_actions[idx]
-            self.plot_action_series(ll_action)
-        
+        act = self.action_scaler.inverse_transform(act)
+
+        # inputs2 = AttrDict()
+        # inputs2.states = obs
+        # print(obs.shape)
+        # prior_output = self.agent.ll_agent._policy.run(inputs, use_learned_prior=True, output_actions=False)
+
+        # print('act', act)
+
+        obs = map2np(obs)
+        obs = self.state_scaler.inverse_transform(obs)
+
+        for ll_action, one_obs, one_act in zip(ll_actions, obs, act):
+
+            # inputs2 = AttrDict()
+            # inputs2.states = one_obs
+            # prior_output = self.agent.ll_agent._policy.run(inputs2, use_learned_prior=True, output_actions=False)
+
+            state = obs2name(one_obs)
+            self.plot_action_series(ll_action, state, one_act)
+              
 
     def decode_hl_actions(self, obs, hl_action):
         # obs = one_sample['observation']
@@ -92,18 +118,58 @@ class HRLVisualizer(RLTrainer):
 
         # print('ll_actions', ll_actions)
 
-    def plot_action_series(self, action):
+    def plot_action_series(self, action, state, act):
+        rad2deg = 180.0 / np.pi * np.pi / 6.0
+
+        print(state)
         
         plt.figure(figsize=(12,4))
         plt.subplot(1,2,1)
-        plt.plot(action[:,0], label='steering')
+        plt.plot(action[:,0] * rad2deg, label='steering')
+        plt.plot(-1, state['delta'] * rad2deg, 'bo', label='last delta' )
+        plt.plot(act[0] * rad2deg, 'ro', label='real delta' )
+        plt.title('steering')
+        plt.legend()
 
         plt.subplot(1,2,2)
         plt.plot(action[:,1], label='pedal')
-
+        plt.plot(-1, state['thr']-state['brk'], 'bo', label='last pedal')
+        plt.plot(act[1], 'ro', label='read pedal')
+        plt.ylim([min(-1, min(action[:,1])-0.1), max(1, max(action[:,1])+0.1)])
+        plt.title('pedal')
         plt.legend()
         plt.show()
 
+        # 
+        plt.figure(figsize=(12,4))
+
+        x = np.arange(10)
+        I = np.ones(10)
+        plt.subplot(1,2,1)
+        plt.plot([0], state['ey'], 'ro', label='ey')
+        plt.plot(x, I * (state['Wl'] + state['ey']))
+        plt.plot(x, -I * (state['Wr'] - state['ey']))
+        plt.title('lateral dist')
+        plt.legend()
+
+        plt.subplot(1,2,2)
+        plt.plot(state['kap'], 'b--', label='kap')
+        plt.title('curvature')
+        plt.legend()
+
+        plt.show()
+
+    def plot_actions(self, inputs):
+        act = inputs.actions
+        plt.figure(figsize=(15,10))
+        plt.subplot(2,1,1)
+        plt.plot(act[:,0], 'b.')
+        plt.title('real delta')
+
+        plt.subplot(2,1,2)
+        plt.plot(act[:,1], 'b.')
+        plt.title('real pedal')
+        plt.show()
 
 
 

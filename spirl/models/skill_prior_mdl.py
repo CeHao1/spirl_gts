@@ -198,12 +198,13 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
                             steps=steps,
                             lstm_hidden_init=lstm_init_hidden).pred
 
-    def run(self, inputs, use_learned_prior=True):
+    def run(self, inputs, use_learned_prior=True, output_actions=False):
         """Policy interface for model. Runs decoder if action plan is empty, otherwise returns next action from action plan.
         :arg inputs: dict with 'states', 'actions', 'images' keys from environment
         :arg use_learned_prior: if True, uses learned prior otherwise samples latent from uniform prior
         """
-        if not self._action_plan:
+        # if not self._action_plan:
+        if True:
             inputs = map2torch(inputs, device=self.device)
 
             # sample latent variable from prior
@@ -215,6 +216,9 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
             input_obs = self._learned_prior_input(inputs).repeat(self._hp.batch_size, 1)
             actions = self.decode(z, cond_inputs=input_obs, steps=self._hp.n_rollout_steps)[0]
             self._action_plan = deque(split_along_axis(map2np(actions), axis=0))
+
+        if output_actions:
+            return actions
 
         return AttrDict(action=self._action_plan.popleft()[None])
 
@@ -325,6 +329,7 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         self._beta_opt.step()
 
     def _learned_prior_input(self, inputs):
+        print('inputs.states', inputs.states.shape)
         return inputs.states[:, 0]
 
     def _regression_targets(self, inputs):

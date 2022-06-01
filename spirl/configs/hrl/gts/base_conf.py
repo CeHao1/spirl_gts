@@ -134,7 +134,10 @@ agent_config = AttrDict(
     ll_agent=SkillSpaceAgent,
     ll_agent_params=ll_agent_config,
     hl_interval=ll_model_params.n_rollout_steps,
-    log_video_caption=True,
+    log_video_caption=False,
+
+    update_iterations = 64 * 20,
+    discount_factor = 0.98,
 )
 
 # Dataset - Random data

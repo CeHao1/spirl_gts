@@ -84,6 +84,21 @@ chosen_feature_keys = DEFAULT_FEATURE_KEYS
 
 state_dim = len(ego_obs)
 
+def obs2name(obs):
+    state = {}
+    kap = []
+    lidar = []
+    for i in range(len(ego_obs)):
+        if 'curvature_in_' in ego_obs[i]:
+            kap.append(obs[i])
+        elif 'lidar_distance_' in ego_obs[i]:
+            lidar.append(obs[i])
+        else:
+            state[ego_obs[i]] = obs[i]
+    state['kap'] = kap
+    state['lidar'] = lidar
+    return state
+
 def start_condition_formulator(num_cars, course_v, speed):
     conditions = []
     for car_id in range(num_cars):

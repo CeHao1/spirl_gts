@@ -42,11 +42,11 @@ configuration = {
     'n_warmup_steps': 80000,
     'use_update_after_sampling':True,
 
-    # 'environment': GTSEnv_Base,
-    # 'sampler' : Sampler,
+    'environment': GTSEnv_Base,
+    'sampler' : Sampler,
     
-    'environment': GTSEnv_Multi,
-    'sampler':SamplerMulti
+    # 'environment': GTSEnv_Multi,
+    # 'sampler':SamplerMulti
 }
 
 configuration = AttrDict(configuration)
