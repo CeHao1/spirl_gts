@@ -225,7 +225,7 @@ class HierarchicalAgent(BaseAgent):
         })
         return super()._default_hparams().overwrite(default_dict)
 
-    def act(self, obs):
+    def act(self, obs): # obs is numpy array
         """Output dict contains is_hl_step in case high-level action was performed during this action."""
         obs_input = obs[None] if len(obs.shape) == 1 else obs    # need batch input for agents
         output = AttrDict()
@@ -249,11 +249,17 @@ class HierarchicalAgent(BaseAgent):
     def no_pop_act(self, obs):
         obs_input = obs[None] if len(obs.shape) == 1 else obs    # need batch input for agents
         output = AttrDict()
-
         hl_output = self.hl_agent.act(obs_input)
         output.update(self.ll_agent.no_pop_act(self.make_ll_obs(obs_input, hl_output.action)))
 
         return self._remove_batch(output) if len(obs.shape) == 1 else output
+
+    def get_prior_action(self, obs):
+        obs = map2torch(obs, self._hp.device)
+        obs_input = obs[None] if len(obs.shape) == 1 else obs
+
+        return self.hl_agent.policy.get_prior_actions(obs_input)
+
 
     def update(self, experience_batches):
         """Updates high-level and low-level agents depending on which parameters are set."""

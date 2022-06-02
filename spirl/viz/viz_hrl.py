@@ -54,9 +54,12 @@ class HRLVisualizer(RLTrainer):
 
         # this is real action(steering and pedal)
         # dict_keys(['actions', 'done', 'pad_mask', 'reward', 'states'])
-        saver = RolloutSaver('./sample/hrl/no_prior/')
+        saver = RolloutSaver('./sample/hrl/spirl/')
         inputs = saver.load_rollout_to_file(0)
         print('inputs', inputs.states.shape)
+        # print('agent type', self.agent)
+
+
         self.test_policy_and_prior(inputs)
         # self.plot_actions(inputs)
 
@@ -97,37 +100,22 @@ class HRLVisualizer(RLTrainer):
 
         for ll_action, one_obs, one_act in zip(ll_actions, obs, act):
             no_pop_output = self.agent.no_pop_act(one_obs)
-            no_pop_act = no_pop_output.action
-            no_pop_act = self.action_scaler.inverse_transform(no_pop_act)
+            no_pop_act = self.action_scaler.inverse_transform(no_pop_output.action)
 
             self.agent._steps_since_hl = 0
             self.agent.ll_agent.reset()
             agent_output = self.agent.act(one_obs)
             agent_act = self.action_scaler.inverse_transform([agent_output.action])[0]
 
-            # inputs2 = AttrDict()
-            # inputs2.states = one_obs
-            # prior_output = self.agent.ll_agent._policy.run(inputs2, use_learned_prior=True, output_actions=False)
+            prior_act = self.agent.get_prior_action(one_obs)
+            prior_act = self.action_scaler.inverse_transform([prior_act])[0]
 
             obs_for_state = self.state_scaler.inverse_transform([one_obs])[0]
             state = obs2name(obs_for_state)
-            self.plot_action_series(ll_action, no_pop_act,  state, one_act, agent_act)
+            self.plot_action_series(ll_action, no_pop_act, prior_act, state, one_act, agent_act)
               
 
-    def decode_hl_actions(self, obs, hl_action):
-        # obs = one_sample['observation']
-        # hl_action = one_sample['action']
-        if (isinstance(obs, np.ndarray)):
-            obs = torch.from_numpy(obs).to(self.device)
-        hl_action = torch.from_numpy(hl_action).to(self.device)
-        
-        # output = self.agent.ll_agent._policy.decode(hl_action, hl_action, self.agent.ll_agent._policy.n_rollout_steps)
-        output = self.agent.ll_agent._policy.decode(hl_action, obs, self.agent.ll_agent._policy.n_rollout_steps)
-        ll_actions = map2np(output)
-        return ll_actions
-
-
-    def plot_action_series(self, action, no_pop_act, state, act, agent_act):
+    def plot_action_series(self, action, no_pop_act, prior_act, state, act, agent_act):
         rad2deg = 180.0 / np.pi
         range2deg = 180.0 / 6.0
 
@@ -137,7 +125,8 @@ class HRLVisualizer(RLTrainer):
         plt.subplot(1,2,1)
         plt.plot(action[:,0] * range2deg, 'b', label='ll action, manual')
         plt.plot(no_pop_act[:,0] * range2deg, 'g', label='no_pop_act')
-        plt.plot( state['delta'] * rad2deg, 'bo', label='last delta' )
+        plt.plot(prior_act[:,0] * range2deg, 'r', label='prior act')
+        plt.plot(state['delta'] * rad2deg, 'bo', label='last delta' )
         plt.plot(act[0] * range2deg, 'ro', label='real delta' )
         plt.plot(agent_act[0] * range2deg, 'go', label='new agent delta' )
         plt.title('steering')
@@ -146,9 +135,10 @@ class HRLVisualizer(RLTrainer):
         plt.subplot(1,2,2)
         plt.plot(action[:,1], 'b', label='ll action, manual')
         plt.plot(no_pop_act[:,1], 'g', label='no_pop_act')
+        plt.plot(prior_act[:,1], 'r', label='prior act')
         plt.plot(state['thr']-state['brk'], 'bo', label='last pedal')
         plt.plot(act[1], 'ro', label='real pedal')
-        plt.plot(agent_act[1], 'ro', label='new agent pedal')
+        plt.plot(agent_act[1], 'go', label='new agent pedal')
         plt.ylim([min(-1, min(action[:,1])-0.1), max(1, max(action[:,1])+0.1)])
         plt.title('pedal')
         plt.legend()

@@ -59,7 +59,7 @@ sampler_config = AttrDict(
 
 # Replay Buffer
 replay_params = AttrDict(
-    # dump_replay=False,
+    dump_replay=False,
 )
 
 # Observation Normalization

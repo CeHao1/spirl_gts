@@ -198,13 +198,12 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
                             steps=steps,
                             lstm_hidden_init=lstm_init_hidden).pred
 
-    def run(self, inputs, use_learned_prior=True, output_actions=False):
+    def run(self, inputs, use_learned_prior=True):
         """Policy interface for model. Runs decoder if action plan is empty, otherwise returns next action from action plan.
         :arg inputs: dict with 'states', 'actions', 'images' keys from environment
         :arg use_learned_prior: if True, uses learned prior otherwise samples latent from uniform prior
         """
-        # if not self._action_plan:
-        if True:
+        if not self._action_plan:
             inputs = map2torch(inputs, device=self.device)
 
             # sample latent variable from prior
@@ -217,10 +216,14 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
             actions = self.decode(z, cond_inputs=input_obs, steps=self._hp.n_rollout_steps)[0]
             self._action_plan = deque(split_along_axis(map2np(actions), axis=0))
 
-        if output_actions:
-            return actions
-
         return AttrDict(action=self._action_plan.popleft()[None])
+
+
+    def no_pop_run(self, obs):
+        obs = map2torch(obs, device=self.device)
+        z = self.compute_learned_prior(obs, first_only=True).sample()
+        actions = self.decode(z, cond_inputs=obs, steps=self._hp.n_rollout_steps)
+        print('actions', actions)
 
     def reset(self):
         """Resets action plan (should be called at beginning of episode when used in RL loop)."""
