@@ -9,7 +9,7 @@ from torch.nn import init
 
 def init_weights_xavier(m):
     if isinstance(m, nn.Linear):
-        nn.init.xavier_normal(m.weight.data)
+        nn.init.xavier_normal_(m.weight.data)
         if m.bias is not None:
             m.bias.data.fill_(0)
     if isinstance(m, nn.Conv2d):
@@ -46,6 +46,8 @@ class Block(nn.Sequential, HasParameters):
             normalize=True,
             activation=nn.LeakyReLU(0.2, inplace=True),
             normalization=self.builder.normalization,
+            # activation = None,
+            # normalization = None,
             normalization_params=AttrDict()
         )
         return params

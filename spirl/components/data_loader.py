@@ -7,6 +7,8 @@ import numpy as np
 import torch.utils.data as data
 import itertools
 
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
 from spirl.utils.general_utils import AttrDict, map_dict, maybe_retrieve, shuffle_with_seed
 from spirl.utils.pytorch_utils import RepeatedDataLoader
 from spirl.utils.video_utils import resize_video
@@ -31,7 +33,6 @@ class Dataset(data.Dataset):
 
     def get_data_loader(self, batch_size, n_repeat):
         print('len {} dataset {}'.format(self.phase, len(self)))
-
 
         assert self.device in ['cuda', 'cpu']  # Otherwise the logic below is wrong
         return RepeatedDataLoader(self, batch_size=batch_size, shuffle=self.shuffle, num_workers=self.n_worker,
@@ -84,7 +85,8 @@ class GlobalSplitDataset(Dataset):
         if not filenames:
             raise RuntimeError('No filenames found in {}'.format(self.data_dir))
         filenames = shuffle_with_seed(filenames)
-        filenames = self._split_with_percentage(self.spec.split, filenames)
+        if (self.phase != 'viz'):
+            filenames = self._split_with_percentage(self.spec.split, filenames)
         return filenames
 
     def _load_h5_files(self, dir):
@@ -278,10 +280,89 @@ class PreloadVideoDataset(VideoDataset):
 class GlobalSplitVideoDataset(VideoDataset, GlobalSplitDataset):
     pass
 
-
 class PreloadGlobalSplitVideoDataset(PreloadVideoDataset, GlobalSplitDataset):
     pass
 
+class GTSDataset(GlobalSplitVideoDataset):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        file_path = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/standard_table")
+        
+        import pickle
+        if not os.path.exists(file_path):
+
+        # if (self.phase == 'train'):
+            standard_table = self.standardlize()
+            f = open(file_path, "wb")
+            pickle.dump(standard_table, f)
+            f.close()
+            print('save standard_table')
+        # elif (self.phase == 'val' or self.phase =='viz'):
+        else:
+            f = open(file_path, "rb")
+            standard_table = pickle.load(f)
+            f.close()
+            print('load standard_table')
+        self.state_scaler = standard_table['state']
+        self.action_scaler = standard_table['action']
+
+
+    def standardlize(self):
+        file_number = len(self)
+        iterate_times = 5
+        sampler_number = int(file_number)
+        data_state_list = []
+        data_action_list = []
+        
+        for _ in range(iterate_times):
+            for i in range(sampler_number):
+                data = super().__getitem__(i)
+                data_state_list.append(data.states)
+                data_action_list.append(data.actions)
+
+        data_state_list = np.array(data_state_list)
+        data_action_list = np.array(data_action_list)
+        state_shapes = data_state_list.shape
+        action_shapes = data_action_list.shape
+
+        data_state_list = data_state_list.reshape(state_shapes[0] * state_shapes[1], state_shapes[2])
+        data_action_list = data_action_list.reshape(action_shapes[0] * action_shapes[1], action_shapes[2])
+
+        # convert steer to [0] by dividing pi/6
+        data_action_list[:,0] /= np.pi / 6
+
+        state_scaler = StandardScaler()
+        state_scaler.fit(data_state_list)
+
+        # action_scaler = MinMaxScaler(feature_range=(-1, 1))
+        # action_scaler.min_ = [0.0, 0.0]
+        # action_scaler.scale_ = [1/3, 1.0]
+
+        action_scaler = StandardScaler()
+        action_scaler.fit(data_action_list)
+
+        standard_table = {
+            'state' : state_scaler,
+            'action': action_scaler
+        }
+
+        print("============= strandard =================")
+        print('states:')
+        print(state_scaler.mean_, state_scaler.scale_)
+
+        print('actions:')
+        # print(action_scaler.min_, action_scaler.scale_)
+        print(action_scaler.mean_, action_scaler.scale_)
+
+
+        return standard_table
+        
+    def __getitem__(self, item):
+        data = super().__getitem__(item)
+        data.states = self.state_scaler.transform(data.states)
+        data.actions = self.action_scaler.transform(data.actions)
+        return data
 
 class GlobalSplitStateSequenceDataset(GlobalSplitVideoDataset):
     """Outputs observation in data dict, not images."""

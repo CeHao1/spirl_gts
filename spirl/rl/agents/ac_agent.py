@@ -30,8 +30,8 @@ class ACAgent(BaseAgent):
         obs = map2torch(self._obs_normalizer(obs), self._hp.device)
         if len(obs.shape) == 1:     # we need batched inputs for policy
             policy_output = self._remove_batch(self.policy(obs[None]))
-            if 'dist' in policy_output:
-                del policy_output['dist']
+            # if 'dist' in policy_output:
+            #     del policy_output['dist']
             return map2np(policy_output)
         return map2np(self.policy(obs))
 
@@ -169,6 +169,7 @@ class SACAgent(ACAgent):
                 alpha=self.alpha,
                 pi_log_prob=policy_output.log_prob.mean(),
                 policy_entropy=policy_output.dist.entropy().mean(),
+                avg_sigma = policy_output.dist.sigma.mean(),
                 q_target=q_target.mean(),
                 q_1=qs[0].mean(),
                 q_2=qs[1].mean(),
@@ -273,7 +274,10 @@ class SACAgent(ACAgent):
 
     @property
     def alpha(self):
-        return self._log_alpha().exp()
+        if self._hp.fixed_alpha is not None:
+            return self._hp.fixed_alpha
+        else:
+            return self._log_alpha().exp()
 
     @property
     def schedule_steps(self):

@@ -68,7 +68,7 @@ class Sampler:
 
         return listdict2dictlist(experience_batch), step
 
-    def sample_episode(self, is_train, render=False):
+    def sample_episode(self, is_train, render=False, deterministic_action=False):
         """Samples one episode from the environment."""
         self.init(is_train)
         episode, done = [], False
@@ -78,11 +78,14 @@ class Sampler:
                     while not done and self._episode_step < self._max_episode_len:
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
+                        # print('agent_output', agent_output)
                         if agent_output.action is None:
                             break
-                        agent_output = self._postprocess_agent_output(agent_output)
+                        agent_output = self._postprocess_agent_output(agent_output, deterministic_action=deterministic_action)
                         if render:
                             render_obs = self._env.render()
+
+                        # print(agent_output.action)
                         obs, reward, done, info = self._env.step(agent_output.action)
                         obs = self._postprocess_obs(obs)
                         episode.append(AttrDict(
@@ -96,11 +99,13 @@ class Sampler:
                         if render:
                             episode[-1].update(AttrDict(image=render_obs))
 
+                        
                         # update stored observation
                         self._obs = obs
                         self._episode_step += 1
-        episode[-1].done = True     # make sure episode is marked as done at final time step
+                        self._episode_reward += reward
 
+        episode[-1].done = True     # make sure episode is marked as done at final time step
         return listdict2dictlist(episode)
 
     def get_episode_info(self):
@@ -127,8 +132,16 @@ class Sampler:
         """Optionally post-process observation."""
         return obs
 
-    def _postprocess_agent_output(self, agent_output):
+    def _postprocess_agent_output(self, agent_output, deterministic_action=False):
         """Optionally post-process / store agent output."""
+        if deterministic_action:
+            if isinstance(agent_output.dist, MultivariateGaussian):
+                # print('change the action to determin')
+                agent_output.ori_action = agent_output.action
+                agent_output.action = agent_output.dist.mean[0]
+
+                # print('ori action',agent_output.ori_action )
+                # print('new action', agent_output.action)
         return agent_output
 
 

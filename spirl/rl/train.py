@@ -15,7 +15,7 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'SAC01'
+WANDB_PROJECT_NAME = 'HRL01'
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -96,6 +96,7 @@ class RLTrainer:
             'log_images_per_epoch': 4,    # log images/videos N times per epoch
             'logging_target': 'wandb',    # where to log results to
             'n_warmup_steps': 0,    # steps of warmup experience collection before training
+            'use_update_after_sampling': False, # call another function
         })
         return default_dict
 
@@ -111,7 +112,10 @@ class RLTrainer:
 
         for epoch in range(start_epoch, self._hp.num_epochs):
             print("Epoch {}".format(epoch))
-            self.train_epoch(epoch)
+            if (self._hp.use_update_after_sampling):
+                self.train_epoch_with_after_sampling_rollout(epoch)
+            else:
+                self.train_epoch(epoch)
 
             if not self.args.dont_save and self.is_chef:
                 save_checkpoint({
@@ -120,7 +124,7 @@ class RLTrainer:
                     'state_dict': self.agent.state_dict(),
                 }, os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name(epoch))
                 self.agent.save_state(self._hp.exp_path)
-                self.val()
+                # self.val()
 
     def train_epoch(self, epoch):
         """Run inner training loop."""
@@ -158,6 +162,42 @@ class RLTrainer:
                                                log_images=False, step=self.global_step)
                         self.print_train_update(epoch, agent_outputs, timers)
 
+    def train_epoch_with_after_sampling_rollout(self, epoch):
+        # initialize timing
+        timers = defaultdict(lambda: AverageTimer())
+
+        self.sampler.init(is_train=True)
+        # ep_start_step = self.global_step
+
+        with timers['batch'].time():
+            # collect experience
+            with timers['rollout'].time(): # collect all sample for each epoch
+                experience_batch, env_steps = self.sampler.sample_batch(batch_size=self._hp.n_steps_per_epoch,
+                                                                        global_step=self.global_step)
+                if self.use_multiple_workers:
+                    experience_batch = mpi_gather_experience(experience_batch)
+                self.global_step += mpi_sum(env_steps)
+
+        print('!! global step is', self.global_step)
+
+        # update policy
+        with timers['update'].time():
+            if self.is_chef:
+                agent_outputs = self.agent.update(experience_batch)
+            if self.use_multiple_workers:
+                self.agent.sync_networks()
+            self.n_update_steps += self.agent.update_iterations
+
+        print('!! update step is', self.n_update_steps)
+
+        # log results
+        with timers['log'].time():
+            # if self.is_chef and self.log_outputs_now:
+            self.agent.log_outputs(agent_outputs, None, self.logger,
+                                    log_images=False, step=self.global_step)
+            self.print_train_update(epoch, agent_outputs, timers)
+
+
     def val(self):
         """Evaluate agent."""
         val_rollout_storage = RolloutStorage()
@@ -165,7 +205,8 @@ class RLTrainer:
             with torch.no_grad():
                 with timing("Eval rollout time: "):
                     for _ in range(WandBLogger.N_LOGGED_SAMPLES):   # for efficiency instead of self.args.n_val_samples
-                        val_rollout_storage.append(self.sampler.sample_episode(is_train=False, render=True))
+                        episode = self.sampler.sample_episode(is_train=False, render=True, deterministic_action=True)
+                        val_rollout_storage.append(episode)
         rollout_stats = val_rollout_storage.rollout_stats()
         if self.is_chef:
             with timing("Eval log time: "):
@@ -184,7 +225,7 @@ class RLTrainer:
             with torch.no_grad():
                 for _ in tqdm(range(self.args.n_val_samples)):
                     while True:     # keep producing rollouts until we get a valid one
-                        episode = self.sampler.sample_episode(is_train=False, render=True)
+                        episode = self.sampler.sample_episode(is_train=False, render=True, deterministic_action=True)
                         valid = not hasattr(self.agent, 'rollout_valid') or self.agent.rollout_valid
                         n_total += 1
                         if valid:

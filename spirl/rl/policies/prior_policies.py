@@ -6,7 +6,7 @@ from spirl.rl.components.agent import BaseAgent
 from spirl.rl.components.policy import Policy
 from spirl.rl.policies.mlp_policies import SplitObsMLPPolicy, MLPPolicy, HybridConvMLPPolicy
 from spirl.utils.general_utils import AttrDict, ParamDict
-from spirl.utils.pytorch_utils import no_batchnorm_update
+from spirl.utils.pytorch_utils import map2np, map2torch, no_batchnorm_update
 
 
 class PriorInitializedPolicy(Policy):
@@ -139,6 +139,13 @@ class LearnedPriorAugmentedPolicy(PriorAugmentedPolicy):
         action, log_prob = self._tanh_squash_output(action, 0)        # ignore log_prob output
         return AttrDict(action=action, log_prob=log_prob)
 
+    def get_prior_actions(self, obs):
+        with torch.no_grad():
+            with no_batchnorm_update(self.prior_net):
+                z = self.prior_net.compute_learned_prior(obs, first_only=True).sample()
+                actions = self.prior_net.decode(z, cond_inputs=obs, steps=self.prior_net._hp.n_rollout_steps)
+        actions = map2np(actions)
+        return actions[0]
 
 class LearnedPriorAugmentedPIPolicy(PriorInitializedPolicy, LearnedPriorAugmentedPolicy):
     def __init__(self, config):

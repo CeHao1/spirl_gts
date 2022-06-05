@@ -8,29 +8,45 @@ from spirl.rl.envs.gts import GTSEnv_Base
 from spirl.rl.envs.gts_multi import GTSEnv_Multi
 
 from spirl.rl.agents.ac_agent import SACAgent
+from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.sampler_multi import SamplerMulti
 
 from spirl.rl.components.normalization import Normalizer
 from spirl.configs.default_data_configs.gts import data_spec
+
+from spirl.utils.gts_utils import reward_function, sampling_done_function
+from spirl.utils.gts_utils import eval_time_trial_done_function, eval_time_trial_reward_function
 
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 notes = 'non-hierarchical RL experiments in gts env'
 
+# Environment
+env_config = AttrDict(
+    reward_norm=1.,
+    # do_init = False,
+
+    # reward_function = eval_time_trial_reward_function,
+    # done_function = eval_time_trial_done_function,
+)
 
 configuration = {
     'seed': 2,
     'agent': SACAgent,
-    # 'environment': GTSEnv_Base,
-    'environment': GTSEnv_Multi,
-    'data_dir': '.',
-    'num_epochs': 200,
-    'max_rollout_len': 20000,
-    'n_steps_per_epoch': 40000,
-    'n_warmup_steps': 160000,
     
-    'sampler':SamplerMulti
+    'data_dir': '.',
+    'num_epochs': 2000,
+    'max_rollout_len': 20000,
+    'n_steps_per_epoch': 20000,
+    'n_warmup_steps': 80000,
+    'use_update_after_sampling':True,
+
+    'environment': GTSEnv_Base,
+    'sampler' : Sampler,
+    
+    # 'environment': GTSEnv_Multi,
+    # 'sampler':SamplerMulti
 }
 
 configuration = AttrDict(configuration)
@@ -53,7 +69,7 @@ critic_params = AttrDict(
     action_dim=policy_params.action_dim,
     input_dim=policy_params.input_dim,
     output_dim=1,
-    n_layers=2,      #  number of policy network layers
+    n_layers=1,      #  number of critic network layers
     nz_mid=256,
     action_input=True,
 )
@@ -61,7 +77,7 @@ critic_params = AttrDict(
 # Replay Buffer
 replay_params = AttrDict(
     capacity=4000000,
-    dump_replay=False,
+    dump_replay=True,
 )
 
 # Observation Normalization
@@ -79,17 +95,22 @@ agent_config = AttrDict(
     # obs_normalizer=Normalizer,
     # obs_normalizer_params=obs_norm_params,
     clip_q_target=False,
-    batch_size=256,
+    batch_size=4096,
     log_videos=False,
 
-    discount_factor = 0.98
+    discount_factor = 0.98,
+
+    fixed_alpha = 0.1,
+    update_iterations = 64 * 20,
+
+    critic_lr = 1e-3,
+    policy_lr = 1e-3,
+
+    
 )
 
 # Dataset - Random data
 data_config = AttrDict()
 data_config.dataset_spec = data_spec
 
-# Environment
-env_config = AttrDict(
-    reward_norm=1.,
-)
+

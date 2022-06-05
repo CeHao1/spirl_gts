@@ -40,6 +40,15 @@ class SkillSpaceAgent(BaseAgent):
             self.action_plan = deque(split_along_axis(map2np(actions), axis=1))
         return AttrDict(action=self.action_plan.popleft())
 
+    def no_pop_act(self, obs):
+        assert len(obs.shape) == 2 and obs.shape[0] == 1  # assume single-observation batches with leading 1-dim
+        split_obs = self._split_obs(obs)
+        actions = self._policy.decode(map2torch(split_obs.z, self._hp.device),
+                                        map2torch(split_obs.cond_input, self._hp.device),
+                                        self._policy.n_rollout_steps)
+        action_plan = map2np(actions)
+        return AttrDict(action=action_plan)
+
     def reset(self):
         self.action_plan = deque()      # reset action plan
 

@@ -1,6 +1,6 @@
 
 import numpy as np
-from gym_gts import GTSApi
+
 import gym
 
 #  =========================== env setup utils ================================
@@ -51,7 +51,53 @@ lidar_name_space = ["lidar_distance_%i_deg" % deg for deg in np.concatenate(
 ego_obs += curvature_name_space
 ego_obs += lidar_name_space
 
+
+DEFAULT_FEATURE_KEYS = (
+    [
+        "front_g",
+        "side_g",
+        "vertical_g",
+        "vx",
+        "vy",
+        "vz",
+        "centerline_diff_angle",
+        "is_hit_wall",
+        "steering",
+    ]
+    + [
+        "lidar_distance_%i_deg" % deg
+        for deg in np.concatenate(
+            (
+                np.arange(start=0, stop=105, step=15),
+                np.arange(start=270, stop=360, step=15),
+            )
+        )
+    ]
+    + [
+        "curvature_in_%.1f_seconds" % seconds
+        for seconds in np.arange(start=0.2, stop=3.0, step=0.2)
+    ]
+)
+
+chosen_feature_keys = DEFAULT_FEATURE_KEYS
+
+
 state_dim = len(ego_obs)
+
+def obs2name(obs):
+    state = {}
+    kap = []
+    lidar = []
+    for i in range(len(ego_obs)):
+        if 'curvature_in_' in ego_obs[i]:
+            kap.append(obs[i])
+        elif 'lidar_distance_' in ego_obs[i]:
+            lidar.append(obs[i])
+        else:
+            state[ego_obs[i]] = obs[i]
+    state['kap'] = kap
+    state['lidar'] = lidar
+    return state
 
 def start_condition_formulator(num_cars, course_v, speed):
     conditions = []
@@ -83,6 +129,7 @@ def BoP_formulator(num_cars, car_name, weight_percentage, power_percentage):
     return bops
 
 def initialize_gts(ip, num_cars, car_codes, course_code, tire_type, bops):
+    from gym_gts import GTSApi
     with GTSApi(ip=ip) as gts_api:
         gts_api.set_race(
             num_cars = num_cars,
@@ -93,22 +140,25 @@ def initialize_gts(ip, num_cars, car_codes, course_code, tire_type, bops):
             bops = bops
         )
 
-def make_env(ip, min_frames_per_action, feature_keys, builtin_controlled, spectator_mode=False,
-            reward_function=None, done_function=None):
-    env = gym.make(
-                'gts-v0', 
-                ip=ip,  
-                min_frames_per_action=min_frames_per_action,
-                builtin_controlled = builtin_controlled,
-                feature_keys = feature_keys,
-                standardize_observations = False,
-                store_states = False,
-                spectator_mode = spectator_mode,
-                reward_function = reward_function,
-                done_function = done_function
-        )
-    return env
+# def make_env(ip, min_frames_per_action, feature_keys, builtin_controlled, spectator_mode=False,
+#             reward_function=None, done_function=None):
+#     env = gym.make(
+#                 'gts-v0', 
+#                 ip=ip,  
+#                 min_frames_per_action=min_frames_per_action,
+#                 builtin_controlled = builtin_controlled,
+#                 feature_keys = feature_keys,
+#                 standardize_observations = False,
+#                 store_states = False,
+#                 spectator_mode = spectator_mode,
+#                 reward_function = reward_function,
+#                 done_function = done_function
+#         )
+#     return env
 
+def make_env(**kwarg):
+    env = gym.make('gts-v0', **kwarg)
+    return env
 
 
 #  =================================== state observe ===============================
@@ -261,6 +311,24 @@ def states_2_obs(states):
         observation.append(states[key])
     return observation
 
+def load_standard_table():
+    
+    import os
+    # from sklearn.preprocessing import StandardScaler
+    import pickle
+    try:
+        file_path = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/standard_table")
+        f = open(file_path, "rb")
+        standard_table = pickle.load(f)
+        f.close()
+
+        state_scaler = standard_table['state']
+        action_scaler = standard_table['action']
+
+        print("load standard table successful")
+        return state_scaler, action_scaler
+    except:
+        print("not standard table")
 
 # ======================================== reward function =====================================
 
@@ -281,6 +349,8 @@ def sampling_done_function(state):
 def evaluation_done_function(state):
     return state["lap_count"] > 2 or state["current_lap_time_msec"]/1000.0 > max_eval_lap if state else False
 
+def eval_time_trial_done_function(state):
+    return state["lap_count"] > 2 and state["current_lap_time_msec"]/1000.0 > 5.0 if state else False
 
 def reward_function(state, previous_state, course_length):
     if previous_state \
@@ -297,3 +367,18 @@ def reward_function(state, previous_state, course_length):
                  ) * (maf/(state["frame_count"] - previous_state["frame_count"]))  # correcting too long steps
 
         return reward
+
+def eval_time_trial_reward_function(state, previous_state, course_length):
+    if previous_state \
+            and isinstance(previous_state["course_v"], float) \
+            and isinstance(previous_state["lap_count"], int):
+
+            if (previous_state["lap_count"] == 2 and state["lap_count"] == 3):
+                last_t = previous_state["current_lap_time_msec"]/1000.0
+                now_t = state["current_lap_time_msec"]/1000.0
+
+                print('now is the second lap time, ', last_t, now_t)
+
+                return max(last_t, now_t)
+            else:
+                return 0

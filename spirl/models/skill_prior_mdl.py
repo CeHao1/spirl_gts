@@ -86,6 +86,7 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
             'reconstruction_mse_weight': 1.,    # weight of MSE reconstruction loss
             'kl_div_weight': 1.,                # weight of KL divergence loss
             'target_kl': None,                  # if not None, adds automatic beta-tuning to reach target KL divergence
+            'learned_prior_weight' : 1.,        # weight for train learned prior
         })
 
         # loading pre-trained components
@@ -158,7 +159,7 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         losses.kl_loss = KLDivLoss(self.beta)(model_output.q, model_output.p)
 
         # learned skill prior net loss
-        losses.q_hat_loss = self._compute_learned_prior_loss(model_output)
+        losses.q_hat_loss = self._compute_learned_prior_loss(model_output, weight=self._hp.learned_prior_weight)
 
         # Optionally update beta
         if self.training and self._hp.target_kl is not None:
@@ -216,6 +217,13 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
             self._action_plan = deque(split_along_axis(map2np(actions), axis=0))
 
         return AttrDict(action=self._action_plan.popleft()[None])
+
+
+    def no_pop_run(self, obs):
+        obs = map2torch(obs, device=self.device)
+        z = self.compute_learned_prior(obs, first_only=True).sample()
+        actions = self.decode(z, cond_inputs=obs, steps=self._hp.n_rollout_steps)
+        print('actions', actions)
 
     def reset(self):
         """Resets action plan (should be called at beginning of episode when used in RL loop)."""
@@ -300,11 +308,13 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         else:
             return MultivariateGaussian(prior_mdl(inputs))
 
-    def _compute_learned_prior_loss(self, model_output):
+    def _compute_learned_prior_loss(self, model_output, weight=1.0):
         if self._hp.nll_prior_train:
-            loss = NLL(breakdown=0)(model_output.q_hat, model_output.z_q.detach())
+            # print('using NLL!!!!!!!!!!!!!!!!')
+            loss = NLL(weight=weight, breakdown=0)(model_output.q_hat, model_output.z_q.detach())
         else:
-            loss = KLDivLoss(breakdown=0)(model_output.q.detach(), model_output.q_hat)
+            # print('using KLD!!!!!!!!!!!!!!!!')
+            loss = KLDivLoss(weight=weight, breakdown=0)(model_output.q.detach(), model_output.q_hat)
         # aggregate loss breakdown for each of the priors in the ensemble
         loss.breakdown = torch.stack([chunk.mean() for chunk in torch.chunk(loss.breakdown, self._hp.n_prior_nets)])
         return loss
@@ -322,11 +332,12 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         self._beta_opt.step()
 
     def _learned_prior_input(self, inputs):
+        print('inputs.states', inputs.states.shape)
         return inputs.states[:, 0]
 
     def _regression_targets(self, inputs):
-        return inputs.actions[:, (self._hp.n_input_frames-1):]
-        # return inputs.actions
+        # return inputs.actions[:, (self._hp.n_input_frames-1):]
+        return inputs.actions
 
     def evaluate_prior_divergence(self, state):
         """Evaluates prior divergence as mean pairwise KL divergence of ensemble of priors."""
