@@ -31,6 +31,8 @@ def get_args():
                         help='number of validation episodes')
     parser.add_argument('--save_dir', type=str,
                         help='directory for saving the generated rollouts in rollout mode')
+    parser.add_argument('--counter', default=0, type=int,
+                        help='start count of save rollout')
     parser.add_argument('--config_override', default='', type=str,
                         help='override to config file in format "key1.key2=val1,key3=val2"')
 

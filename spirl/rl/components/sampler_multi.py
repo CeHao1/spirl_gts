@@ -2,6 +2,7 @@ import numpy as np
 import contextlib
 
 from spirl.rl.components.sampler import Sampler, HierarchicalSampler
+from spirl.modules.variational_inference import MultivariateGaussian
 from spirl.utils.general_utils import listdict2dictlist, AttrDict, ParamDict, obj2np
 
 class SamplerMulti(Sampler):
@@ -52,7 +53,7 @@ class SamplerMulti(Sampler):
             experience_batch_final += experience_batch[agent_index]
         return listdict2dictlist(experience_batch_final), step
 
-    def sample_episode(self, is_train, render=False, deterministic_action=False):
+    def sample_episode(self, is_train, render=False, deterministic_action=False, return_list=False):
         na = self._hp.number_of_agents
 
         self.init(is_train)
@@ -65,7 +66,7 @@ class SamplerMulti(Sampler):
                     while not np.all(done) :
                     # and self._episode_step < self._max_episode_len:
                         agent_output = [self.sample_action(self._obs[agent_index]) for agent_index in range(na)]
-
+                        agent_output = self._postprocess_agent_output(agent_output, deterministic_action=deterministic_action)
                         if render:
                             render_obs = self._env.render()
 
@@ -89,10 +90,22 @@ class SamplerMulti(Sampler):
         for agent_index in range(na): 
             episode[agent_index][-1].done = True
 
+        if return_list:
+            return [listdict2dictlist(one_epsi) for one_epsi in episode]
+
         episode_final = []
         for agent_index in range(na): 
             episode_final += episode[agent_index]
         return listdict2dictlist(episode_final)
+
+
+    def _postprocess_agent_output(self, agent_output, deterministic_action=False):
+        if deterministic_action:
+            if isinstance(agent_output[0].dist, MultivariateGaussian):
+                    for idx in range(len(agent_output)):
+                        agent_output[idx].ori_action = agent_output[idx].action
+                        agent_output[idx].action = agent_output[idx].dist.mean[0]
+        return agent_output
 
 
 class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):

@@ -309,14 +309,16 @@ class GTSDataset(GlobalSplitVideoDataset):
 
 
     def standardlize(self):
+        from tqdm import tqdm
         file_number = len(self)
         iterate_times = 5
         sampler_number = int(file_number)
         data_state_list = []
         data_action_list = []
         
-        for _ in range(iterate_times):
-            for i in range(sampler_number):
+        for sample_roll in range(iterate_times):
+            print('sample roll is {}, total roll {}'.format(sample_roll, iterate_times))
+            for i in tqdm(range(sampler_number)):
                 data = super().__getitem__(i)
                 data_state_list.append(data.states)
                 data_action_list.append(data.actions)
@@ -330,7 +332,7 @@ class GTSDataset(GlobalSplitVideoDataset):
         data_action_list = data_action_list.reshape(action_shapes[0] * action_shapes[1], action_shapes[2])
 
         # convert steer to [0] by dividing pi/6
-        data_action_list[:,0] /= np.pi / 6
+        # data_action_list[:,0] /= np.pi / 6
 
         state_scaler = StandardScaler()
         state_scaler.fit(data_state_list)

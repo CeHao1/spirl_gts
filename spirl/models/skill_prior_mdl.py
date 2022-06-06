@@ -332,7 +332,6 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         self._beta_opt.step()
 
     def _learned_prior_input(self, inputs):
-        print('inputs.states', inputs.states.shape)
         return inputs.states[:, 0]
 
     def _regression_targets(self, inputs):
