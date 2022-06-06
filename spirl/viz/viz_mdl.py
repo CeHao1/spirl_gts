@@ -86,7 +86,8 @@ def plots(input, output, out_prior):
     # print('input', input)
     # print('output', output)
     
-    rad2deg = 180.0 / np.pi
+    # rad2deg = 180.0 / np.pi
+    rad2deg = 1
 
     plt.figure(figsize=(10,4))
     titles = ['steering angle (deg)', 'pedal command']

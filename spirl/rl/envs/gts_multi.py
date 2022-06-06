@@ -69,7 +69,7 @@ class GTSEnv_Multi(GTSEnv_Base):
         # return GymEnv._wrap_observation(self, obs)
 
     def render(self, mode='rgb_array'):
-        return [[0,0,0] for _ in range(self._hp.num_cars)]
+        return [[[[0,0,0]]] for _ in range(self._hp.num_cars)]
 
 
 if __name__ == "__main__":

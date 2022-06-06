@@ -16,6 +16,7 @@ from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
 WANDB_PROJECT_NAME = 'HRL01'
+# WANDB_PROJECT_NAME = 'SAC01'
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -226,7 +227,7 @@ class RLTrainer:
                 for _ in tqdm(range(self.args.n_val_samples)):
                     while True:     # keep producing rollouts until we get a valid one
                         episode = self.sampler.sample_episode(is_train=False, render=True, 
-                                    deterministic_action=True, return_list=True)
+                                    deterministic_action=self.args.deterministic_action, return_list=True)
                         valid = not hasattr(self.agent, 'rollout_valid') or self.agent.rollout_valid
                         n_total += 1
                         if valid:

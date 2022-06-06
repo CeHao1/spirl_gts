@@ -142,8 +142,8 @@ class VideoDataset(Dataset):
             data.start_ind, data.end_ind = start_ind, end_ind
 
         # perform final processing on data
-        if (data.images.ndim == 4):
-            data.images = self._preprocess_images(data.images)
+        # if (data.images.ndim == 4):
+        #     data.images = self._preprocess_images(data.images)
 
         return data
 

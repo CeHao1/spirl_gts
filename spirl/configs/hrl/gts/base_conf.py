@@ -28,8 +28,8 @@ env_config = AttrDict(
     # do_init = False,
     action_standard = True,
 
-    reward_function = eval_time_trial_reward_function,
-    done_function = eval_time_trial_done_function,
+    # reward_function = eval_time_trial_reward_function,
+    # done_function = eval_time_trial_done_function,
     
 )
 
@@ -44,11 +44,11 @@ configuration = {
     'n_warmup_steps': 80000,
     'use_update_after_sampling':True,
 
-    # 'environment': GTSEnv_Multi,
-    # 'sampler':HierarchicalSamplerMulti,
+    'environment': GTSEnv_Multi,
+    'sampler':HierarchicalSamplerMulti,
 
-    'environment':GTSEnv_Base,
-    'sampler':HierarchicalSampler
+    # 'environment':GTSEnv_Base,
+    # 'sampler':HierarchicalSampler
 
 }
 configuration = AttrDict(configuration)
@@ -137,7 +137,7 @@ agent_config = AttrDict(
     log_video_caption=False,
 
     update_iterations = 64 * 20,
-    discount_factor = 0.98,
+    discount_factor = 0.98 ** ll_model_params.n_rollout_steps,
 )
 
 # Dataset - Random data

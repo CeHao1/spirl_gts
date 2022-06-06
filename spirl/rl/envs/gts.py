@@ -105,7 +105,7 @@ class GTSEnv_Base(GymEnv):
         return course_length
 
     def render(self, mode='rgb_array'):
-        return [0,0,0]
+        return [[[0,0,0]]]
 
     def descaler_actions(self, actions):
         if self._hp.action_standard:
