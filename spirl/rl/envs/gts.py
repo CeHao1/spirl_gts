@@ -66,7 +66,7 @@ class GTSEnv_Base(GymEnv):
     def _make_env(self):
         self._env = make_env(
             ip = self._hp.ip_address, 
-            min_frames_per_action=6, 
+            min_frames_per_action=2, 
             feature_keys = RL_OBS_1, 
             # feature_keys = DEFAULT_FEATURE_KEYS,
 

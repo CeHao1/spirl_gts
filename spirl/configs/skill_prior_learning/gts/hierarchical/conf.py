@@ -30,6 +30,9 @@ model_config = AttrDict(
     n_processing_layers=5,
 
     learned_prior_weight = 1e-2,
+
+    # n_rollout_steps = 6,
+    nz_vae = 6,
 )
 
 # Dataset

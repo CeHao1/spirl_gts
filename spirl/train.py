@@ -91,7 +91,7 @@ class ModelTrainer(BaseTrainer):
             'data_dir': None,  # directory where dataset is in
             'batch_size': 128,
             'exp_path': None,  # Path to the folder with experiments
-            'num_epochs': 500,
+            'num_epochs': 5000,
             'epoch_cycles_train': 1,
             'optimizer': 'radam',    # supported: 'adam', 'radam', 'rmsprop', 'sgd'
             'lr': 1e-3,

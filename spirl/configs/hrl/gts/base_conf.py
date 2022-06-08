@@ -83,7 +83,8 @@ ll_model_params = AttrDict(
     nz_enc=128,
     nz_mid=128,
     n_processing_layers=5,
-    nz_vae=10,
+    # nz_vae=10,
+    nz_vae = 6,
     n_rollout_steps=10,
 )
 
