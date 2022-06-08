@@ -116,7 +116,7 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
         self.last_hl_action = [None for _ in range(self._hp.number_of_agents)]  # stores observation when last hl action was taken
         self.reward_since_last_hl = [0] * self._hp.number_of_agents  # accumulates the reward since the last HL step for HL transition
         self._obs = [None for _ in range(self._hp.number_of_agents)]
-        self._episode_reward = [0] * self._hp.number_of_agents
+        # self._episode_reward = [0] * self._hp.number_of_agents
 
 
     def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True):
@@ -184,7 +184,8 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
                             env_steps += 1
                             self._episode_step += 1
 
-                            self._episode_reward[agent_index] += reward[agent_index]
+                            # _episode_reward must a number, average of each car
+                            self._episode_reward += reward[agent_index] / na
                             self.reward_since_last_hl[agent_index] += reward[agent_index]
 
                         # reset if episode ends
@@ -214,3 +215,4 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
         self.last_hl_obs = [None for _ in range(self._hp.number_of_agents)]
         self.last_hl_action = [None for _ in range(self._hp.number_of_agents)]  # stores observation when last hl action was taken
         self.reward_since_last_hl = [0] * self._hp.number_of_agents  # accumulates the reward since the last HL step for HL transition
+        # self._episode_reward = [0] * self._hp.number_of_agents
