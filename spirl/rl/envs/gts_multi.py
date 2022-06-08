@@ -11,7 +11,7 @@ from spirl.utils.general_utils import ParamDict, AttrDict
 from spirl.utils.gts_utils import make_env, initialize_gts
 from spirl.utils.gts_utils import RL_OBS_1, CAR_CODE, COURSE_CODE, TIRE_TYPE, BOP
 from spirl.utils.gts_utils import start_condition_formulator
-from spirl.utils.gts_utils import raw_observation_to_true_observation
+from spirl.utils.gts_utils import raw_observation_to_true_observation, gts_observation_2_state
 
 from spirl.utils.gts_utils import reward_function, sampling_done_function
 
@@ -21,15 +21,18 @@ class GTSEnv_Multi(GTSEnv_Base):
 # just like sampler
 
     def _game_hp(self):
-        game_hp = ParamDict({
-            'builtin_controlled' : [],
-            'do_init' : True,
-            'reward_function' : reward_function,
-            'done_function' : sampling_done_function,
-            'standardize_observations' : False,
-            'state_standard': True,
-            'action_standard':False,
-        })
+        # game_hp = ParamDict({
+        #     'builtin_controlled' : [],
+        #     'do_init' : True,
+        #     'reward_function' : reward_function,
+        #     'done_function' : sampling_done_function,
+        #     'standardize_observations' : False,
+        #     'state_standard': True,
+        #     'action_standard':False,
+        # })
+        game_hp = super()._game_hp()
+        game_hp.action_standard = True
+        
         return game_hp
 
     def _default_hparams(self):
@@ -59,6 +62,10 @@ class GTSEnv_Multi(GTSEnv_Base):
         return self._wrap_observation(obs), rew, done, info
 
     def _wrap_observation(self, obs):
+        # show frame count
+        gts_states = gts_observation_2_state(obs[0], RL_OBS_1)
+        print('frame count', gts_states['frame_count'])
+
         converted_obs = [raw_observation_to_true_observation(obs_single) for obs_single in obs]
         if self.state_scaler:
             std_obs = self.state_scaler.transform(converted_obs)

@@ -39,9 +39,9 @@ configuration = {
     
     'data_dir': '.',
     'num_epochs': 300,
-    'max_rollout_len': 20000,
-    'n_steps_per_epoch': 20000,
-    'n_warmup_steps': 80000,
+    'max_rollout_len': 10000,
+    'n_steps_per_epoch': 10000,
+    'n_warmup_steps': 40000,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Multi,

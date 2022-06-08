@@ -5,6 +5,7 @@ from spirl.rl.components.sampler import Sampler, HierarchicalSampler
 from spirl.modules.variational_inference import MultivariateGaussian
 from spirl.utils.general_utils import listdict2dictlist, AttrDict, ParamDict, obj2np
 from copy import deepcopy
+from time import time
 
 class SamplerMulti(Sampler):
 
@@ -16,22 +17,32 @@ class SamplerMulti(Sampler):
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
                     while step < batch_size:
+                        print('\n===========================')
+                        t0 = time()
+                        
                         agent_output = [self.sample_action(self._obs[agent_index]) for agent_index in range(na)]
+
                         if agent_output[0].action is None:
                             self._episode_reset(global_step)
                             continue
 
                         actions = [agent_output[agent_index].action for agent_index in range(na)]
-                        # print(actions[0])
+                        # actions = [[0.0, 0.0] for agent_index in range(na)]
+                        
+                        t1 = time()
+                        print('time to generate action', (t1-t0)*1000)
+
+
                         obs, reward, done, info = self._env.step(actions)
-                        # print(done)
+                        t2 = time()
+                        print('time for step', (t2-t1)*1000)
 
                         for agent_index in range(na): 
                             experience_batch[agent_index].append(AttrDict(
                                 observation=self._obs[agent_index],
                                 reward=reward[agent_index],
                                 done=done[agent_index],
-                                action=agent_output[agent_index].action,
+                                # action=agent_output[agent_index].action,
                                 observation_next=obs[agent_index],
                             ))
 
@@ -48,6 +59,9 @@ class SamplerMulti(Sampler):
                                 for agent_index in range(na): 
                                     experience_batch[agent_index][-1].done = True
                             self._episode_reset(global_step)
+
+                        t3 = time()
+                        print('time for rest', (t3-t2)*1000)
 
         experience_batch_final = []
         for agent_index in range(na): 
@@ -126,24 +140,38 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
         hl_experience_batch = [[] for _ in range(na)]
         ll_experience_batch = [[] for _ in range(na)]
 
-        # copy 20 agents for multi-sampling
-        multi_agent = [deepcopy(self._agent) for _ in range(na)]
-
+  
         env_steps, hl_step = 0, 0
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
-                    while hl_step < batch_size or len(ll_experience_batch[0]) <= 1:
-                        # perform one rollout step
+                    # copy 20 agents for multi-sampling, only temprary variables
+                    multi_agent = [deepcopy(self._agent) for _ in range(na)]
 
-                        # agent_output = [self.sample_action(self._obs[agent_index]) for agent_index in range(na)]
+                    while hl_step < batch_size or len(ll_experience_batch[0]) <= 1:
+                        print('\n==============================================')
+                        
+                        # initially reset for agents
+                        if self.initial_reset_counts < na:
+                            multi_agent[self.initial_reset_counts].reset()
+                            
+                            print('reset agent', self.initial_reset_counts)
+                        
+
+                        # perform one rollout step
+                        t0 = time()
                         agent_output = [multi_agent[agent_index].act(self._obs[agent_index]) for agent_index in range(na)]
+                        t1 = time()
+                        print('** get action time is ', (t1 - t0)*1000)
+
+                        
                         actions = [agent_output[agent_index].action for agent_index in range(na)]
 
                         obs, reward, done, info = self._env.step(actions)
                         # obs = self._postprocess_obs(obs)
 
                         for agent_index in range(na): 
+
                             # store low-level observations, usually not useful
                             if store_ll:
                                 if ll_experience_batch[agent_index]:
@@ -163,6 +191,10 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
                             # store high-level actions
                             if agent_output[agent_index].is_hl_step or np.any(done) or (self._episode_step >= self._max_episode_len-1):
                                 if self.last_hl_obs[agent_index] is not None and self.last_hl_action[agent_index] is not None:
+                                    # do not store until several steps, the initial steps are very unstable
+                                    if (self.initial_reset_counts < na * 3):
+                                        break
+                                    
                                     hl_experience_batch[agent_index].append(AttrDict(
                                         observation=self.last_hl_obs[agent_index],
                                         reward=self.reward_since_last_hl[agent_index],
@@ -172,6 +204,8 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
                                     ))
                                     hl_step += 1
 
+                                    print('==== high-level step for agent', agent_index)
+
                                 if np.any(done):
                                     hl_experience_batch[agent_index][-1].reward += reward[agent_index]  # add terminal reward
 
@@ -179,14 +213,18 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
                                 self.last_hl_action[agent_index] = agent_output[agent_index].hl_action
                                 self.reward_since_last_hl[agent_index] = 0
 
-                            # update stored observation
-                            self._obs[agent_index] = obs[agent_index]
+                            
+                            # self._obs[agent_index] = obs[agent_index]
                             env_steps += 1
                             self._episode_step += 1
 
                             # _episode_reward must a number, average of each car
                             self._episode_reward += reward[agent_index] / na
                             self.reward_since_last_hl[agent_index] += reward[agent_index]
+
+                        # update stored observation, what ever
+                        self._obs = obs
+                        self.initial_reset_counts += 1
 
                         # reset if episode ends
                         if np.any(done) or self._episode_step >= self._max_episode_len:
@@ -196,6 +234,10 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
                                     if hl_experience_batch[agent_index]:   # can potentially be empty 
                                         hl_experience_batch[agent_index][-1].done = True
                             self._episode_reset(global_step)
+
+                        # for agent numbers
+
+                    # end while
 
         final_hl_experience_batch = []
         final_ll_experience_batch = []
@@ -216,3 +258,7 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
         self.last_hl_action = [None for _ in range(self._hp.number_of_agents)]  # stores observation when last hl action was taken
         self.reward_since_last_hl = [0] * self._hp.number_of_agents  # accumulates the reward since the last HL step for HL transition
         # self._episode_reward = [0] * self._hp.number_of_agents
+
+        self.initial_reset_counts = 0 
+        # because sampling high-level action takes too long time, if we sample for 20 cars, 
+        # the time is too long and will cause delay. So, we will initially separate them.

@@ -48,7 +48,9 @@ class GTSEnv_Base(GymEnv):
             'done_function' : sampling_done_function,
             'standardize_observations' : False,
             'state_standard': True,
-            'action_standard':False
+            'action_standard':False,
+            'fast_mode':True,
+            'min_frames_per_action': 6,
         })
         return game_hp
 
@@ -66,10 +68,11 @@ class GTSEnv_Base(GymEnv):
     def _make_env(self):
         self._env = make_env(
             ip = self._hp.ip_address, 
-            min_frames_per_action=2, 
+            min_frames_per_action = self._hp.min_frames_per_action, 
             feature_keys = RL_OBS_1, 
             # feature_keys = DEFAULT_FEATURE_KEYS,
 
+            fast_mode = self._hp.fast_mode,
             builtin_controlled = self._hp.builtin_controlled, 
             spectator_mode = self._hp.spectator_mode,
             reward_function = self._hp.reward_function,
