@@ -4,6 +4,7 @@ import contextlib
 from spirl.rl.components.sampler import Sampler, HierarchicalSampler
 from spirl.modules.variational_inference import MultivariateGaussian
 from spirl.utils.general_utils import listdict2dictlist, AttrDict, ParamDict, obj2np
+from copy import deepcopy
 
 class SamplerMulti(Sampler):
 
@@ -121,16 +122,18 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
         hl_experience_batch = [[] for _ in range(na)]
         ll_experience_batch = [[] for _ in range(na)]
 
+        # copy 20 agents for multi-sampling
+        multi_agent = [deepcopy(self._agent) for _ in range(na)]
+
         env_steps, hl_step = 0, 0
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
                     while hl_step < batch_size or len(ll_experience_batch[0]) <= 1:
                         # perform one rollout step
-                        # agent_output = self.sample_action(self._obs)
-                        # agent_output = self._postprocess_agent_output(agent_output)
 
-                        agent_output = [self.sample_action(self._obs[agent_index]) for agent_index in range(na)]
+                        # agent_output = [self.sample_action(self._obs[agent_index]) for agent_index in range(na)]
+                        agent_output = [multi_agent[agent_index].act(self._obs[agent_index]) for agent_index in range(na)]
                         actions = [agent_output[agent_index].action for agent_index in range(na)]
 
                         # print(actions[0])
