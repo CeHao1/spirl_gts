@@ -25,7 +25,7 @@ notes = 'hierarchical RL on the gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    do_init = False,
+    # do_init = False,
     action_standard = True,
 
     # reward_function = eval_time_trial_reward_function,
@@ -84,8 +84,8 @@ ll_model_params = AttrDict(
     nz_mid=128,
     n_processing_layers=5,
     # nz_vae=10,
-    nz_vae = 6,
-    n_rollout_steps=10,
+    nz_vae = 4,
+    n_rollout_steps=4,
 )
 
 
@@ -103,7 +103,7 @@ ll_agent_config.update(AttrDict(
 hl_policy_params = AttrDict(
     action_dim=ll_model_params.nz_vae,       # z-dimension of the skill VAE
     input_dim=data_spec.state_dim,
-    max_action_range=2.,        # prior is Gaussian with unit variance
+    max_action_range=1.,        # prior is Gaussian with unit variance
     nz_mid=256,
     n_layers=5,
 )
@@ -113,7 +113,7 @@ hl_critic_params = AttrDict(
     action_dim=hl_policy_params.action_dim,
     input_dim=hl_policy_params.input_dim,
     output_dim=1,
-    n_layers=5,  # number of policy network laye
+    n_layers=5,  # number of policy network layer
     nz_mid=256,
     action_input=True,
 )
@@ -137,8 +137,8 @@ agent_config = AttrDict(
     hl_interval=ll_model_params.n_rollout_steps,
     log_video_caption=False,
 
-    update_iterations = 64 * 20,
-    discount_factor = 0.98 ** ll_model_params.n_rollout_steps,
+    update_iterations = 512,
+    discount_factor = 0.98 ,
 )
 
 # Dataset - Random data

@@ -23,7 +23,7 @@ configuration = AttrDict(configuration)
 model_config = AttrDict(
     state_dim=data_spec.state_dim,
     action_dim=data_spec.n_actions,
-    n_rollout_steps=10,
+    # n_rollout_steps=10,
     kl_div_weight=5e-4,
     nz_enc=128,
     nz_mid=128,
@@ -31,8 +31,8 @@ model_config = AttrDict(
 
     learned_prior_weight = 1e-2,
 
-    # n_rollout_steps = 6,
-    nz_vae = 6,
+    n_rollout_steps = 4,
+    nz_vae = 4,
 )
 
 # Dataset
