@@ -17,7 +17,7 @@ class SamplerMulti(Sampler):
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
                     while step < batch_size:
-                        print('\n===========================')
+                        # print('\n===========================')
                         t0 = time()
                         
                         agent_output = [self.sample_action(self._obs[agent_index]) for agent_index in range(na)]
@@ -29,20 +29,20 @@ class SamplerMulti(Sampler):
                         actions = [agent_output[agent_index].action for agent_index in range(na)]
                         # actions = [[0.0, 0.0] for agent_index in range(na)]
                         
-                        t1 = time()
-                        print('time to generate action', (t1-t0)*1000)
+                        # t1 = time()
+                        # print('time to generate action', (t1-t0)*1000)
 
 
                         obs, reward, done, info = self._env.step(actions)
-                        t2 = time()
-                        print('time for step', (t2-t1)*1000)
+                        # t2 = time()
+                        # print('time for step', (t2-t1)*1000)
 
                         for agent_index in range(na): 
                             experience_batch[agent_index].append(AttrDict(
                                 observation=self._obs[agent_index],
                                 reward=reward[agent_index],
                                 done=done[agent_index],
-                                # action=agent_output[agent_index].action,
+                                action=agent_output[agent_index].action,
                                 observation_next=obs[agent_index],
                             ))
 
@@ -60,8 +60,8 @@ class SamplerMulti(Sampler):
                                     experience_batch[agent_index][-1].done = True
                             self._episode_reset(global_step)
 
-                        t3 = time()
-                        print('time for rest', (t3-t2)*1000)
+                        # t3 = time()
+                        # print('time for rest', (t3-t2)*1000)
 
         experience_batch_final = []
         for agent_index in range(na): 
@@ -149,20 +149,20 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
                     multi_agent = [deepcopy(self._agent) for _ in range(na)]
 
                     while hl_step < batch_size or len(ll_experience_batch[0]) <= 1:
-                        print('\n==============================================')
+                        # print('\n==============================================')
                         
                         # initially reset for agents
                         if self.initial_reset_counts < na:
                             multi_agent[self.initial_reset_counts].reset()
                             
-                            print('reset agent', self.initial_reset_counts)
+                            # print('reset agent', self.initial_reset_counts)
                         
 
                         # perform one rollout step
-                        t0 = time()
+                        # t0 = time()
                         agent_output = [multi_agent[agent_index].act(self._obs[agent_index]) for agent_index in range(na)]
-                        t1 = time()
-                        print('** get action time is ', (t1 - t0)*1000)
+                        # t1 = time()
+                        # print('** get action time is ', (t1 - t0)*1000)
 
                         
                         actions = [agent_output[agent_index].action for agent_index in range(na)]
@@ -204,7 +204,7 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
                                     ))
                                     hl_step += 1
 
-                                    print('==== high-level step for agent', agent_index)
+                                    # print('==== high-level step for agent', agent_index)
 
                                 if np.any(done):
                                     hl_experience_batch[agent_index][-1].reward += reward[agent_index]  # add terminal reward

@@ -25,7 +25,7 @@ notes = 'hierarchical RL on the gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    # do_init = False,
+    do_init = False,
     action_standard = True,
 
     # reward_function = eval_time_trial_reward_function,
@@ -67,7 +67,7 @@ obs_norm_params = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    batch_size=10, #256,
+    batch_size=256, #256,
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,

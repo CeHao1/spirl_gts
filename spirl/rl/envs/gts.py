@@ -121,6 +121,12 @@ class GTSEnv_Base(GymEnv):
         from spirl.utils.gts_utils import load_standard_table
         self.state_scaler, self.action_scaler = load_standard_table()
 
+        # print the standard table 
+        print('===== action scaler =====')
+        print(self.action_scaler.mean_, self.action_scaler.scale_)
+        test_actions = [[-1.0, -1.0],[1.0, 1.0]]
+        print('converted action range', self.action_scaler.inverse_transform(test_actions))
+
 if __name__ == "__main__":
     from spirl.utils.general_utils import AttrDict
     conf = AttrDict({'do_init' : True})

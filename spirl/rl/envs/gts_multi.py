@@ -21,18 +21,7 @@ class GTSEnv_Multi(GTSEnv_Base):
 # just like sampler
 
     def _game_hp(self):
-        # game_hp = ParamDict({
-        #     'builtin_controlled' : [],
-        #     'do_init' : True,
-        #     'reward_function' : reward_function,
-        #     'done_function' : sampling_done_function,
-        #     'standardize_observations' : False,
-        #     'state_standard': True,
-        #     'action_standard':False,
-        # })
-        game_hp = super()._game_hp()
-        game_hp.action_standard = True
-        
+        game_hp = super()._game_hp()     
         return game_hp
 
     def _default_hparams(self):
@@ -63,8 +52,8 @@ class GTSEnv_Multi(GTSEnv_Base):
 
     def _wrap_observation(self, obs):
         # show frame count
-        gts_states = gts_observation_2_state(obs[0], RL_OBS_1)
-        print('frame count', gts_states['frame_count'])
+        # gts_states = gts_observation_2_state(obs[0], RL_OBS_1)
+        # print('frame count', gts_states['frame_count'])
 
         converted_obs = [raw_observation_to_true_observation(obs_single) for obs_single in obs]
         if self.state_scaler:

@@ -307,7 +307,6 @@ class GTSDataset(GlobalSplitVideoDataset):
         self.state_scaler = standard_table['state']
         self.action_scaler = standard_table['action']
 
-
     def standardlize(self):
         from tqdm import tqdm
         file_number = len(self)
