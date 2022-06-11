@@ -120,6 +120,8 @@ class SamplerMulti(Sampler):
                     for idx in range(len(agent_output)):
                         agent_output[idx].ori_action = agent_output[idx].action
                         agent_output[idx].action = agent_output[idx].dist.mean[0]
+                        # clip to [-1, 1]
+                        agent_output[idx].action = np.clip(agent_output[idx].action, -1.0, 1.0)
         return agent_output
 
 

@@ -76,7 +76,7 @@ class MDLVisualizer(ModelTrainer):
             n = 0
 
             plots(input_actions[n], output_reconstruction[n], output_prior_recon[n])
-            if batch_idx > 5:
+            if batch_idx > 20:
                 break
         print('finish')
 
@@ -90,7 +90,7 @@ def plots(input, output, out_prior):
     rad2deg = 1
 
     plt.figure(figsize=(10,4))
-    titles = ['steering angle (deg)', 'pedal command']
+    titles = ['steering angle', 'pedal command']
 
     plt.subplot(1,2, 1)
     plt.plot(input[:,0] * rad2deg, 'b')

@@ -12,6 +12,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from spirl.utils.general_utils import AttrDict, map_dict, maybe_retrieve, shuffle_with_seed
 from spirl.utils.pytorch_utils import RepeatedDataLoader
 from spirl.utils.video_utils import resize_video
+from spirl.utils.math_utils import smooth
 
 # ================================= original video loader ======================
 class Dataset(data.Dataset):
@@ -117,9 +118,33 @@ class VideoDataset(Dataset):
         self.crop_subseq = 'crop_rand_subseq' in self.spec and self.spec.crop_rand_subseq
         self.img_sz = resolution
         self.subsampler = self._get_subsampler()
+        self.smooth = 'smooth_actions' in self.spec and self.spec.smooth_actions
 
     def __getitem__(self, index):
         data = self._get_raw_data(index)
+
+        import copy
+        import matplotlib.pyplot as plt
+
+        a0 = copy.deepcopy(data.actions)
+        # smooth the action 
+        if self.smooth:
+            data = self.smooth_actions(data, self.spec.subseq_len)
+
+        a1 = copy.deepcopy(data.actions)
+
+        # plt.figure(figsize=(15,10))
+        # plt.subplot(211)
+        # plt.plot(a0[:,0], 'b', label='ori')
+        # plt.plot(a1[:,0], 'r', label='smooth')
+
+        # plt.subplot(212)
+        # plt.plot(a0[:,1], 'b', label='ori')
+        # plt.plot(a1[:,1], 'r', label='smooth')
+
+        # plt.legend()
+        # print('!!!')
+        # plt.show()
 
         # maybe subsample seqs
         if self.subsampler is not None:
@@ -129,6 +154,7 @@ class VideoDataset(Dataset):
         if self.crop_subseq:
             end_ind = np.argmax(data.pad_mask * np.arange(data.pad_mask.shape[0], dtype=np.float32), 0)
             data = self._crop_rand_subseq(data, end_ind, length=self.spec.subseq_len)
+
 
         # Make length consistent
         start_ind = 0
@@ -161,18 +187,21 @@ class VideoDataset(Dataset):
                 for name in F[key].keys():
                     if name in ['states', 'actions', 'pad_mask']:
                         data[name] = F[key + '/' + name][()].astype(np.float32)
-                        # print('find key ', name)
-                        # print('dim is ', data[name].shape)
 
                 if key + '/images' in F:
                     data.images = F[key + '/images'][()]
                 else:
                     data.images = np.zeros((data.states.shape[0], 2, 2, 3), dtype=np.uint8)
 
-                # import time 
-                # time.sleep(100)
         except:
             raise ValueError("Could not load from file {}".format(path))
+        return data
+
+    def smooth_actions(self, data, length):
+        # odd length
+        length = length//2 * 2 + 1
+        for idx in range(data.actions.shape[1]):
+            data.actions[:, idx] = smooth(data.actions[:, idx], length)
         return data
 
     def _get_samples_per_file(self, path):
@@ -307,6 +336,12 @@ class GTSDataset(GlobalSplitVideoDataset):
         self.state_scaler = standard_table['state']
         self.action_scaler = standard_table['action']
 
+        # print the standard table 
+        print('===== action scaler =====')
+        print(self.action_scaler.mean_, self.action_scaler.scale_)
+        test_actions = [[-1.0, -1.0],[1.0, 1.0]]
+        print('converted action range', self.action_scaler.inverse_transform(test_actions))
+
     def standardlize(self):
         from tqdm import tqdm
         file_number = len(self)
@@ -356,6 +391,7 @@ class GTSDataset(GlobalSplitVideoDataset):
         # print(action_scaler.min_, action_scaler.scale_)
         print(action_scaler.mean_, action_scaler.scale_)
 
+        print('action limits, min: {}, max: {}'.format(np.min(data_action_list, axis=0), np.max(data_action_list, axis=0)))
 
         return standard_table
         
