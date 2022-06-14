@@ -89,7 +89,7 @@ def plots(input, output, out_prior):
     # rad2deg = 180.0 / np.pi
     rad2deg = 1
 
-    plt.figure(figsize=(10,4))
+    plt.figure(figsize=(15,5))
     titles = ['steering angle', 'pedal command']
 
     plt.subplot(1,2, 1)
@@ -97,12 +97,14 @@ def plots(input, output, out_prior):
     plt.plot(output[:,0] *rad2deg, 'r')
     plt.plot(out_prior[:,0] *rad2deg, 'g')
     plt.title(titles[0])
+    # plt.ylim([-1.1, 1.1])
 
     plt.subplot(1,2, 2)
     plt.plot(input[:,1], 'b', label='input action series')
     plt.plot(output[:,1], 'r', label='output reconstruction')
     plt.plot(out_prior[:,1], 'g', label='prior')
     plt.title(titles[1])
+    # plt.ylim([-1.1, 1.1])
 
     plt.legend()
 

@@ -366,9 +366,11 @@ class GTSDataset(GlobalSplitVideoDataset):
         actions = data.actions
 
         # change the bias
-        a0 = actions[0]
-        a0_new = np.random.randn(*a0.shape) / 3 + a0
-        # print('a0: {}, a0_mew: {}'.format(a0, a0_new))
+        # a0 = actions[0]
+        a0 = np.mean(actions, axis=0)
+        r0 = 2
+        # a0_new = np.random.randn(*a0.shape) * a0 * r0
+        a0_new = np.random.rand(*a0.shape) * a0 * r0
 
         # change the manitude
         action_origin = actions - actions[0]
@@ -379,6 +381,7 @@ class GTSDataset(GlobalSplitVideoDataset):
 
         # final results
         actions_new = a0_new + action_origin * change_range
+        actions_new = np.float32(actions_new)
         data.actions = np.clip(actions_new, -1, 1)
 
         return data
