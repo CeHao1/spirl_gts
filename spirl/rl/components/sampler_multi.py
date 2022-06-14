@@ -235,6 +235,8 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
                                     ll_experience_batch[agent_index][-1].done = True
                                     if hl_experience_batch[agent_index]:   # can potentially be empty 
                                         hl_experience_batch[agent_index][-1].done = True
+
+                            print('!! done any, then reset')
                             self._episode_reset(global_step)
 
                         # for agent numbers
@@ -247,6 +249,8 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
         for agent_index in range(na):
             final_hl_experience_batch += hl_experience_batch[agent_index]
             final_ll_experience_batch += ll_experience_batch[agent_index][:-1]
+
+        print('!! list dist', len(final_hl_experience_batch))
 
         return AttrDict(
             hl_batch=listdict2dictlist(final_hl_experience_batch),

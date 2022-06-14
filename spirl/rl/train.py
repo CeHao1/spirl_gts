@@ -168,7 +168,7 @@ class RLTrainer:
         timers = defaultdict(lambda: AverageTimer())
 
         self.sampler.init(is_train=True)
-        # ep_start_step = self.global_step
+        print('!! start of the train after')
 
         with timers['batch'].time():
             # collect experience

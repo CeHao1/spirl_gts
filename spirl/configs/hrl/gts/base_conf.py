@@ -41,7 +41,8 @@ configuration = {
     'num_epochs': 300,
     'max_rollout_len': 10000,
     'n_steps_per_epoch': 10000,
-    'n_warmup_steps': 40000,
+    # 'n_warmup_steps': 40000,
+    'n_warmup_steps': 4000,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Multi,
