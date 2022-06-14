@@ -4,6 +4,7 @@ import os
 import random
 import h5py
 import numpy as np
+import copy
 import torch.utils.data as data
 import itertools
 
@@ -118,33 +119,9 @@ class VideoDataset(Dataset):
         self.crop_subseq = 'crop_rand_subseq' in self.spec and self.spec.crop_rand_subseq
         self.img_sz = resolution
         self.subsampler = self._get_subsampler()
-        self.smooth = 'smooth_actions' in self.spec and self.spec.smooth_actions
 
     def __getitem__(self, index):
         data = self._get_raw_data(index)
-
-        # import copy
-        # import matplotlib.pyplot as plt
-
-        # a0 = copy.deepcopy(data.actions)
-        # smooth the action 
-        if self.smooth:
-            data = self.smooth_actions(data, self.spec.subseq_len)
-
-        # a1 = copy.deepcopy(data.actions)
-
-        # plt.figure(figsize=(15,10))
-        # plt.subplot(211)
-        # plt.plot(a0[:,0], 'b', label='ori')
-        # plt.plot(a1[:,0], 'r', label='smooth')
-
-        # plt.subplot(212)
-        # plt.plot(a0[:,1], 'b', label='ori')
-        # plt.plot(a1[:,1], 'r', label='smooth')
-
-        # plt.legend()
-        # print('!!!')
-        # plt.show()
 
         # maybe subsample seqs
         if self.subsampler is not None:
@@ -168,8 +145,7 @@ class VideoDataset(Dataset):
             data.start_ind, data.end_ind = start_ind, end_ind
 
         # perform final processing on data
-        # if (data.images.ndim == 4):
-        #     data.images = self._preprocess_images(data.images)
+        data.images = self._preprocess_images(data.images)
 
         return data
 
@@ -195,15 +171,6 @@ class VideoDataset(Dataset):
 
         except:
             raise ValueError("Could not load from file {}".format(path))
-        return data
-
-    def smooth_actions(self, data, length):
-        # odd length
-        length = length//2 * 2 + 1
-        for idx in range(data.actions.shape[1]):
-            # clip to [-1,1]
-            data.actions[:, idx] = np.clip(data.actions[:, idx], -1.0, 1.0)
-            data.actions[:, idx] = smooth(data.actions[:, idx], length)
         return data
 
     def _get_samples_per_file(self, path):
@@ -317,19 +284,17 @@ class PreloadGlobalSplitVideoDataset(PreloadVideoDataset, GlobalSplitDataset):
 class GTSDataset(GlobalSplitVideoDataset):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.smooth = 'smooth_actions' in self.spec and self.spec.smooth_actions
 
         file_path = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/standard_table")
         
         import pickle
         if not os.path.exists(file_path):
-
-        # if (self.phase == 'train'):
             standard_table = self.standardlize()
             f = open(file_path, "wb")
             pickle.dump(standard_table, f)
             f.close()
             print('save standard_table')
-        # elif (self.phase == 'val' or self.phase =='viz'):
         else:
             f = open(file_path, "rb")
             standard_table = pickle.load(f)
@@ -343,6 +308,89 @@ class GTSDataset(GlobalSplitVideoDataset):
         print(self.action_scaler.mean_, self.action_scaler.scale_)
         test_actions = [[-1.0, -1.0],[1.0, 1.0]]
         print('converted action range', self.action_scaler.inverse_transform(test_actions))
+
+    def getitem_(self, index):
+        data = self._get_raw_data(index)
+
+        # smooth the action 
+        if self.smooth:
+            data = self.smooth_actions(data, self.spec.subseq_len)
+
+        # action0 = copy.deepcopy(data.actions)
+
+        # try to modify actions
+        data = self.modify_actions(data)
+        # action1 = copy.deepcopy(data.actions)
+
+        # import matplotlib.pyplot as plt
+
+        # plt.figure(figsize=(10,7))
+        # plt.subplot(2,1,1)
+        # plt.plot(action0[:,0], 'b', label='ori')
+        # plt.plot(action1[:,0], 'r', label='changed')
+
+        # plt.subplot(2,1,2)
+        # plt.plot(action0[:,1], 'b', label='ori')
+        # plt.plot(action1[:,1], 'r', label='changed')
+        # plt.legend()
+
+        # print('111')
+        # plt.show()
+
+
+        # maybe subsample seqs
+        if self.subsampler is not None:
+            data = self._subsample_data(data)
+
+        # sample random subsequence of fixed length
+        if self.crop_subseq:
+            end_ind = np.argmax(data.pad_mask * np.arange(data.pad_mask.shape[0], dtype=np.float32), 0)
+            data = self._crop_rand_subseq(data, end_ind, length=self.spec.subseq_len)
+
+
+        # Make length consistent
+        start_ind = 0
+        end_ind = np.argmax(data.pad_mask * np.arange(data.pad_mask.shape[0], dtype=np.float32), 0) \
+            if self.randomize_length or self.crop_subseq else self.spec.max_seq_len - 1
+        end_ind, data = self._sample_max_len_video(data, end_ind, target_len=self.spec.subseq_len if self.crop_subseq
+                                                                                  else self.spec.max_seq_len)
+
+        if self.randomize_length:
+            end_ind = self._randomize_length(start_ind, end_ind, data)
+            data.start_ind, data.end_ind = start_ind, end_ind
+
+
+        return data
+
+    def modify_actions(self, data):
+        actions = data.actions
+
+        # change the bias
+        a0 = actions[0]
+        a0_new = np.random.randn(*a0.shape) / 3 + a0
+        # print('a0: {}, a0_mew: {}'.format(a0, a0_new))
+
+        # change the manitude
+        action_origin = actions - actions[0]
+        # range is [0, 2]
+        r = 2.0
+        change_range = np.random.rand(*a0.shape) * r
+        # print('change_range', change_range)
+
+        # final results
+        actions_new = a0_new + action_origin * change_range
+        data.actions = np.clip(actions_new, -1, 1)
+
+        return data
+
+    def smooth_actions(self, data, length):
+        # odd length
+        length = length//2 * 2 + 1
+        for idx in range(data.actions.shape[1]):
+            # clip to [-1,1]
+            data.actions[:, idx] = np.clip(data.actions[:, idx], -1.0, 1.0)
+            data.actions[:, idx] = smooth(data.actions[:, idx], length)
+        return data
 
     def standardlize(self):
         from tqdm import tqdm
@@ -422,7 +470,7 @@ class GTSDataset(GlobalSplitVideoDataset):
         return standard_table
         
     def __getitem__(self, item):
-        data = super().__getitem__(item)
+        data = self.getitem_(item)
         data.states = self.state_scaler.transform(data.states)
         data.actions = self.action_scaler.transform(data.actions)
         return data
