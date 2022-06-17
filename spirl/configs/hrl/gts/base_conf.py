@@ -25,7 +25,7 @@ notes = 'hierarchical RL on the gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    do_init = False,
+    # do_init = False,
     action_standard = True,
 
     # reward_function = eval_time_trial_reward_function,
@@ -42,7 +42,7 @@ configuration = {
     'max_rollout_len': 10000,
     'n_steps_per_epoch': 10000,
     # 'n_warmup_steps': 40000,
-    'n_warmup_steps': 4000,
+    'n_warmup_steps': 8000,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Multi,

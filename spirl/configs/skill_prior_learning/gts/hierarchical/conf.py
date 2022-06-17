@@ -29,7 +29,7 @@ model_config = AttrDict(
     nz_mid=128,
     n_processing_layers=5,
 
-    learned_prior_weight = 1e-3,
+    learned_prior_weight = 1e-4,
 
     n_rollout_steps = 4,
     nz_vae = 4,

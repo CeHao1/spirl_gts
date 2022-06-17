@@ -147,6 +147,9 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
+
+                    print('!! set up multi agent, then start sampling')
+                    print('batch_size is ', batch_size)
                     # copy 20 agents for multi-sampling, only temprary variables
                     multi_agent = [deepcopy(self._agent) for _ in range(na)]
 
@@ -236,9 +239,9 @@ class HierarchicalSamplerMulti(SamplerMulti, HierarchicalSampler):
                                     if hl_experience_batch[agent_index]:   # can potentially be empty 
                                         hl_experience_batch[agent_index][-1].done = True
 
-                            print('!! done any, then reset')
+                            print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
                             self._episode_reset(global_step)
-
+ 
                         # for agent numbers
 
                     # end while
