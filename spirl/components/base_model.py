@@ -81,13 +81,24 @@ class BaseModel(nn.Module):
                 module.log_outputs_stateful(step, log_images, phase, self._logger)
             
     def _log_losses(self, losses, step, log_images, phase):
+        # print("=============== phase", phase)
         for name, loss in losses.items():
             self._logger.log_scalar(loss.value, name + '_loss', step, phase)
+            # print('loss.value', loss.value, type(loss.value))
             if 'weight' in loss.keys():
                 self._logger.log_scalar(loss.value * loss.weight, name + '_loss_weighted', step, phase)
             # do not log the breakdown, useless
             # if 'breakdown' in loss and log_images:
             #     self._logger.log_graph(loss.breakdown, name + '_breakdown', step, phase)
+
+            # log the loss at separate dim
+            if 'error_separate' in loss:
+                dim = 0
+                for error in loss.error_separate:
+                    self._logger.log_scalar(error , name + '_dimension_' + str(dim), step, phase)
+                    # print('log error separate', dim, error, type(error))
+                    dim += 1
+                    
 
     def _load_weights(self, weight_loading_info):
         """

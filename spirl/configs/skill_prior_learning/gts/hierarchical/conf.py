@@ -33,6 +33,8 @@ model_config = AttrDict(
 
     n_rollout_steps = 4,
     nz_vae = 4,
+
+    action_dim_weights = [1.0, 1.0],
 )
 
 # Dataset

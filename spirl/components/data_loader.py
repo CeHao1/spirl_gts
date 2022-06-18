@@ -359,7 +359,6 @@ class GTSDataset(GlobalSplitVideoDataset):
             end_ind = self._randomize_length(start_ind, end_ind, data)
             data.start_ind, data.end_ind = start_ind, end_ind
 
-
         return data
 
     def modify_actions(self, data):

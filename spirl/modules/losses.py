@@ -4,6 +4,8 @@ from torch.nn import BCEWithLogitsLoss
 from spirl.utils.general_utils import AttrDict, get_dim_inds
 from spirl.modules.variational_inference import Gaussian
 
+from spirl.utils.pytorch_utils import map2np, map2torch
+import numpy as np
 
 class Loss():
     def __init__(self, weight=1.0, breakdown=None):
@@ -15,7 +17,7 @@ class Loss():
         self.weight = weight
         self.breakdown = breakdown
     
-    def __call__(self, *args, weights=1, reduction='mean', store_raw=False, **kwargs):
+    def __call__(self, *args, weights=1, reduction='mean', store_raw=False, separate_dim=False, **kwargs):
         """
 
         :param estimates:
@@ -23,15 +25,31 @@ class Loss():
         :return:
         """
         # weights = self.weight
-        error = self.compute(*args, **kwargs) * weights
+        error = self.compute(*args, **kwargs) 
+        if weights is not 1:
+            weights = np.array(weights)
+            assert error.shape[-1] == weights.shape[-1]
+            for idx in range(error.shape[-1]):
+                error[:,:,idx] *= weights[idx]
+
         if reduction != 'mean':
             raise NotImplementedError
+
         loss = AttrDict(value=error.mean(), weight=self.weight)
+
         if self.breakdown is not None:
             reduce_dim = get_dim_inds(error)[:self.breakdown] + get_dim_inds(error)[self.breakdown+1:]
             loss.breakdown = error.detach().mean(reduce_dim) if reduce_dim else error.detach()
+
         if store_raw:
             loss.error_mat = error.detach()
+
+        if separate_dim:
+            error_separate = []
+            for idx in range(error.shape[-1]):
+                error_separate.append(error[:,:,idx].mean())
+            loss.error_separate = error_separate
+            
         return loss
     
     def compute(self, estimates, targets):
@@ -80,3 +98,6 @@ class BCELogitsLoss(Loss):
         return BCEWithLogitsLoss()(estimates, targets)
 
 
+class MSE(Loss):
+    def compute(self, estimates, targets):
+        return (estimates - targets)**2

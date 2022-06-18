@@ -22,7 +22,7 @@ def plot_graph(array, h=400, w=400, dpi=10, linewidth=3.0):
     fig = plt.figure(figsize=(w / dpi, h / dpi), dpi=dpi)
     if isinstance(array, torch.Tensor):
         array = array.cpu().numpy()
-    plt.xlim(0, array.shape[0] - 1)
+    # plt.xlim(0, array.shape[0] - 1)
     plt.xticks(fontsize=100)
     plt.yticks(fontsize=100)
     plt.plot(array)
