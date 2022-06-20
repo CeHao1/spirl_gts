@@ -4,6 +4,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 from spirl.train import *
 
+import seaborn as sns
+from tqdm import tqdm
 
 
 class MDLVisualizer(ModelTrainer):
@@ -19,7 +21,7 @@ class MDLVisualizer(ModelTrainer):
         self._hp.overwrite(conf.general)  # override defaults with config file
         self._hp.exp_path = make_path(conf.exp_dir, args.path, args.prefix, args.new_dir)
 
-        self._hp.batch_size = 2
+        self._hp.batch_size = 1000
         self.log_dir = log_dir = os.path.join(self._hp.exp_path, 'events')
         print('using log dir: ', log_dir)
 
@@ -37,9 +39,8 @@ class MDLVisualizer(ModelTrainer):
             start_epoch = self.resume(args.resume, conf.ckpt_path)
 
         print('get model and data')
-
-        self.test_once()
-
+        # self.show_one_value()
+        self.show_value_distribution()
         
 
     def build_vizer(self, params, phase):
@@ -53,7 +54,28 @@ class MDLVisualizer(ModelTrainer):
         loader = self.get_dataset(self.args, model, self.conf.data, phase, params.n_repeat, params.dataset_size)
         return model, loader
 
-    def test_once(self):
+
+    def show_one_value(self):
+        for idx in range(20):
+            plots(*self.get_data())
+
+    def show_value_distribution(self):
+        inpt_mean = []
+        oupt_mean = []
+        prior_mean = []
+        # for idx in tqdm(range(10)):
+        inpt, oupt, prior = self.get_data(all_data=True)
+
+        # inpt_mean.append(np.mean(inpt, axis=0))
+        # oupt_mean.append(np.mean(oupt, axis=0))
+        # prior_mean.append(np.mean(prior, axis=0))
+
+        inpt_mean = np.mean(inpt, axis=1)
+        oupt_mean = np.mean(oupt, axis=1)
+        prior_mean = np.mean(prior, axis=1)
+        plots_distribution(inpt_mean, oupt_mean, prior_mean)
+
+    def get_data(self, all_data=False):
         # sample_batched = self.loader.dataset[0]
         
         for batch_idx, sample_batched in enumerate(self.loader):
@@ -69,16 +91,21 @@ class MDLVisualizer(ModelTrainer):
             output_reconstruction = self.loader.dataset.action_scaler.inverse_transform(output_reconstruction)
             output_prior_recon = self.loader.dataset.action_scaler.inverse_transform(output_prior_recon)
 
-            print("=============== index", batch_idx)
+            # print("=============== index", batch_idx)
             # print('input', inputs.actions[0])
             # print('output', output.reconstruction[0])
             # plots(to_numpy(inputs.actions[0]), to_numpy(output.reconstruction[0]))
-            n = 0
+            
 
-            plots(input_actions[n], output_reconstruction[n], output_prior_recon[n])
-            if batch_idx > 20:
-                break
-        print('finish')
+        #     plots(input_actions[n], output_reconstruction[n], output_prior_recon[n])
+        #     if batch_idx > 20:
+            break
+        # print('finish')
+        if all_data:
+            return input_actions, output_reconstruction, output_prior_recon
+        else:
+            n = 0
+            return input_actions[n], output_reconstruction[n], output_prior_recon[n]
 
 
 def plots(input, output, out_prior):
@@ -109,6 +136,62 @@ def plots(input, output, out_prior):
     plt.legend()
 
     plt.show()
+
+def plots_distribution(input, output, out_prior):
+    rad2deg = 1
+    titles = ['steering angle', 'pedal command']
+
+    plt.figure(figsize=(15,5))
+
+    plt.subplot(1,2, 1)
+    sns.kdeplot(input[:,0])
+    sns.kdeplot(output[:,0])
+    sns.kdeplot(out_prior[:,0])
+    plt.title(titles[0])
+
+    plt.subplot(1,2, 2)
+    sns.kdeplot(input[:,1], label='input action series')
+    sns.kdeplot(output[:,1], label='output reconstruction')
+    sns.kdeplot(out_prior[:,1], label='prior')
+    plt.title(titles[1])
+
+    plt.legend()
+    plt.show()
+
+    # plt.figure(figsize=(15,5))
+    # plt.subplot(1,2, 1)
+    # sns.distplot(input[:,0])
+    # sns.distplot(output[:,0])
+    # sns.distplot(out_prior[:,0])
+    # plt.title(titles[0])
+
+    # plt.subplot(1,2, 2)
+    # sns.distplot(input[:,1], label='input action series')
+    # sns.distplot(output[:,1], label='output reconstruction')
+    # sns.distplot(out_prior[:,1], label='prior')
+    # plt.title(titles[1])
+
+    # plt.legend()
+    # plt.show()
+
+    plt.figure(figsize=(15,5))
+
+    plt.subplot(1,2, 1)
+    sns.histplot(input[:,0], color='b')
+    sns.histplot(output[:,0], color='r')
+    sns.histplot(out_prior[:,0])
+    plt.title(titles[0])
+
+    plt.subplot(1,2, 2)
+    sns.histplot(input[:,1], label='input action series')
+    sns.histplot(output[:,1], label='output reconstruction')
+    sns.histplot(out_prior[:,1], label='prior')
+    plt.title(titles[1])
+
+    plt.legend()
+    plt.show()
+
+
 
 def to_numpy(t):
     return t.cpu().detach().numpy()

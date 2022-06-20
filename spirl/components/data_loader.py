@@ -451,8 +451,9 @@ class GTSDataset(GlobalSplitVideoDataset):
         action_scaler = StandardScaler()
         # action_scaler.fit(data_action_list)
 
-        action_scaler.mean_ = 0.0
-        action_scaler.scale_ = 1.0
+        action_scaler.mean_ = [0.0, 0.0]
+        # action_scaler.scale_ = 1.0
+        action_scaler.scale_ = [0.5, 1.0]
 
         standard_table = {
             'state' : state_scaler,
