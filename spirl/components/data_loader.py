@@ -313,30 +313,11 @@ class GTSDataset(GlobalSplitVideoDataset):
         data = self._get_raw_data(index)
 
         # smooth the action 
-        if self.smooth:
-            data = self.smooth_actions(data, self.spec.subseq_len)
-
-        # action0 = copy.deepcopy(data.actions)
+        # if self.smooth:
+        #     data = self.smooth_actions(data, self.spec.subseq_len)
 
         # try to modify actions
-        data = self.modify_actions(data)
-        # action1 = copy.deepcopy(data.actions)
-
-        # import matplotlib.pyplot as plt
-
-        # plt.figure(figsize=(10,7))
-        # plt.subplot(2,1,1)
-        # plt.plot(action0[:,0], 'b', label='ori')
-        # plt.plot(action1[:,0], 'r', label='changed')
-
-        # plt.subplot(2,1,2)
-        # plt.plot(action0[:,1], 'b', label='ori')
-        # plt.plot(action1[:,1], 'r', label='changed')
-        # plt.legend()
-
-        # print('111')
-        # plt.show()
-
+        # data = self.modify_actions(data)
 
         # maybe subsample seqs
         if self.subsampler is not None:
@@ -368,14 +349,16 @@ class GTSDataset(GlobalSplitVideoDataset):
         a0 = np.mean(actions, axis=0)
 
         a0_change_range = 5.0 
-        a0_change_rate = np.random.rand(*a0.shape) * a0_change_range
+        # rand_seed = np.random.rand(*a0.shape) * 2 -1.0
+        rand_seed = np.random.rand(*a0.shape)
+        a0_change_rate = rand_seed * a0_change_range
 
         a0_new = a0 * a0_change_rate
 
         # change the manitude
         action_origin = actions - actions[0]
 
-        r = np.clip(np.abs(a0_change_rate), 1.0, None)
+        r = np.clip(np.abs(a0_change_rate), 1.0, None) * np.sign(a0_change_rate)
         change_range = np.random.rand(*a0.shape) * r
 
         # final results

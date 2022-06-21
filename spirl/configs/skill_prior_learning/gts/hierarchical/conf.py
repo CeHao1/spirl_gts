@@ -36,6 +36,7 @@ model_config = AttrDict(
     kl_div_weight=5e-4,
     learned_prior_weight = 1e-10,
     action_dim_weights = [10.0, 1.0],
+    # action_dim_weights = [1.0, 1.0],
 )
 
 # Dataset

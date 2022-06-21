@@ -21,7 +21,7 @@ class MDLVisualizer(ModelTrainer):
         self._hp.overwrite(conf.general)  # override defaults with config file
         self._hp.exp_path = make_path(conf.exp_dir, args.path, args.prefix, args.new_dir)
 
-        self._hp.batch_size = 1000
+        self._hp.batch_size = 3000
         self.log_dir = log_dir = os.path.join(self._hp.exp_path, 'events')
         print('using log dir: ', log_dir)
 
@@ -38,6 +38,8 @@ class MDLVisualizer(ModelTrainer):
         if args.resume or conf.ckpt_path is not None:
             start_epoch = self.resume(args.resume, conf.ckpt_path)
 
+
+        # self.model.switch_to_prior()
         print('get model and data')
         # self.show_one_value()
         self.show_value_distribution()
@@ -80,7 +82,11 @@ class MDLVisualizer(ModelTrainer):
         
         for batch_idx, sample_batched in enumerate(self.loader):
             inputs = AttrDict(map_dict(lambda x: x.to(self.device), sample_batched))
+
+            # self.model.switch_to_prior()            
             output = self.model(inputs)
+
+            self.model.switch_to_prior()
             output_prior = self.model(inputs, use_learned_prior=True)
 
             input_actions = to_numpy(inputs.actions)
@@ -138,57 +144,79 @@ def plots(input, output, out_prior):
     plt.show()
 
 def plots_distribution(input, output, out_prior):
-    rad2deg = 1
-    titles = ['steering angle', 'pedal command']
 
+
+    range2deg = 30
+
+    titles = ['steering angle (deg)', 'pedal command']
+
+
+    # prior distribution
+    # plt.figure(figsize=(15,5))
+
+    # plt.subplot(1,2, 1)
+    # sns.kdeplot(output[:,0] * range2deg, label='decoded steering')
+    # sns.kdeplot(out_prior[:,0] * range2deg, label='prior')
+    # plt.title('steering (deg)', fontsize=20)
+    # plt.ylabel('density', fontsize=20)
+    # plt.xlabel('steering angles degree', fontsize=20)
+    # # plt.legend(fontsize=18)
+
+    # plt.subplot(1,2, 2)
+    # sns.kdeplot(output[:,1], label='decoded pedal')
+    # sns.kdeplot(out_prior[:,1], label='prior')
+    # plt.ylabel('density', fontsize=20)
+    # plt.xlabel('pedal', fontsize=20)
+    # plt.title('pedal', fontsize=20)
+
+    # plt.legend(fontsize=18)
+    # plt.show()
+
+
+
+    # density
     plt.figure(figsize=(15,5))
 
     plt.subplot(1,2, 1)
-    sns.kdeplot(input[:,0])
-    sns.kdeplot(output[:,0])
-    sns.kdeplot(out_prior[:,0])
-    plt.title(titles[0])
+    sns.kdeplot(input[:,0] * range2deg, label='input action series')
+    sns.kdeplot(output[:,0] * range2deg, label='output reconstruction')
+    sns.kdeplot(out_prior[:,0] * range2deg, label='prior')
+    plt.title(titles[0], fontsize=20)
+    plt.ylabel('density', fontsize=20)
+    plt.xlabel('steering angles degree', fontsize=20)
+    # plt.legend(fontsize=20)
 
     plt.subplot(1,2, 2)
     sns.kdeplot(input[:,1], label='input action series')
     sns.kdeplot(output[:,1], label='output reconstruction')
     sns.kdeplot(out_prior[:,1], label='prior')
-    plt.title(titles[1])
+    plt.ylabel('density', fontsize=20)
+    plt.xlabel('pedal', fontsize=20)
+    plt.title(titles[1], fontsize=20)
 
-    plt.legend()
+    plt.legend(fontsize=18)
     plt.show()
 
-    # plt.figure(figsize=(15,5))
-    # plt.subplot(1,2, 1)
-    # sns.distplot(input[:,0])
-    # sns.distplot(output[:,0])
-    # sns.distplot(out_prior[:,0])
-    # plt.title(titles[0])
-
-    # plt.subplot(1,2, 2)
-    # sns.distplot(input[:,1], label='input action series')
-    # sns.distplot(output[:,1], label='output reconstruction')
-    # sns.distplot(out_prior[:,1], label='prior')
-    # plt.title(titles[1])
-
-    # plt.legend()
-    # plt.show()
-
+    # histogram
     plt.figure(figsize=(15,5))
 
     plt.subplot(1,2, 1)
-    sns.histplot(input[:,0], color='b')
-    sns.histplot(output[:,0], color='r')
-    sns.histplot(out_prior[:,0])
-    plt.title(titles[0])
+    sns.histplot(input[:,0] * range2deg, color='b')
+    sns.histplot(output[:,0] * range2deg, color='r')
+    sns.histplot(out_prior[:,0] * range2deg,  color='g')
+    plt.ylabel('counts', fontsize=20)
+    plt.xlabel('steering angles degree', fontsize=20)
+    plt.title(titles[0], fontsize=20)
 
     plt.subplot(1,2, 2)
-    sns.histplot(input[:,1], label='input action series')
-    sns.histplot(output[:,1], label='output reconstruction')
-    sns.histplot(out_prior[:,1], label='prior')
-    plt.title(titles[1])
+    sns.histplot(input[:,1], label='input action series', color='b')
+    sns.histplot(output[:,1], label='output reconstruction', color='r')
+    sns.histplot(out_prior[:,1], label='prior', color='g')
+    plt.ylabel('counts', fontsize=20)
+    plt.xlabel('pedal', fontsize=20)
+    plt.title(titles[1], fontsize=20)
 
-    plt.legend()
+    plt.legend(fontsize=20)
     plt.show()
 
 
