@@ -27,10 +27,14 @@ def get_args():
                         help='if True, uses strict weight loading function')
     parser.add_argument('--deterministic', default=False, type=int,
                         help='if True, sets fixed seeds for torch and numpy')
+    parser.add_argument('--deterministic_action', default=False, type=int,
+                        help='if True, use deterministic action without variance')
     parser.add_argument('--n_val_samples', default=10, type=int,
                         help='number of validation episodes')
     parser.add_argument('--save_dir', type=str,
                         help='directory for saving the generated rollouts in rollout mode')
+    parser.add_argument('--counter', default=0, type=int,
+                        help='start count of save rollout')
     parser.add_argument('--config_override', default='', type=str,
                         help='override to config file in format "key1.key2=val1,key3=val2"')
 

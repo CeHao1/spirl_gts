@@ -12,5 +12,6 @@ data_spec = AttrDict(
     split=AttrDict(train=0.8, val=0.2, test=0.0),
     res=32,
     crop_rand_subseq=True,
+    smooth_actions = True,
 )
 data_spec.max_seq_len = 300

@@ -4,6 +4,7 @@ import os
 import random
 import h5py
 import numpy as np
+import copy
 import torch.utils.data as data
 import itertools
 
@@ -12,6 +13,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from spirl.utils.general_utils import AttrDict, map_dict, maybe_retrieve, shuffle_with_seed
 from spirl.utils.pytorch_utils import RepeatedDataLoader
 from spirl.utils.video_utils import resize_video
+from spirl.utils.math_utils import smooth
 
 # ================================= original video loader ======================
 class Dataset(data.Dataset):
@@ -130,6 +132,7 @@ class VideoDataset(Dataset):
             end_ind = np.argmax(data.pad_mask * np.arange(data.pad_mask.shape[0], dtype=np.float32), 0)
             data = self._crop_rand_subseq(data, end_ind, length=self.spec.subseq_len)
 
+
         # Make length consistent
         start_ind = 0
         end_ind = np.argmax(data.pad_mask * np.arange(data.pad_mask.shape[0], dtype=np.float32), 0) \
@@ -142,8 +145,7 @@ class VideoDataset(Dataset):
             data.start_ind, data.end_ind = start_ind, end_ind
 
         # perform final processing on data
-        if (data.images.ndim == 4):
-            data.images = self._preprocess_images(data.images)
+        data.images = self._preprocess_images(data.images)
 
         return data
 
@@ -161,16 +163,12 @@ class VideoDataset(Dataset):
                 for name in F[key].keys():
                     if name in ['states', 'actions', 'pad_mask']:
                         data[name] = F[key + '/' + name][()].astype(np.float32)
-                        # print('find key ', name)
-                        # print('dim is ', data[name].shape)
 
                 if key + '/images' in F:
                     data.images = F[key + '/images'][()]
                 else:
                     data.images = np.zeros((data.states.shape[0], 2, 2, 3), dtype=np.uint8)
 
-                # import time 
-                # time.sleep(100)
         except:
             raise ValueError("Could not load from file {}".format(path))
         return data
@@ -286,19 +284,17 @@ class PreloadGlobalSplitVideoDataset(PreloadVideoDataset, GlobalSplitDataset):
 class GTSDataset(GlobalSplitVideoDataset):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.smooth = 'smooth_actions' in self.spec and self.spec.smooth_actions
 
         file_path = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/standard_table")
         
         import pickle
         if not os.path.exists(file_path):
-
-        # if (self.phase == 'train'):
             standard_table = self.standardlize()
             f = open(file_path, "wb")
             pickle.dump(standard_table, f)
             f.close()
             print('save standard_table')
-        # elif (self.phase == 'val' or self.phase =='viz'):
         else:
             f = open(file_path, "rb")
             standard_table = pickle.load(f)
@@ -307,30 +303,126 @@ class GTSDataset(GlobalSplitVideoDataset):
         self.state_scaler = standard_table['state']
         self.action_scaler = standard_table['action']
 
+        # print the standard table 
+        print('===== action scaler =====')
+        print(self.action_scaler.mean_, self.action_scaler.scale_)
+        test_actions = [[-1.0, -1.0],[1.0, 1.0]]
+        print('converted action range', self.action_scaler.inverse_transform(test_actions))
+
+    def getitem_(self, index):
+        data = self._get_raw_data(index)
+
+        # smooth the action 
+        # if self.smooth:
+        #     data = self.smooth_actions(data, self.spec.subseq_len)
+
+        # try to modify actions
+        # data = self.modify_actions(data)
+
+        # maybe subsample seqs
+        if self.subsampler is not None:
+            data = self._subsample_data(data)
+
+        # sample random subsequence of fixed length
+        if self.crop_subseq:
+            end_ind = np.argmax(data.pad_mask * np.arange(data.pad_mask.shape[0], dtype=np.float32), 0)
+            data = self._crop_rand_subseq(data, end_ind, length=self.spec.subseq_len)
+
+
+        # Make length consistent
+        start_ind = 0
+        end_ind = np.argmax(data.pad_mask * np.arange(data.pad_mask.shape[0], dtype=np.float32), 0) \
+            if self.randomize_length or self.crop_subseq else self.spec.max_seq_len - 1
+        end_ind, data = self._sample_max_len_video(data, end_ind, target_len=self.spec.subseq_len if self.crop_subseq
+                                                                                  else self.spec.max_seq_len)
+
+        if self.randomize_length:
+            end_ind = self._randomize_length(start_ind, end_ind, data)
+            data.start_ind, data.end_ind = start_ind, end_ind
+
+        return data
+
+    def modify_actions(self, data):
+        actions = data.actions
+
+        # change the bias
+        a0 = np.mean(actions, axis=0)
+
+        a0_change_range = 5.0 
+        # rand_seed = np.random.rand(*a0.shape) * 2 -1.0
+        rand_seed = np.random.rand(*a0.shape)
+        a0_change_rate = rand_seed * a0_change_range
+
+        a0_new = a0 * a0_change_rate
+
+        # change the manitude
+        action_origin = actions - actions[0]
+
+        r = np.clip(np.abs(a0_change_rate), 1.0, None) * np.sign(a0_change_rate)
+        change_range = np.random.rand(*a0.shape) * r
+
+        # final results
+        actions_new = a0_new + action_origin * change_range
+        actions_new = np.float32(actions_new)
+        data.actions = np.clip(actions_new, -1, 1)
+
+        return data
+
+    def smooth_actions(self, data, length):
+        # odd length
+        length = length//2 * 2 + 1
+        for idx in range(data.actions.shape[1]):
+            # clip to [-1,1]
+            data.actions[:, idx] = np.clip(data.actions[:, idx], -1.0, 1.0)
+            data.actions[:, idx] = smooth(data.actions[:, idx], length)
+        return data
 
     def standardlize(self):
+        from tqdm import tqdm
         file_number = len(self)
-        iterate_times = 5
+        iterate_times = 1
         sampler_number = int(file_number)
+        # sampler_number = 2
+
+        data0 = super().__getitem__(0)
+        # data_state_list = data0.states
+        # data_action_list = data0.actions
+
         data_state_list = []
         data_action_list = []
-        
-        for _ in range(iterate_times):
-            for i in range(sampler_number):
-                data = super().__getitem__(i)
+
+
+        for sample_roll in range(iterate_times):
+            print('sample roll is {}, total roll {}'.format(sample_roll, iterate_times))
+            for i in tqdm(range(sampler_number)):
+                
+                data = self._get_raw_data(i) # use full length data
+                data = self.smooth_actions(data, self.spec.subseq_len)
+
+                # print('data0', data0.actions.shape, data0.states.shape, type(data0.actions))
+                # print('data', data.actions.shape, data.states.shape, type(data.actions))
+
                 data_state_list.append(data.states)
                 data_action_list.append(data.actions)
 
-        data_state_list = np.array(data_state_list)
-        data_action_list = np.array(data_action_list)
+                # data_state_list = np.concatenate((data_state_list, data.states), axis=0)
+                # data_action_list = np.concatenate((data_action_list, data.actions), axis=0)
+
+        data_state_list = np.concatenate(data_state_list, axis=0)
+        data_action_list = np.concatenate(data_action_list, axis=0)
+
+        # data_state_list = np.array(data_state_list)
+        # data_action_list = np.array(data_action_list)
         state_shapes = data_state_list.shape
         action_shapes = data_action_list.shape
 
-        data_state_list = data_state_list.reshape(state_shapes[0] * state_shapes[1], state_shapes[2])
-        data_action_list = data_action_list.reshape(action_shapes[0] * action_shapes[1], action_shapes[2])
+        # print('state_shapes', state_shapes, 'action_shapes', action_shapes)
+
+        # data_state_list = data_state_list.reshape(state_shapes[0] * state_shapes[1], state_shapes[2])
+        # data_action_list = data_action_list.reshape(action_shapes[0] * action_shapes[1], action_shapes[2])
 
         # convert steer to [0] by dividing pi/6
-        data_action_list[:,0] /= np.pi / 6
+        # data_action_list[:,0] /= np.pi / 6
 
         state_scaler = StandardScaler()
         state_scaler.fit(data_state_list)
@@ -340,7 +432,11 @@ class GTSDataset(GlobalSplitVideoDataset):
         # action_scaler.scale_ = [1/3, 1.0]
 
         action_scaler = StandardScaler()
-        action_scaler.fit(data_action_list)
+        # action_scaler.fit(data_action_list)
+
+        action_scaler.mean_ = [0.0, 0.0]
+        # action_scaler.scale_ = 1.0
+        action_scaler.scale_ = [0.5, 1.0]
 
         standard_table = {
             'state' : state_scaler,
@@ -355,11 +451,12 @@ class GTSDataset(GlobalSplitVideoDataset):
         # print(action_scaler.min_, action_scaler.scale_)
         print(action_scaler.mean_, action_scaler.scale_)
 
+        print('action limits, min: {}, max: {}'.format(np.min(data_action_list, axis=0), np.max(data_action_list, axis=0)))
 
         return standard_table
         
     def __getitem__(self, item):
-        data = super().__getitem__(item)
+        data = self.getitem_(item)
         data.states = self.state_scaler.transform(data.states)
         data.actions = self.action_scaler.transform(data.actions)
         return data

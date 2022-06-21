@@ -11,7 +11,7 @@ from matplotlib.patches import Ellipse
 from spirl.components.base_model import BaseModel
 from spirl.components.logger import Logger
 from spirl.components.checkpointer import load_by_key, freeze_modules
-from spirl.modules.losses import KLDivLoss, NLL
+from spirl.modules.losses import KLDivLoss, NLL, MSE
 from spirl.modules.subnetworks import BaseProcessingLSTM, Predictor, Encoder
 from spirl.modules.recurrent_modules import RecurrentPredictor
 from spirl.utils.general_utils import AttrDict, ParamDict, split_along_axis, get_clipped_optimizer
@@ -87,6 +87,7 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
             'kl_div_weight': 1.,                # weight of KL divergence loss
             'target_kl': None,                  # if not None, adds automatic beta-tuning to reach target KL divergence
             'learned_prior_weight' : 1.,        # weight for train learned prior
+            'action_dim_weights': 1,
         })
 
         # loading pre-trained components
@@ -150,10 +151,21 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         """
         losses = AttrDict()
 
+        weights = self._hp.action_dim_weights
+
         # reconstruction loss, assume unit variance model output Gaussian
-        losses.rec_mse = NLL(self._hp.reconstruction_mse_weight) \
-            (Gaussian(model_output.reconstruction, torch.zeros_like(model_output.reconstruction)),
-             self._regression_targets(inputs))
+        # losses.rec_mse = NLL(self._hp.reconstruction_mse_weight) \
+        #     (Gaussian(model_output.reconstruction, torch.zeros_like(model_output.reconstruction)),
+        #      self._regression_targets(inputs), weights=weights, separate_dim=True)
+
+
+        # try a new mse formulatoin
+        losses.rec_mse = MSE(self._hp.reconstruction_mse_weight) \
+                        (model_output.reconstruction, self._regression_targets(inputs), 
+                        weights=weights, separate_dim=True)
+
+        # import time
+        # time.sleep(100)
 
         # KL loss
         losses.kl_loss = KLDivLoss(self.beta)(model_output.q, model_output.p)
@@ -166,7 +178,9 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
             self._update_beta(losses.kl_loss.value)
 
         losses.total = self._compute_total_loss(losses)
+
         return losses
+
 
     def _log_outputs(self, model_output, inputs, losses, step, log_images, phase, logger, **logging_kwargs):
         """Optionally visualizes outputs of SPIRL model.
@@ -310,10 +324,8 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
 
     def _compute_learned_prior_loss(self, model_output, weight=1.0):
         if self._hp.nll_prior_train:
-            # print('using NLL!!!!!!!!!!!!!!!!')
             loss = NLL(weight=weight, breakdown=0)(model_output.q_hat, model_output.z_q.detach())
         else:
-            # print('using KLD!!!!!!!!!!!!!!!!')
             loss = KLDivLoss(weight=weight, breakdown=0)(model_output.q.detach(), model_output.q_hat)
         # aggregate loss breakdown for each of the priors in the ensemble
         loss.breakdown = torch.stack([chunk.mean() for chunk in torch.chunk(loss.breakdown, self._hp.n_prior_nets)])
@@ -332,7 +344,6 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         self._beta_opt.step()
 
     def _learned_prior_input(self, inputs):
-        print('inputs.states', inputs.states.shape)
         return inputs.states[:, 0]
 
     def _regression_targets(self, inputs):

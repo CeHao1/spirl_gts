@@ -7,11 +7,11 @@ from spirl.utils.general_utils import AttrDict
 
 class RolloutSaver(object):
     """Saves rollout episodes to a target directory."""
-    def __init__(self, save_dir):
+    def __init__(self, save_dir, counter=0):
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         self.save_dir = save_dir
-        self.counter = 0
+        self.counter = counter
 
     def save_rollout_to_file(self, episode):
         """Saves an episode to the next file index of the target folder."""

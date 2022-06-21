@@ -16,6 +16,7 @@ from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
 WANDB_PROJECT_NAME = 'HRL01'
+# WANDB_PROJECT_NAME = 'SAC01'
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -167,13 +168,16 @@ class RLTrainer:
         timers = defaultdict(lambda: AverageTimer())
 
         self.sampler.init(is_train=True)
-        # ep_start_step = self.global_step
+        print('!! start of the train after')
 
         with timers['batch'].time():
             # collect experience
             with timers['rollout'].time(): # collect all sample for each epoch
+                print('!! start of sample batch')
                 experience_batch, env_steps = self.sampler.sample_batch(batch_size=self._hp.n_steps_per_epoch,
                                                                         global_step=self.global_step)
+                print('!! after sample batch')
+                print('self.use_multiple_workers', self.use_multiple_workers)
                 if self.use_multiple_workers:
                     experience_batch = mpi_gather_experience(experience_batch)
                 self.global_step += mpi_sum(env_steps)
@@ -218,20 +222,25 @@ class RLTrainer:
     def generate_rollouts(self):
         """Generate rollouts and save to hdf5 files."""
         print("Saving {} rollouts to directory {}...".format(self.args.n_val_samples, self.args.save_dir))
-        saver = RolloutSaver(self.args.save_dir)
+        saver = RolloutSaver(self.args.save_dir, self.args.counter)
         n_success = 0
         n_total = 0
         with self.agent.val_mode():
             with torch.no_grad():
                 for _ in tqdm(range(self.args.n_val_samples)):
                     while True:     # keep producing rollouts until we get a valid one
-                        episode = self.sampler.sample_episode(is_train=False, render=True, deterministic_action=True)
+                        episode = self.sampler.sample_episode(is_train=False, render=True, 
+                                    deterministic_action=self.args.deterministic_action, return_list=True)
                         valid = not hasattr(self.agent, 'rollout_valid') or self.agent.rollout_valid
                         n_total += 1
                         if valid:
                             n_success += 1
                             break
-                    saver.save_rollout_to_file(episode)
+                    if isinstance(episode, list):
+                        for epsi in episode:
+                            saver.save_rollout_to_file(epsi)
+                    else:
+                        saver.save_rollout_to_file(episode)
         print("Success rate: {:d} / {:d} = {:.3f}%".format(n_success, n_total, float(n_success) / n_total * 100))
 
     def warmup(self):

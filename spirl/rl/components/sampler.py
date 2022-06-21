@@ -6,7 +6,6 @@ from spirl.utils.general_utils import listdict2dictlist, AttrDict, ParamDict, ob
 from spirl.modules.variational_inference import MultivariateGaussian
 from spirl.rl.utils.reward_fcns import sparse_threshold
 
-
 class Sampler:
     """Collects rollouts from the environment using the given agent."""
     def __init__(self, config, env, agent, logger, max_episode_len):
@@ -68,7 +67,7 @@ class Sampler:
 
         return listdict2dictlist(experience_batch), step
 
-    def sample_episode(self, is_train, render=False, deterministic_action=False):
+    def sample_episode(self, is_train, render=False, deterministic_action=False, return_list=False):
         """Samples one episode from the environment."""
         self.init(is_train)
         episode, done = [], False
@@ -106,6 +105,9 @@ class Sampler:
                         self._episode_reward += reward
 
         episode[-1].done = True     # make sure episode is marked as done at final time step
+        if return_list:
+            return [listdict2dictlist(episode)]
+
         return listdict2dictlist(episode)
 
     def get_episode_info(self):

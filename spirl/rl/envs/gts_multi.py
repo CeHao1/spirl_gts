@@ -11,7 +11,7 @@ from spirl.utils.general_utils import ParamDict, AttrDict
 from spirl.utils.gts_utils import make_env, initialize_gts
 from spirl.utils.gts_utils import RL_OBS_1, CAR_CODE, COURSE_CODE, TIRE_TYPE, BOP
 from spirl.utils.gts_utils import start_condition_formulator
-from spirl.utils.gts_utils import raw_observation_to_true_observation
+from spirl.utils.gts_utils import raw_observation_to_true_observation, gts_observation_2_state
 
 from spirl.utils.gts_utils import reward_function, sampling_done_function
 
@@ -21,20 +21,12 @@ class GTSEnv_Multi(GTSEnv_Base):
 # just like sampler
 
     def _game_hp(self):
-        game_hp = ParamDict({
-            'builtin_controlled' : [],
-            'do_init' : True,
-            'reward_function' : reward_function,
-            'done_function' : sampling_done_function,
-            'standardize_observations' : False,
-            'state_standard': True,
-            'action_standard':False,
-        })
+        game_hp = super()._game_hp()     
         return game_hp
 
     def _default_hparams(self):
         default_dict = ParamDict({
-            'ip_address' : '192.168.124.14',
+            'ip_address' : '192.168.1.5',
             'car_name' : 'Audi TTCup',
             'course_name' : 'Tokyo Central Outer' ,
             'num_cars' : 20,
@@ -59,6 +51,10 @@ class GTSEnv_Multi(GTSEnv_Base):
         return self._wrap_observation(obs), rew, done, info
 
     def _wrap_observation(self, obs):
+        # show frame count
+        # gts_states = gts_observation_2_state(obs[0], RL_OBS_1)
+        # print('frame count', gts_states['frame_count'])
+
         converted_obs = [raw_observation_to_true_observation(obs_single) for obs_single in obs]
         if self.state_scaler:
             std_obs = self.state_scaler.transform(converted_obs)
@@ -69,7 +65,7 @@ class GTSEnv_Multi(GTSEnv_Base):
         # return GymEnv._wrap_observation(self, obs)
 
     def render(self, mode='rgb_array'):
-        return [[0,0,0] for _ in range(self._hp.num_cars)]
+        return [[[[0,0,0]]] for _ in range(self._hp.num_cars)]
 
 
 if __name__ == "__main__":

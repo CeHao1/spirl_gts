@@ -32,7 +32,7 @@ class GTSEnv_Base(GymEnv):
     
     def _default_hparams(self):
         default_dict = ParamDict({
-            'ip_address' : '192.168.124.14',
+            'ip_address' : '192.168.1.5',
             'car_name' : 'Audi TTCup',
             'course_name' : 'Tokyo Central Outer' ,
             'num_cars' : 1,
@@ -48,7 +48,9 @@ class GTSEnv_Base(GymEnv):
             'done_function' : sampling_done_function,
             'standardize_observations' : False,
             'state_standard': True,
-            'action_standard':False
+            'action_standard':False,
+            'fast_mode':True,
+            'min_frames_per_action': 6,
         })
         return game_hp
 
@@ -66,10 +68,11 @@ class GTSEnv_Base(GymEnv):
     def _make_env(self):
         self._env = make_env(
             ip = self._hp.ip_address, 
-            min_frames_per_action=6, 
+            min_frames_per_action = self._hp.min_frames_per_action, 
             feature_keys = RL_OBS_1, 
             # feature_keys = DEFAULT_FEATURE_KEYS,
 
+            fast_mode = self._hp.fast_mode,
             builtin_controlled = self._hp.builtin_controlled, 
             spectator_mode = self._hp.spectator_mode,
             reward_function = self._hp.reward_function,
@@ -105,7 +108,7 @@ class GTSEnv_Base(GymEnv):
         return course_length
 
     def render(self, mode='rgb_array'):
-        return [0,0,0]
+        return [[[0,0,0]]]
 
     def descaler_actions(self, actions):
         if self._hp.action_standard:
@@ -117,6 +120,12 @@ class GTSEnv_Base(GymEnv):
     def _load_standard_table(self):
         from spirl.utils.gts_utils import load_standard_table
         self.state_scaler, self.action_scaler = load_standard_table()
+
+        # print the standard table 
+        print('===== action scaler =====')
+        print(self.action_scaler.mean_, self.action_scaler.scale_)
+        test_actions = [[-1.0, -1.0],[1.0, 1.0]]
+        print('converted action range', self.action_scaler.inverse_transform(test_actions))
 
 if __name__ == "__main__":
     from spirl.utils.general_utils import AttrDict

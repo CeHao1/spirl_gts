@@ -28,8 +28,8 @@ env_config = AttrDict(
     # do_init = False,
     action_standard = True,
 
-    reward_function = eval_time_trial_reward_function,
-    done_function = eval_time_trial_done_function,
+    # reward_function = eval_time_trial_reward_function,
+    # done_function = eval_time_trial_done_function,
     
 )
 
@@ -39,16 +39,17 @@ configuration = {
     
     'data_dir': '.',
     'num_epochs': 300,
-    'max_rollout_len': 20000,
-    'n_steps_per_epoch': 20000,
-    'n_warmup_steps': 80000,
+    'max_rollout_len': 10000,
+    'n_steps_per_epoch': 10000,
+    # 'n_warmup_steps': 40000,
+    'n_warmup_steps': 8000,
     'use_update_after_sampling':True,
 
-    # 'environment': GTSEnv_Multi,
-    # 'sampler':HierarchicalSamplerMulti,
+    'environment': GTSEnv_Multi,
+    'sampler':HierarchicalSamplerMulti,
 
-    'environment':GTSEnv_Base,
-    'sampler':HierarchicalSampler
+    # 'environment':GTSEnv_Base,
+    # 'sampler':HierarchicalSampler
 
 }
 configuration = AttrDict(configuration)
@@ -67,7 +68,7 @@ obs_norm_params = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    batch_size=10, #256,
+    batch_size=256, #256,
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -83,8 +84,9 @@ ll_model_params = AttrDict(
     nz_enc=128,
     nz_mid=128,
     n_processing_layers=5,
-    nz_vae=10,
-    n_rollout_steps=10,
+    # nz_vae=10,
+    nz_vae = 4,
+    n_rollout_steps=4,
 )
 
 
@@ -102,7 +104,7 @@ ll_agent_config.update(AttrDict(
 hl_policy_params = AttrDict(
     action_dim=ll_model_params.nz_vae,       # z-dimension of the skill VAE
     input_dim=data_spec.state_dim,
-    max_action_range=2.,        # prior is Gaussian with unit variance
+    max_action_range=1.,        # prior is Gaussian with unit variance
     nz_mid=256,
     n_layers=5,
 )
@@ -112,7 +114,7 @@ hl_critic_params = AttrDict(
     action_dim=hl_policy_params.action_dim,
     input_dim=hl_policy_params.input_dim,
     output_dim=1,
-    n_layers=5,  # number of policy network laye
+    n_layers=5,  # number of policy network layer
     nz_mid=256,
     action_input=True,
 )
@@ -136,8 +138,8 @@ agent_config = AttrDict(
     hl_interval=ll_model_params.n_rollout_steps,
     log_video_caption=False,
 
-    update_iterations = 64 * 20,
-    discount_factor = 0.98,
+    update_iterations = 512,
+    discount_factor = 0.98 ,
 )
 
 # Dataset - Random data
