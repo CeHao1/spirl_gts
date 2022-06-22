@@ -164,9 +164,6 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
                         (model_output.reconstruction, self._regression_targets(inputs), 
                         weights=weights, separate_dim=True)
 
-        # import time
-        # time.sleep(100)
-
         # KL loss
         losses.kl_loss = KLDivLoss(self.beta)(model_output.q, model_output.p)
 

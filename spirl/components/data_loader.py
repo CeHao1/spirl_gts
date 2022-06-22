@@ -1,5 +1,5 @@
 import glob
-# import importlib
+import importlib
 import os
 import random
 import h5py
@@ -9,8 +9,10 @@ import torch.utils.data as data
 import itertools
 
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from spirl.utils.math_utils import positive2unit
+import matplotlib.pyplot as plt
 
-from spirl.utils.general_utils import AttrDict, map_dict, maybe_retrieve, shuffle_with_seed
+from spirl.utils.general_utils import AttrDict, ParamDict, map_dict, maybe_retrieve, shuffle_with_seed
 from spirl.utils.pytorch_utils import RepeatedDataLoader
 from spirl.utils.video_utils import resize_video
 from spirl.utils.math_utils import smooth
@@ -531,11 +533,18 @@ class RandomVideoDataset(GeneratedVideoDataset):
         return data_dict
 
 
-class UniformSeqDataset(Dataset):
-    def __init__(self, data_conf, *args, **kwargs):
-        # super().__init__(*args, **kwargs)
-        self.spec = data_conf
-        self.raw_data_length = data_conf.max_seq_len
+class CustomizedSeqDataset(Dataset):
+    def __init__(self, *args, **kwargs):
+        self.spec = args[1].dataset_spec
+        self.raw_data_length = self.spec.subseq_len - 1
+        self._hp = self._get_hp()
+        self._hp.overwrite(self.spec)
+
+    def _get_hp(self):
+        hp = ParamDict(
+            num_of_slop_change = 1,
+        )
+        return hp
 
     def __getitem__(self, index):
         data = AttrDict()
@@ -553,21 +562,57 @@ class UniformSeqDataset(Dataset):
             actions.append(self._generate_action_sequence())
 
         actions = np.array(actions)
-        actions = actions.reshape(self.raw_data_length, self.spec.n_actions)
-        return actions
+        return actions.T
 
     def _generate_action_sequence(self):
         action = np.zeros(self.raw_data_length)
         return action
 
+    def _clip_to_one(self, v):
+        return np.clip(v, -1.0, 1.0)
+
     def __len__(self):
         return np.Infinity
-    
+
+class UniformSeqDataset(CustomizedSeqDataset):
+    def _generate_action_sequence(self):
+        mean_value = positive2unit(np.random.rand())
+        raw_seq_value = np.random.randn(self.raw_data_length) / 5.0
+        seq_value = self._generate_cumulated_seq(mean_value, raw_seq_value)
+        action = seq_value
+        return action
+
+    def _generate_cumulated_seq(self, mean_value, raw_seq):
+        slope = 1 if np.random.rand() > 0.5 else -1
+        pos_of_slop_change = np.random.choice(np.arange(self.raw_data_length), self._hp.num_of_slop_change)
+
+        seq = [mean_value]
+        for idx in range(self.raw_data_length):
+            if idx in pos_of_slop_change:
+                slope *= -1
+            new_v = seq[-1] + np.abs(raw_seq[idx]) * slope
+            seq.append( self._clip_to_one(new_v) )
+
+        seq = np.array(seq[1:])
+        return seq
+        
 
 if __name__ == "__main__":
-    from spirl.configs.default_data_configs.gts import data_spec
-    dataset = UniformSeqDataset(data_spec)
+    # from spirl.configs.default_data_configs.gts import data_spec
+    from spirl.configs.skill_prior_learning.gts.hierarchical.conf import data_config
+    data_dir = 'None'
+    dataset = UniformSeqDataset(data_dir, data_config)
     d1 = dataset[1]
-    print(d1.states.shape, d1.actions.shape)
-    
 
+    
+    # print(d1.states.shape, d1.actions.shape)
+    actions = d1.actions
+
+    plt.figure(figsize=(15, 6))
+    plt.subplot(121)
+    plt.plot(actions[:,0])
+
+    plt.subplot(122)
+    plt.plot(actions[:,1])
+    plt.show()
+    
