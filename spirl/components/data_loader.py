@@ -313,11 +313,11 @@ class GTSDataset(GlobalSplitVideoDataset):
         data = self._get_raw_data(index)
 
         # smooth the action 
-        # if self.smooth:
-        #     data = self.smooth_actions(data, self.spec.subseq_len)
+        if self.smooth:
+            data = self.smooth_actions(data, self.spec.subseq_len)
 
         # try to modify actions
-        # data = self.modify_actions(data)
+        data = self.modify_actions(data)
 
         # maybe subsample seqs
         if self.subsampler is not None:
@@ -339,6 +339,9 @@ class GTSDataset(GlobalSplitVideoDataset):
         if self.randomize_length:
             end_ind = self._randomize_length(start_ind, end_ind, data)
             data.start_ind, data.end_ind = start_ind, end_ind
+
+        # print('action shape', data.actions.shape)
+        # print('states shape', data.states.shape)
 
         return data
 
