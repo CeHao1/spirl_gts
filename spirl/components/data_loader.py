@@ -536,7 +536,8 @@ class RandomVideoDataset(GeneratedVideoDataset):
 class CustomizedSeqDataset(Dataset):
     def __init__(self, *args, **kwargs):
         self.spec = args[1].dataset_spec
-        self.raw_data_length = self.spec.subseq_len - 1
+        self.raw_state_length = self.spec.subseq_len
+        self.raw_action_length = self.spec.subseq_len - 1
         self._hp = self._get_hp()
         self._hp.overwrite(self.spec)
 
@@ -553,7 +554,7 @@ class CustomizedSeqDataset(Dataset):
         return data
 
     def _generate_empty_states(self):
-        states = np.zeros((self.raw_data_length, self.spec.state_dim))
+        states = np.zeros((self.raw_state_length, self.spec.state_dim))
         return states
 
     def _generate_actions(self):
@@ -565,7 +566,7 @@ class CustomizedSeqDataset(Dataset):
         return actions.T
 
     def _generate_action_sequence(self):
-        action = np.zeros(self.raw_data_length)
+        action = np.zeros(self.raw_action_length - 1)
         return action
 
     def _clip_to_one(self, v):
@@ -577,17 +578,17 @@ class CustomizedSeqDataset(Dataset):
 class UniformSeqDataset(CustomizedSeqDataset):
     def _generate_action_sequence(self):
         mean_value = positive2unit(np.random.rand())
-        raw_seq_value = np.random.randn(self.raw_data_length) / 5.0
+        raw_seq_value = np.random.randn(self.raw_action_length) / 5.0
         seq_value = self._generate_cumulated_seq(mean_value, raw_seq_value)
         action = seq_value
         return action
 
     def _generate_cumulated_seq(self, mean_value, raw_seq):
         slope = 1 if np.random.rand() > 0.5 else -1
-        pos_of_slop_change = np.random.choice(np.arange(self.raw_data_length), self._hp.num_of_slop_change)
+        pos_of_slop_change = np.random.choice(np.arange(self.raw_action_length), self._hp.num_of_slop_change)
 
         seq = [mean_value]
-        for idx in range(self.raw_data_length):
+        for idx in range(self.raw_action_length):
             if idx in pos_of_slop_change:
                 slope *= -1
             new_v = seq[-1] + np.abs(raw_seq[idx]) * slope
@@ -607,6 +608,9 @@ if __name__ == "__main__":
     
     # print(d1.states.shape, d1.actions.shape)
     actions = d1.actions
+    states = d1.states
+
+    print('action shape: {}, state shape: {}'.format(actions.shape, states.shape))
 
     plt.figure(figsize=(15, 6))
     plt.subplot(121)
