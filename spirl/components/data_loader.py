@@ -1,5 +1,5 @@
 import glob
-import imp
+import importlib
 import os
 import random
 import h5py
@@ -9,8 +9,10 @@ import torch.utils.data as data
 import itertools
 
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from spirl.utils.math_utils import positive2unit
+import matplotlib.pyplot as plt
 
-from spirl.utils.general_utils import AttrDict, map_dict, maybe_retrieve, shuffle_with_seed
+from spirl.utils.general_utils import AttrDict, ParamDict, map_dict, maybe_retrieve, shuffle_with_seed
 from spirl.utils.pytorch_utils import RepeatedDataLoader
 from spirl.utils.video_utils import resize_video
 from spirl.utils.math_utils import smooth
@@ -521,7 +523,6 @@ class GeneratedVideoDataset(VideoDataset):
 
     @staticmethod
     def visualize(*args, **kwargs):
-        """Enables dataset-specific visualization."""
         pass
 
 
@@ -533,3 +534,92 @@ class RandomVideoDataset(GeneratedVideoDataset):
         data_dict.actions = np.random.rand(self.spec['max_seq_len'] - 1, self.spec['n_actions']).astype(np.float32)
 
         return data_dict
+
+
+class CustomizedSeqDataset(Dataset):
+    def __init__(self, *args, **kwargs):
+        self.spec = args[1].dataset_spec
+        self.raw_state_length = self.spec.subseq_len
+        self.raw_action_length = self.spec.subseq_len - 1
+        self._hp = self._get_hp()
+        self._hp.overwrite(self.spec)
+
+    def _get_hp(self):
+        hp = ParamDict(
+            num_of_slop_change = 1,
+        )
+        return hp
+
+    def __getitem__(self, index):
+        data = AttrDict()
+        data.states = self._generate_empty_states()
+        data.actions = self._generate_actions()
+        return data
+
+    def _generate_empty_states(self):
+        states = np.zeros((self.raw_state_length, self.spec.state_dim))
+        return states
+
+    def _generate_actions(self):
+        actions = []
+        for idx in range(self.spec.n_actions):
+            actions.append(self._generate_action_sequence())
+
+        actions = np.array(actions)
+        return actions.T
+
+    def _generate_action_sequence(self):
+        action = np.zeros(self.raw_action_length - 1)
+        return action
+
+    def _clip_to_one(self, v):
+        return np.clip(v, -1.0, 1.0)
+
+    def __len__(self):
+        return np.Infinity
+
+class UniformSeqDataset(CustomizedSeqDataset):
+    def _generate_action_sequence(self):
+        mean_value = positive2unit(np.random.rand())
+        raw_seq_value = np.random.randn(self.raw_action_length) / 5.0
+        seq_value = self._generate_cumulated_seq(mean_value, raw_seq_value)
+        action = seq_value
+        return action
+
+    def _generate_cumulated_seq(self, mean_value, raw_seq):
+        slope = 1 if np.random.rand() > 0.5 else -1
+        pos_of_slop_change = np.random.choice(np.arange(self.raw_action_length), self._hp.num_of_slop_change)
+
+        seq = [mean_value]
+        for idx in range(self.raw_action_length):
+            if idx in pos_of_slop_change:
+                slope *= -1
+            new_v = seq[-1] + np.abs(raw_seq[idx]) * slope
+            seq.append( self._clip_to_one(new_v) )
+
+        seq = np.array(seq[1:])
+        return seq
+        
+
+if __name__ == "__main__":
+    # from spirl.configs.default_data_configs.gts import data_spec
+    from spirl.configs.skill_prior_learning.gts.hierarchical.conf import data_config
+    data_dir = 'None'
+    dataset = UniformSeqDataset(data_dir, data_config)
+    d1 = dataset[1]
+
+    
+    # print(d1.states.shape, d1.actions.shape)
+    actions = d1.actions
+    states = d1.states
+
+    print('action shape: {}, state shape: {}'.format(actions.shape, states.shape))
+
+    plt.figure(figsize=(15, 6))
+    plt.subplot(121)
+    plt.plot(actions[:,0])
+
+    plt.subplot(122)
+    plt.plot(actions[:,1])
+    plt.show()
+    

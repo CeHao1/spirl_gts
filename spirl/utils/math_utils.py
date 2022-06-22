@@ -9,3 +9,6 @@ def smooth(a,WSZ):
     start = np.cumsum(a[:WSZ-1])[::2]/r
     stop = (np.cumsum(a[:-WSZ:-1])[::2]/r)[::-1]
     return np.concatenate((  start , out0, stop  ))
+
+def positive2unit(v, r=1.0):
+    return r * (v - 0.5)

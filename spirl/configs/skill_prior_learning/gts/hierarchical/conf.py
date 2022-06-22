@@ -8,7 +8,6 @@ from spirl.components.evaluator import TopOfNSequenceEvaluator
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
-
 configuration = {
     'model': SkillPriorMdl,
     'logger': Logger,

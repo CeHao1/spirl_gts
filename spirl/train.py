@@ -4,7 +4,7 @@ import os
 import time
 from shutil import copy
 import datetime
-import imp
+import importlib
 from tensorboardX import SummaryWriter
 import numpy as np
 import random
@@ -230,7 +230,7 @@ class ModelTrainer(BaseTrainer):
 
         # general and model configs
         print('loading from the config file {}'.format(conf.conf_path))
-        conf_module = imp.load_source('conf', conf.conf_path)
+        conf_module = importlib.load_source('conf', conf.conf_path)
         conf.general = conf_module.configuration
         conf.model = conf_module.model_config
 
@@ -238,7 +238,7 @@ class ModelTrainer(BaseTrainer):
         try:
             data_conf = conf_module.data_config
         except AttributeError:
-            data_conf_file = imp.load_source('dataset_spec', os.path.join(AttrDict(conf).data_dir, 'dataset_spec.py'))
+            data_conf_file = importlib.load_source('dataset_spec', os.path.join(AttrDict(conf).data_dir, 'dataset_spec.py'))
             data_conf = AttrDict()
             data_conf.dataset_spec = AttrDict(data_conf_file.dataset_spec)
             data_conf.dataset_spec.split = AttrDict(data_conf.dataset_spec.split)

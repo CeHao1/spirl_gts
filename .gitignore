@@ -10,3 +10,5 @@ wandb/
 
 viz/ipy/
 sample/
+
+*.ipynb
