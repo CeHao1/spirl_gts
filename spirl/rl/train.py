@@ -1,6 +1,6 @@
 import torch
 import os
-import imp
+import importlib
 import json
 from tqdm import tqdm
 from collections import defaultdict
@@ -267,7 +267,7 @@ class RLTrainer:
 
         # general and agent configs
         print('loading from the config file {}'.format(conf.conf_path))
-        conf_module = imp.load_source('conf', conf.conf_path)
+        conf_module = importlib.load_source('conf', conf.conf_path)
         conf.general = conf_module.configuration
         conf.agent = conf_module.agent_config
         conf.agent.device = self.device

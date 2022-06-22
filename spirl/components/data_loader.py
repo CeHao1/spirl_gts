@@ -1,5 +1,5 @@
 import glob
-import imp
+# import importlib
 import os
 import random
 import h5py
@@ -518,7 +518,6 @@ class GeneratedVideoDataset(VideoDataset):
 
     @staticmethod
     def visualize(*args, **kwargs):
-        """Enables dataset-specific visualization."""
         pass
 
 
@@ -530,3 +529,45 @@ class RandomVideoDataset(GeneratedVideoDataset):
         data_dict.actions = np.random.rand(self.spec['max_seq_len'] - 1, self.spec['n_actions']).astype(np.float32)
 
         return data_dict
+
+
+class UniformSeqDataset(Dataset):
+    def __init__(self, data_conf, *args, **kwargs):
+        # super().__init__(*args, **kwargs)
+        self.spec = data_conf
+        self.raw_data_length = data_conf.max_seq_len
+
+    def __getitem__(self, index):
+        data = AttrDict()
+        data.states = self._generate_empty_states()
+        data.actions = self._generate_actions()
+        return data
+
+    def _generate_empty_states(self):
+        states = np.zeros((self.raw_data_length, self.spec.state_dim))
+        return states
+
+    def _generate_actions(self):
+        actions = []
+        for idx in range(self.spec.n_actions):
+            actions.append(self._generate_action_sequence())
+
+        actions = np.array(actions)
+        actions = actions.reshape(self.raw_data_length, self.spec.n_actions)
+        return actions
+
+    def _generate_action_sequence(self):
+        action = np.zeros(self.raw_data_length)
+        return action
+
+    def __len__(self):
+        return np.Infinity
+    
+
+if __name__ == "__main__":
+    from spirl.configs.default_data_configs.gts import data_spec
+    dataset = UniformSeqDataset(data_spec)
+    d1 = dataset[1]
+    print(d1.states.shape, d1.actions.shape)
+    
+
