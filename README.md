@@ -8,7 +8,7 @@ export DATA_DIR=./data
 =====================================================================================
 ## Train skill priors
 ### Train no close loop prior
-python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical --val_data_size=160 --prefix=cus_01 --resume=latest
+python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical --val_data_size=160 --prefix=g_01 --resume=latest
 
 ### viz
 %run spirl/viz/viz_mdl.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical --resume=latest

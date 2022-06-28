@@ -6,8 +6,8 @@ from spirl.components.data_loader import GlobalSplitVideoDataset, GTSDataset, Un
 from spirl.utils.gts_utils import state_dim
 
 data_spec = AttrDict(
-    # dataset_class=GTSDataset,
-    dataset_class = UniformSeqDataset,
+    dataset_class=GTSDataset,
+    # dataset_class = UniformSeqDataset,
     n_actions=2,
     state_dim=state_dim,
     split=AttrDict(train=0.8, val=0.2, test=0.0),

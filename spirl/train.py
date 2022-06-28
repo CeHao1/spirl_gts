@@ -71,8 +71,7 @@ class ModelTrainer(BaseTrainer):
             start_epoch = self.resume(args.resume, conf.ckpt_path)
 
 
-        print('start epch is ', start_epoch)
-        # self._hp.num_epochs = 2
+        print('start epoch is ', start_epoch)
 
         if args.val_sweep:
             self.run_val_sweep()
@@ -107,8 +106,8 @@ class ModelTrainer(BaseTrainer):
         return default_dict
     
     def train(self, start_epoch):
-        if not self.args.skip_first_val:
-            self.val()
+        # if not self.args.skip_first_val:
+        #     self.val()
             
         for epoch in range(start_epoch, self._hp.num_epochs):
             self.train_epoch(epoch)
@@ -121,8 +120,8 @@ class ModelTrainer(BaseTrainer):
                     'optimizer': self.optimizer.state_dict(),
                 },  os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name(epoch))
 
-            if epoch % self.args.val_interval == 0:
-                self.val()
+            # if epoch % self.args.val_interval == 0:
+            #     self.val()
 
     def train_epoch(self, epoch):
         self.model.train()

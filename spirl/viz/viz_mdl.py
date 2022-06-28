@@ -21,7 +21,7 @@ class MDLVisualizer(ModelTrainer):
         self._hp.overwrite(conf.general)  # override defaults with config file
         self._hp.exp_path = make_path(conf.exp_dir, args.path, args.prefix, args.new_dir)
 
-        self._hp.batch_size = 3000
+        self._hp.batch_size = 2
         self.log_dir = log_dir = os.path.join(self._hp.exp_path, 'events')
         print('using log dir: ', log_dir)
 
@@ -41,8 +41,8 @@ class MDLVisualizer(ModelTrainer):
 
         # self.model.switch_to_prior()
         print('get model and data')
-        # self.show_one_value()
-        self.show_value_distribution()
+        self.show_one_value()
+        # self.show_value_distribution()
         
 
     def build_vizer(self, params, phase):
@@ -86,25 +86,18 @@ class MDLVisualizer(ModelTrainer):
             # self.model.switch_to_prior()            
             output = self.model(inputs)
 
-            self.model.switch_to_prior()
+            # self.model.switch_to_prior()
             output_prior = self.model(inputs, use_learned_prior=True)
+            # self.model.switch_to_inference()
 
             input_actions = to_numpy(inputs.actions)
             output_reconstruction = to_numpy(output.reconstruction)
             output_prior_recon = to_numpy(output_prior.reconstruction)
 
-            input_actions = self.loader.dataset.action_scaler.inverse_transform(input_actions)
-            output_reconstruction = self.loader.dataset.action_scaler.inverse_transform(output_reconstruction)
-            output_prior_recon = self.loader.dataset.action_scaler.inverse_transform(output_prior_recon)
+            # input_actions = self.loader.dataset.action_scaler.inverse_transform(input_actions)
+            # output_reconstruction = self.loader.dataset.action_scaler.inverse_transform(output_reconstruction)
+            # output_prior_recon = self.loader.dataset.action_scaler.inverse_transform(output_prior_recon)
 
-            # print("=============== index", batch_idx)
-            # print('input', inputs.actions[0])
-            # print('output', output.reconstruction[0])
-            # plots(to_numpy(inputs.actions[0]), to_numpy(output.reconstruction[0]))
-            
-
-        #     plots(input_actions[n], output_reconstruction[n], output_prior_recon[n])
-        #     if batch_idx > 20:
             break
         # print('finish')
         if all_data:

@@ -441,7 +441,8 @@ class GTSDataset(GlobalSplitVideoDataset):
 
         action_scaler.mean_ = [0.0, 0.0]
         # action_scaler.scale_ = 1.0
-        action_scaler.scale_ = [0.5, 1.0]
+        # action_scaler.scale_ = [0.5, 1.0]
+        action_scaler.scale_ = [1.0, 1.0]
 
         standard_table = {
             'state' : state_scaler,
@@ -532,12 +533,12 @@ class RandomVideoDataset(GeneratedVideoDataset):
         data_dict.images = np.random.rand(self.spec['max_seq_len'], 3, self.img_sz, self.img_sz).astype(np.float32)
         data_dict.states = np.random.rand(self.spec['max_seq_len'], self.spec['state_dim']).astype(np.float32)
         data_dict.actions = np.random.rand(self.spec['max_seq_len'] - 1, self.spec['n_actions']).astype(np.float32)
-
         return data_dict
 
 
-class CustomizedSeqDataset(Dataset):
+class CustomizedSeqDataset(GlobalSplitVideoDataset):
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.spec = args[1].dataset_spec
         self.raw_state_length = self.spec.subseq_len
         self.raw_action_length = self.spec.subseq_len - 1
@@ -558,7 +559,7 @@ class CustomizedSeqDataset(Dataset):
 
     def _generate_empty_states(self):
         states = np.zeros((self.raw_state_length, self.spec.state_dim))
-        return states
+        return np.float32(states)
 
     def _generate_actions(self):
         actions = []
@@ -566,7 +567,7 @@ class CustomizedSeqDataset(Dataset):
             actions.append(self._generate_action_sequence())
 
         actions = np.array(actions)
-        return actions.T
+        return np.float32(actions.T)
 
     def _generate_action_sequence(self):
         action = np.zeros(self.raw_action_length - 1)
@@ -576,7 +577,7 @@ class CustomizedSeqDataset(Dataset):
         return np.clip(v, -1.0, 1.0)
 
     def __len__(self):
-        return np.Infinity
+        return int(1e5)
 
 class UniformSeqDataset(CustomizedSeqDataset):
     def _generate_action_sequence(self):
