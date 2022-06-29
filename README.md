@@ -52,8 +52,19 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/no_prior/ --seed=0 --pref
 
 
 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## The structure of agent and policy
 
+                | no prior          |  spirl                            | spirl cl
 
+ LL model       | SkillPriorMdl     |                                   | ClSPiRLMdl
+ LL policy      |                   |                                   | ClModelPolicy
+ LL agent       | SkillSpaceAgent   |                                   | SACAgent
+
+ HL policy      | MLPPolicy         | LearnedPriorAugmentedPIPolicy     |
+ HL agent       | SACAgent          | ActionPriorSACAgent               | 
+
+ Joint agent    | FixedIntervalHierarchicalAgent
 
 
 
