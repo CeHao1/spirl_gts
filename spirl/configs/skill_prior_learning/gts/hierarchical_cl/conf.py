@@ -33,7 +33,7 @@ model_config = AttrDict(
     cond_decode=True,
 
     learned_prior_weight = 1e-2,
-    nll_prior_train = False,
+    # nll_prior_train = False,
 )
 
 # Dataset

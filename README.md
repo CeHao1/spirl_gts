@@ -5,6 +5,24 @@
 export EXP_DIR=./experiments
 export DATA_DIR=./data
 
+
+=====================================================================================
+## test close loop dim
+export EXP_DIR=./experiments
+export DATA_DIR=/media/cehao/Data/ubuntu_backup/spirl_data
+
+### tarin maze close loop, prior
+python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/maze/hierarchical_cl --val_data_size=160 --prefix=cl_maze_01 --resume=latest
+
+
+### train maze cl, spirl
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl/ --prefix=cl_maze_01 --gpu=0 --resume=latest
+
+python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/maze/hierarchical --val_data_size=160 --prefix=ol01
+
+### train gts close loop
+python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cl --val_data_size=160 --prefix=cl01
+
 =====================================================================================
 ## Train skill priors
 ### Train no close loop prior
