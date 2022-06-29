@@ -48,7 +48,8 @@ sampler_config = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    batch_size=256,
+    # batch_size=256,
+    batch_size=64,
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -137,7 +138,8 @@ agent_config = AttrDict(
     hl_interval=ll_model_params.n_rollout_steps,
     log_videos=False,
     update_hl=True,
-    update_ll=False,
+    # update_ll=False,
+    update_ll=True,
 )
 
 # Dataset - Random data

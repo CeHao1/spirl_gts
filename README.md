@@ -21,7 +21,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl/ --prefix=cl_ma
 python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/maze/hierarchical --val_data_size=160 --prefix=ol01
 
 ### train gts close loop
-python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cl --val_data_size=160 --prefix=cl01
+python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cl --val_data_size=160 --prefix=cl_gts_01
 
 =====================================================================================
 ## Train skill priors
