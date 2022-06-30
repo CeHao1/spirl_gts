@@ -319,7 +319,7 @@ class GTSDataset(GlobalSplitVideoDataset):
             data = self.smooth_actions(data, self.spec.subseq_len)
 
         # try to modify actions
-        data = self.modify_actions(data)
+        # data = self.modify_actions(data)
 
         # maybe subsample seqs
         if self.subsampler is not None:

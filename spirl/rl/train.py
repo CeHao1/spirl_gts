@@ -15,8 +15,7 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'HRL01'
-# WANDB_PROJECT_NAME = 'SAC01'
+WANDB_PROJECT_NAME = 'maze-test'
 WANDB_ENTITY_NAME = 'cehao'
 
 

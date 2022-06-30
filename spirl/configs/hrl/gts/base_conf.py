@@ -68,7 +68,8 @@ obs_norm_params = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    batch_size=256, #256,
+    # batch_size=256, #256,
+    batch_size=64, 
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -85,7 +86,7 @@ ll_model_params = AttrDict(
     nz_mid=128,
     n_processing_layers=5,
     # nz_vae=10,
-    nz_vae = 4,
+    nz_vae = 6,
     n_rollout_steps=4,
 )
 
