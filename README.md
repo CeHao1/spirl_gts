@@ -5,6 +5,10 @@
 export EXP_DIR=./experiments
 export DATA_DIR=./data
 
+=====================================================================================
+## maze test
+python3 spirl/rl/train.py --path=spirl/configs/rl/maze/SAC --prefix=maze_sac --gpu=0 --resume='latest'
+
 
 =====================================================================================
 ## test close loop dim
@@ -14,19 +18,21 @@ export DATA_DIR=/media/cehao/Data/ubuntu_backup/spirl_data
 ### tarin maze close loop, prior
 python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/maze/hierarchical_cl --val_data_size=160 --prefix=cl_maze_01 --resume=latest
 
+### train maze open loop, prior
+python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/maze/hierarchical --val_data_size=160 --prefix=ol_maze_test
 
 ### train maze cl, spirl
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl/ --prefix=cl_maze_01 --gpu=0 --resume=latest
 
-python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/maze/hierarchical --val_data_size=160 --prefix=ol01
+
 
 ### train gts close loop
-python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cl --val_data_size=160 --prefix=cl_gts_test02
+python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cl --val_data_size=160 --prefix=cd_gts_nz20
 
 =====================================================================================
 ## Train skill priors
 ### Train no close loop prior
-python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical --val_data_size=160 --prefix=ol_gts_test01 --resume=latest
+python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical --val_data_size=160 --prefix=ol_gts_test02 --resume=latest
 
 ### viz
 %run spirl/viz/viz_mdl.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical --resume=latest
