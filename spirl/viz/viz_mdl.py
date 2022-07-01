@@ -21,7 +21,7 @@ class MDLVisualizer(ModelTrainer):
         self._hp.overwrite(conf.general)  # override defaults with config file
         self._hp.exp_path = make_path(conf.exp_dir, args.path, args.prefix, args.new_dir)
 
-        self._hp.batch_size = 2
+        self._hp.batch_size = 128
         self.log_dir = log_dir = os.path.join(self._hp.exp_path, 'events')
         print('using log dir: ', log_dir)
 
@@ -86,9 +86,9 @@ class MDLVisualizer(ModelTrainer):
             # self.model.switch_to_prior()            
             output = self.model(inputs)
 
-            # self.model.switch_to_prior()
+            self.model.switch_to_prior()
             output_prior = self.model(inputs, use_learned_prior=True)
-            # self.model.switch_to_inference()
+            self.model.switch_to_inference()
 
             input_actions = to_numpy(inputs.actions)
             output_reconstruction = to_numpy(output.reconstruction)
@@ -121,14 +121,14 @@ def plots(input, output, out_prior):
     plt.subplot(1,2, 1)
     plt.plot(input[:,0] * rad2deg, 'b')
     plt.plot(output[:,0] *rad2deg, 'r')
-    plt.plot(out_prior[:,0] *rad2deg, 'g')
+    # plt.plot(out_prior[:,0] *rad2deg, 'g')
     plt.title(titles[0])
     # plt.ylim([-1.1, 1.1])
 
     plt.subplot(1,2, 2)
     plt.plot(input[:,1], 'b', label='input action series')
     plt.plot(output[:,1], 'r', label='output reconstruction')
-    plt.plot(out_prior[:,1], 'g', label='prior')
+    # plt.plot(out_prior[:,1], 'g', label='prior')
     plt.title(titles[1])
     # plt.ylim([-1.1, 1.1])
 

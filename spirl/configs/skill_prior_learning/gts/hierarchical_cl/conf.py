@@ -13,8 +13,8 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 configuration = {
-    # 'model': ClSPiRLMdl,
-    'model': CDSPiRLMdl,
+    'model': ClSPiRLMdl,
+    # 'model': CDSPiRLMdl,
     'logger': Logger,
     'data_dir': os.path.join(os.environ['DATA_DIR'], 'gts'),
     'epoch_cycles_train': 10,
@@ -33,8 +33,8 @@ model_config = AttrDict(
     cond_decode=True,
 
     n_rollout_steps = 4,
-    # nz_vae = 6,
-    nz_vae = 20,
+    nz_vae = 6,
+    # nz_vae = 20,
 
     reconstruction_mse_weight = 100.,
     kl_div_weight=5e-4,
