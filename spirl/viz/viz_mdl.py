@@ -121,14 +121,14 @@ def plots(input, output, out_prior):
     plt.subplot(1,2, 1)
     plt.plot(input[:,0] * rad2deg, 'b')
     plt.plot(output[:,0] *rad2deg, 'r')
-    # plt.plot(out_prior[:,0] *rad2deg, 'g')
+    plt.plot(out_prior[:,0] *rad2deg, 'g')
     plt.title(titles[0])
     # plt.ylim([-1.1, 1.1])
 
     plt.subplot(1,2, 2)
     plt.plot(input[:,1], 'b', label='input action series')
     plt.plot(output[:,1], 'r', label='output reconstruction')
-    # plt.plot(out_prior[:,1], 'g', label='prior')
+    plt.plot(out_prior[:,1], 'g', label='prior')
     plt.title(titles[1])
     # plt.ylim([-1.1, 1.1])
 

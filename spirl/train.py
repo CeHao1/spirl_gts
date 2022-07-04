@@ -249,9 +249,9 @@ class ModelTrainer(BaseTrainer):
         return conf
 
     def postprocess_conf(self, conf):
-        # conf.model['batch_size'] = self._hp.batch_size if not torch.cuda.is_available() \
-        #     else int(self._hp.batch_size / torch.cuda.device_count())
-        conf.model['batch_size'] = 64
+        conf.model['batch_size'] = self._hp.batch_size if not torch.cuda.is_available() \
+            else int(self._hp.batch_size / torch.cuda.device_count())
+        # conf.model['batch_size'] = 64
         conf.model.update(conf.data.dataset_spec)
         conf.model['device'] = conf.data['device'] = self.device.type
         return conf

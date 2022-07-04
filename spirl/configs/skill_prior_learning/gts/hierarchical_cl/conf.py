@@ -21,6 +21,8 @@ configuration = {
     'evaluator': TopOfNSequenceEvaluator,
     'top_of_n_eval': 100,
     'top_comp_metric': 'mse',
+
+    'batch_size':128,
 }
 configuration = AttrDict(configuration)
 
@@ -38,10 +40,11 @@ model_config = AttrDict(
 
     reconstruction_mse_weight = 100.,
     kl_div_weight=5e-4,
-    learned_prior_weight = 1e-10,
+    # learned_prior_weight = 1e-10,
     action_dim_weights = [100.0, 1.0],
     # action_dim_weights = [1.0, 1.0],
     
+    learned_prior_weight = 1e-3,
 )
 
 # Dataset

@@ -34,5 +34,5 @@ hl_policy_params.update(AttrDict(
 agent_config.update(AttrDict(
     ll_agent=SACAgent,
     ll_agent_params=ll_agent_config,
-    update_ll=False,
+    update_ll=True,
 ))
