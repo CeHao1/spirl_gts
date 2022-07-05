@@ -51,10 +51,14 @@ class MLPCritic(Critic):
 
     def forward(self, obs, actions=None):
         input = torch.cat((obs, actions), dim=-1) if self._hp.action_input else obs
+        # print('critic forward, input shape', input.shape)
         return AttrDict(q=self._net(input))
 
     def _build_network(self):
         input_size = self._hp.input_dim + self._hp.action_dim if self._hp.action_input else self._hp.input_dim
+        print('critic input size', input_size)
+        print('input_dim:{}, action_dim:{}'.format(self._hp.input_dim , self._hp.action_dim))
+
         return Predictor(self._hp,
                          input_size=input_size,
                          output_size=self._hp.output_dim,

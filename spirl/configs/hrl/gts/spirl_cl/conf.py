@@ -1,5 +1,6 @@
 from spirl.configs.hrl.gts.spirl.conf import *
 
+from spirl.rl.components.critic import SplitObsMLPCritic
 from spirl.models.closed_loop_spirl_mdl import ClSPiRLMdl
 from spirl.rl.policies.cl_model_policies import ClModelPolicy
 
@@ -15,12 +16,24 @@ ll_policy_params = AttrDict(
 )
 ll_policy_params.update(ll_model_params)
 
+
+ll_critic_params = AttrDict(
+    action_dim=data_spec.state_dim,
+    input_dim=data_spec.n_actions,
+    output_dim=1,
+    n_layers=5,  # number of policy network layer
+    nz_mid=256,
+    action_input=True,
+    unused_obs_size = ll_model_params.nz_vae, # whether remove latent variable, or add it
+)
+
 # create LL SAC agent (by default we will only use it for rolling out decoded skills, not finetuning skill decoder)
 ll_agent_config = AttrDict(
     policy=ClModelPolicy,
     policy_params=ll_policy_params,
-    critic=MLPCritic,                   # LL critic is not used since we are not finetuning LL
-    critic_params=hl_critic_params
+    # critic=MLPCritic,                   # LL critic is not used since we are not finetuning LL
+    critic=SplitObsMLPCritic,
+    critic_params=ll_critic_params
 )
 
 # update HL policy model params
