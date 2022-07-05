@@ -26,13 +26,15 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl/ --prefix=cl_ma
 
 
 
-### train gts close loop
-python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cl --val_data_size=160 --prefix=cl_gts_bs128_wqhat1e-3 --resume=latest
-
 =====================================================================================
 ## Train skill priors
 ### Train no close loop prior
 python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical --val_data_size=160 --prefix=ol_gts_bs128_wqhat1e-3 --resume=latest
+
+
+### train gts close loop, prior
+python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cl --val_data_size=160 --prefix=cl_gts_bs128_wqhat1e-3 --resume=latest
+
 
 ### viz
 %run spirl/viz/viz_mdl.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical --resume=latest
@@ -65,6 +67,10 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl --prefix=sp_oldbatc
 
 ### viz
 %run spirl/viz/viz_hrl.py --gpu=0 --path=spirl/configs/hrl/gts/spirl --prefix=sp_03 --resume=latest
+
+
+### train close loop spirl
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl_cl/ --prefix=cl_gts_llSAC2 --gpu=0 --resume=latest
 
 =====================================================================================
 ## No prior

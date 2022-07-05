@@ -41,15 +41,15 @@ configuration = {
     'num_epochs': 300,
     'max_rollout_len': 10000,
     'n_steps_per_epoch': 10000,
-    # 'n_warmup_steps': 40000,
-    'n_warmup_steps': 8000,
+    'n_warmup_steps': 2000,
+    # 'n_warmup_steps': 8000,
     'use_update_after_sampling':True,
 
-    'environment': GTSEnv_Multi,
-    'sampler':HierarchicalSamplerMulti,
+    # 'environment': GTSEnv_Multi,
+    # 'sampler':HierarchicalSamplerMulti,
 
-    # 'environment':GTSEnv_Base,
-    # 'sampler':HierarchicalSampler
+    'environment':GTSEnv_Base,
+    'sampler':HierarchicalSampler
 
 }
 configuration = AttrDict(configuration)
