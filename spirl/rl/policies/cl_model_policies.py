@@ -86,13 +86,7 @@ class LLVarClModelPolicy(ClModelPolicy):
     def _build_network(self):
         net = self._hp.policy_model(self._hp.policy_model_params, None)
         if self._hp.load_weights:
-            BaseAgent.load_model_weights(net, self._hp.policy_model_checkpoint, self._hp.policy_model_epoch)
-        # self._log_sigma = torch.tensor(self._hp.initial_log_sigma * np.ones(self.action_dim, dtype=np.float32),
-        #                                device=self.device, requires_grad=True)
-
-        hp = self._hp.policy_model_params
-        self._log_sigma_net = Predictor(hp, input_size =  hp.state_dim + hp.nz_vae, output_size = hp.action_dim, 
-                                        num_layers = hp.n_processing_layers, mid_size = hp.nz_mid)
+            BaseAgent.load_model_weights(net, self._hp.policy_model_checkpoint, self._hp.policy_model_epoch)       
         return net
 
     def _compute_action_dist(self, obs):
@@ -106,16 +100,15 @@ class LLVarClModelPolicy(ClModelPolicy):
 
             concatenate_obs = torch.cat((split_obs.cond_input, self.last_z), dim=-1)
             act = self.net.decoder(concatenate_obs)
-            log_sigma = self._log_sigma_net(concatenate_obs)
+            log_sigma = self.net.log_sigma(concatenate_obs)
             self.steps_since_hl += 1
         else:
             # during update (ie with batch size > 1) recompute LL action from z
             concatenate_obs = torch.cat((split_obs.cond_input, split_obs.z), dim=-1)
             act = self.net.decoder(concatenate_obs)
-            log_sigma = self._log_sigma_net(concatenate_obs)
-
-        # return MultivariateGaussian(mu=act, log_sigma=self._log_sigma[None].repeat(act.shape[0], 1))
-        return MultivariateGaussian(mu=act, log_sigma=log_sigma[None].repeat(act.shape[0], 1))
+            log_sigma = self.net.log_sigma(concatenate_obs)
+        # return MultivariateGaussian(mu=act, log_sigma=log_sigma[None].repeat(act.shape[0], 1))
+        return MultivariateGaussian(mu=act, log_sigma=log_sigma)
 
 class ACClModelPolicy(ClModelPolicy):
     """Handles image observations in ClModelPolicy."""

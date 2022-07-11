@@ -33,7 +33,7 @@ python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hie
 
 
 ### train gts close loop, prior
-python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cl --val_data_size=160 --prefix=cl_gts_bs128_wqhat1e-3 --resume=latest
+python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cl --val_data_size=160 --prefix=cl_gts_llvar --resume=latest
 
 
 ### viz
@@ -60,7 +60,7 @@ python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --prefix=maf6_2 --gpu=
 =====================================================================================
 ## Train spirl agent
 ### Train agent
-python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl/ --prefix=ol_compare_01 --gpu=0 --resume=latest
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl/ --prefix=ol_hier_sample_test --gpu=0 --resume=latest
 
 ### sample_rollout
 python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl --prefix=sp_oldbatch --gpu=0  --mode=rollout --save_dir='./sample/hrl/spirl' --n_val_samples=1 --resume=latest
@@ -70,7 +70,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl --prefix=sp_oldbatc
 
 
 ### train close loop spirl
-python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl_cl/ --prefix=cl_gts_llSAC3 --gpu=0 --resume=latest
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl_cl/ --prefix=cl_gts_llvar01 --gpu=0 --resume=latest
 
 =====================================================================================
 ## No prior
