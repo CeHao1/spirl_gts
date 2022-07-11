@@ -209,6 +209,7 @@ class HierarchicalSampler(Sampler):
 
                         # reset if episode ends
                         if done or self._episode_step >= self._max_episode_len:
+                        # if done or self._episode_step >= self._max_episode_len:
                             if not done:    # force done to be True for timeout
                                 ll_experience_batch[-1].done = True
                                 if hl_experience_batch:   # can potentially be empty 
