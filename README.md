@@ -70,7 +70,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl --prefix=sp_oldbatc
 
 
 ### train close loop spirl
-python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl_cl/ --prefix=cl_gts_llSAC2 --gpu=0 --resume=latest
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl_cl/ --prefix=cl_gts_llSAC3 --gpu=0 --resume=latest
 
 =====================================================================================
 ## No prior

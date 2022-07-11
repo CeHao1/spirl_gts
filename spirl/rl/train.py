@@ -103,7 +103,7 @@ class RLTrainer:
     def train(self, start_epoch):
         """Run outer training loop."""
 
-        self._hp.n_warmup_steps = 0
+        # self._hp.n_warmup_steps = 0
         if self._hp.n_warmup_steps > 0:
             self.warmup()
 

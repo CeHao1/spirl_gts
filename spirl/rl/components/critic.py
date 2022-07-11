@@ -56,8 +56,8 @@ class MLPCritic(Critic):
 
     def _build_network(self):
         input_size = self._hp.input_dim + self._hp.action_dim if self._hp.action_input else self._hp.input_dim
-        print('critic input size', input_size)
-        print('input_dim:{}, action_dim:{}'.format(self._hp.input_dim , self._hp.action_dim))
+        # print('critic input size', input_size)
+        # print('input_dim:{}, action_dim:{}'.format(self._hp.input_dim , self._hp.action_dim))
 
         return Predictor(self._hp,
                          input_size=input_size,
