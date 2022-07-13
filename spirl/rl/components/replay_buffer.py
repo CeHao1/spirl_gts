@@ -26,15 +26,19 @@ class ReplayBuffer:
 
     def append(self, experience_batch):
         """Appends the vals in the AttrDict experience_batch to the existing replay buffer."""
+
+        # process batched experience 
+        if len(np.array(experience_batch.observation).shape) > 2:
+            for key in experience_batch:
+                exp = np.array(experience_batch[key])
+                experience_batch[key] = exp.reshape(exp.shape[0]*exp.shape[1], -1).squeeze()
+
         if self._replay_buffer is None:
             self._init(experience_batch)
 
         # compute indexing range
         n_samples = self._get_n_samples(experience_batch)
         idxs = np.asarray(np.arange(self._idx, self._idx + n_samples) % self._max_capacity, dtype=int)
-        print('in replay buffer, n_samples', n_samples)
-        print('reward', np.array(experience_batch.reward).shape)
-        print('obs', np.array(experience_batch.observation).shape)
 
         # add batch
         for key in self._replay_buffer:

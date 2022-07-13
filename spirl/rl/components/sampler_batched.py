@@ -206,8 +206,8 @@ class HierarchicalSamplerBached(SamplerBatched):
                                     # hl_experience_batch[-1].reward += reward  # add terminal reward
                                     for exp, r in zip(hl_experience_batch[-1].reward, reward):
                                         exp.reward += r
-                                if hl_step % 1000 == 0:
-                                    print("Sample step {}".format(hl_step))
+                                # if hl_step % 1000 == 0:
+                                #     print("Sample step {}".format(hl_step))
                             self.last_hl_obs = self._obs if self._episode_step == 0 else obs
                             self.last_hl_action = agent_output.hl_action
                             self.reward_since_last_hl = 0
