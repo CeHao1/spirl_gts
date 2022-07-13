@@ -26,7 +26,7 @@ notes = 'hierarchical RL on the gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    do_init = False,
+    # do_init = False,
     action_standard = True,
 
     # reward_function = eval_time_trial_reward_function,
@@ -46,12 +46,12 @@ configuration = {
     # 'n_warmup_steps': 8000,
     'use_update_after_sampling':True,
 
-    'environment': GTSEnv_Multi,
+    # 'environment': GTSEnv_Multi,
     # 'sampler':HierarchicalSamplerMulti,
 
-    # 'environment':GTSEnv_Base,
-    # 'sampler':HierarchicalSampler,
-    'sampler':HierarchicalSamplerBached,
+    'environment':GTSEnv_Base,
+    'sampler':HierarchicalSampler,
+    # 'sampler':HierarchicalSamplerBached,
 
 
     'n_steps_per_epoch': 200,
