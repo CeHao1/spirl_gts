@@ -29,11 +29,15 @@ class ReplayBuffer:
         if self._replay_buffer is None:
             self._init(experience_batch)
 
+        # process batched experience 
+        if len(np.array(experience_batch.observation).shape) > 2:
+            for key in experience_batch:
+                exp = np.array(experience_batch[key])
+                experience_batch[key] = exp.reshape(-1, exp.shape[-1])
+
         # compute indexing range
         n_samples = self._get_n_samples(experience_batch)
         idxs = np.asarray(np.arange(self._idx, self._idx + n_samples) % self._max_capacity, dtype=int)
-        print('in replay buffer, n_samples', n_samples)
-        print(np.array(experience_batch.reward).shape)
 
         # add batch
         for key in self._replay_buffer:
