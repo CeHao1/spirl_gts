@@ -33,6 +33,7 @@ class ReplayBuffer:
         n_samples = self._get_n_samples(experience_batch)
         idxs = np.asarray(np.arange(self._idx, self._idx + n_samples) % self._max_capacity, dtype=int)
         print('in replay buffer, n_samples', n_samples)
+        print(np.array(experience_batch.reward).shape)
 
         # add batch
         for key in self._replay_buffer:

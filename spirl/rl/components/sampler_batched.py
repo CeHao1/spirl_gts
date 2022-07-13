@@ -217,7 +217,7 @@ class HierarchicalSamplerBached(SamplerBatched):
                         env_steps += batch_length; 
                         self._episode_step += batch_length; 
                         self._episode_reward += np.mean(reward)
-                        self.reward_since_last_hl += np.mean(reward)
+                        self.reward_since_last_hl += np.array(reward)
 
                         # reset if episode ends
                         if np.any(done) or self._episode_step >= self._max_episode_len:

@@ -55,7 +55,7 @@ configuration = {
 
 
     'n_steps_per_epoch': 200,
-    'n_warmup_steps': 4000,
+    'n_warmup_steps': 200,
 
 }
 configuration = AttrDict(configuration)
