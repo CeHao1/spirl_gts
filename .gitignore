@@ -12,3 +12,4 @@ viz/ipy/
 sample/
 
 *.ipynb
+.vscode/
