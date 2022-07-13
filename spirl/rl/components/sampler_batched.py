@@ -46,7 +46,7 @@ class SamplerBatched:
                             continue
                         agent_output = self._postprocess_agent_output(agent_output)
                         obs, reward, done, info = self._env.step(agent_output.action)
-                        assert len(obs.shape == 2) # must be batched array. first dim is batch size, second dim is the obs data
+                        assert len(obs.shape) == 2 # must be batched array. first dim is batch size, second dim is the obs data
                         batch_length = obs.shape[0]
 
                         obs = self._postprocess_obs(obs)
@@ -92,7 +92,7 @@ class SamplerBatched:
 
                         # print(agent_output.action)
                         obs, reward, done, info = self._env.step(agent_output.action)
-                        assert len(obs.shape == 2)
+                        assert len(obs.shape) == 2
                         batch_length = obs.shape[0]
 
                         obs = self._postprocess_obs(obs)
@@ -171,7 +171,7 @@ class HierarchicalSamplerBached(SamplerBatched):
                         agent_output = self.sample_action(self._obs)
                         agent_output = self._postprocess_agent_output(agent_output)
                         obs, reward, done, info = self._env.step(agent_output.action)
-                        assert len(obs.shape == 2)
+                        assert len(obs.shape) == 2
                         batch_length = obs.shape[0]
 
                         obs = self._postprocess_obs(obs)
@@ -192,7 +192,7 @@ class HierarchicalSamplerBached(SamplerBatched):
                             ))
 
                         # store HL experience batch if this was HL action or episode is done
-                        if agent_output.is_hl_step or (done or self._episode_step >= self._max_episode_len-1):
+                        if agent_output.is_hl_step or (np.any(done) or self._episode_step >= self._max_episode_len-1):
                             if self.last_hl_obs is not None and self.last_hl_action is not None:
                                 hl_experience_batch.append(AttrDict(
                                     observation=self.last_hl_obs,
@@ -224,12 +224,12 @@ class HierarchicalSamplerBached(SamplerBatched):
                         # if done or self._episode_step >= self._max_episode_len:
                             if not np.all(done):    # force done to be True for timeout
                                 # ll_experience_batch[-1].done = True
-                                for exp in ll_experience_batch[-1]:
-                                    exp.done = True
+                                for exp in ll_experience_batch[-1].done:
+                                    exp = True
                                 if hl_experience_batch:   # can potentially be empty 
                                     # hl_experience_batch[-1].done = True
-                                    for exp in hl_experience_batch[-1]:
-                                        exp.done = True
+                                    for exp in hl_experience_batch[-1].done:
+                                        exp = True
                             print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
                             self._episode_reset(global_step)
         return AttrDict(

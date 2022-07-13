@@ -29,8 +29,8 @@ ll_critic_params = AttrDict(
 
 # create LL SAC agent (by default we will only use it for rolling out decoded skills, not finetuning skill decoder)
 ll_agent_config = AttrDict(
-    # policy=ClModelPolicy,
-    policy = LLVarClModelPolicy,
+    policy=ClModelPolicy,
+    # policy = LLVarClModelPolicy,
     policy_params=ll_policy_params,
     # critic=MLPCritic,                   # LL critic is not used since we are not finetuning LL
     critic=SplitObsMLPCritic,

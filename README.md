@@ -33,7 +33,7 @@ python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hie
 
 
 ### train gts close loop, prior
-python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cl --val_data_size=160 --prefix=cl_gts_llvar --resume=latest
+python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cl --val_data_size=160 --prefix=cl_gts_llvar02 --resume=latest
 
 
 ### viz
@@ -70,7 +70,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl --prefix=sp_oldbatc
 
 
 ### train close loop spirl
-python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl_cl/ --prefix=cl_gts_llvar01 --gpu=0 --resume=latest
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl_cl/ --prefix=cl_gts_new_sample01 --gpu=0 --resume=latest
 
 =====================================================================================
 ## No prior
