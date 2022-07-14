@@ -6,8 +6,11 @@ export EXP_DIR=./experiments
 export DATA_DIR=./data
 
 =====================================================================================
-## maze test
-python3 spirl/rl/train.py --path=spirl/configs/rl/maze/SAC --prefix=maze_sac --gpu=0 --resume='latest'
+# for state conditioned 
+## train model
+python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cd --val_data_size=160 --prefix=cd_gts_ori --resume=latest
+## train agent
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl_cd/ --prefix=cd_gts_llvar02 --gpu=0 --resume=latest
 
 
 =====================================================================================
@@ -38,8 +41,6 @@ python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hie
 
 ### viz
 %run spirl/viz/viz_mdl.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical --resume=latest
-
-### train customized prior
 
 
 =====================================================================================
