@@ -46,12 +46,12 @@ configuration = {
     # 'n_warmup_steps': 8000,
     'use_update_after_sampling':True,
 
-    # 'environment': GTSEnv_Multi,
+    'environment': GTSEnv_Multi,
     # 'sampler':HierarchicalSamplerMulti,
 
-    'environment':GTSEnv_Base,
-    'sampler':HierarchicalSampler,
-    # 'sampler':HierarchicalSamplerBached,
+    # 'environment':GTSEnv_Base,
+    # 'sampler':HierarchicalSampler,
+    'sampler':HierarchicalSamplerBached,
 
 
     'n_steps_per_epoch': 200,

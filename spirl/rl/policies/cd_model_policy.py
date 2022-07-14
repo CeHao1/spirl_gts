@@ -26,7 +26,7 @@ class CDModelPolicy(Policy):
             'initial_log_sigma': -50,          # initial log sigma of policy dist (since model is deterministic)
         })
 
-        # we can set manual log sigma
+        # we can set manual log sigma, 'manual_log_sigma'
         return super()._default_hparams().overwrite(default_dict)
 
     def forward(self, obs):
@@ -39,7 +39,7 @@ class CDModelPolicy(Policy):
             BaseAgent.load_model_weights(net, self._hp.policy_model_checkpoint, self._hp.policy_model_epoch)  
 
         if 'manual_log_sigma' in self._hp:
-            print('use manual log sigma to initialize cd model policy', self._hp.manual_log_sigma)
+            print('!!! use manual log sigma to initialize cd model policy', self._hp.manual_log_sigma)
             init_log_sigma = np.array(self._hp.manual_log_sigma, dtype=np.float32)
             assert init_log_sigma.shape[0] == self.action_dim
         else:
