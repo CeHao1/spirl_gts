@@ -8,7 +8,7 @@ from torch.optim import Adam, SGD
 
 from spirl.utils.general_utils import ParamDict, get_clipped_optimizer, AttrDict, prefix_dict, map_dict, \
                                         nan_hook, np2obj, ConstantSchedule
-from spirl.utils.pytorch_utils import RAdam, remove_grads, map2np, map2torch
+from spirl.utils.pytorch_utils import RAdam, remove_grads, map2np, map2torch, make_one_hot
 from spirl.utils.vis_utils import add_caption_to_img, add_captions_to_seq
 from spirl.rl.components.normalization import DummyNormalizer
 from spirl.rl.components.policy import Policy
@@ -361,3 +361,10 @@ class FixedIntervalHierarchicalAgent(HierarchicalAgent):
     def reset(self):
         super().reset()
         self._steps_since_hl = 0     # start new episode with high-level step
+
+class FixedIntervalTimeIndexedHierarchicalAgent(FixedIntervalHierarchicalAgent):
+    def make_ll_obs(self, obs, hl_action):
+        """Creates low-level agent's observation from env observation,  HL action and time index."""
+        idx = torch.tensor(torch.tensor([self._steps_since_hl]), device=self.device)
+        one_hot = make_one_hot(idx, self._hp.hl_interval).repeat(obs.shape[0], 1, 1)
+        return np.concatenate((obs, hl_action, one_hot), axis=-1)

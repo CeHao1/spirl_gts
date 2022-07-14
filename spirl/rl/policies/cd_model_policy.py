@@ -51,19 +51,22 @@ class CDModelPolicy(Policy):
     def _compute_action_dist(self, obs):
         assert len(obs.shape) == 2
         split_obs = self._split_obs(obs)
-        if obs.shape[0] == 1:
-            # during rollouts use HL z every H steps and execute LL policy every step
-            if self.steps_since_hl > self.horizon - 1:
-                self.last_z = split_obs.z
-                self.steps_since_hl = 0
+        # if obs.shape[0] == 1:
+        #     # during rollouts use HL z every H steps and execute LL policy every step
+        #     if self.steps_since_hl > self.horizon - 1:
+        #         self.last_z = split_obs.z
+        #         self.steps_since_hl = 0
 
-            concatenate_obs = torch.cat((split_obs.cond_input, self.last_z), dim=-1)
-            act = self.net.decoder(concatenate_obs)
-            self.steps_since_hl += 1
-        else:
-            # during update (ie with batch size > 1) recompute LL action from z
-            concatenate_obs = torch.cat((split_obs.cond_input, split_obs.z), dim=-1)
-            act = self.net.decoder(concatenate_obs)
+        #     concatenate_obs = torch.cat((split_obs.cond_input, self.last_z), dim=-1)
+        #     act = self.net.decoder(concatenate_obs)
+        #     self.steps_since_hl += 1
+        # else:
+        #     # during update (ie with batch size > 1) recompute LL action from z
+        #     concatenate_obs = torch.cat((split_obs.cond_input, split_obs.z), dim=-1)
+        #     act = self.net.decoder(concatenate_obs)
+
+        concatenate_obs = self._get_concatenate_obs(split_obs)
+        act = self.net.decoder(concatenate_obs)
 
         act_mean = act[..., : self.net.action_size]
         act_log_std = act[..., self.net.action_size :]
@@ -72,8 +75,8 @@ class CDModelPolicy(Policy):
         return MultivariateGaussian(mu=act_mean, log_sigma=log_sigma)
 
     def _get_concatenate_obs(self, split_obs):
-        pass
-    
+        return torch.cat((split_obs.cond_input, split_obs.z), dim=-1)
+
     def sample_rand(self, obs):
         if len(obs.shape) == 1:
             output_dict = self.forward(obs[None])
@@ -101,4 +104,13 @@ class CDModelPolicy(Policy):
         return self._hp.policy_model_params.n_rollout_steps
 
 class TimeIndexedCDMdlPolicy(CDModelPolicy):
-    pass
+    def _split_obs(self, obs):
+        assert obs.shape[1] == self.net.state_dim + self.net.latent_dim + self.net.n_rollout_steps
+        return AttrDict(
+            cond_input=obs[:, :self.net.state_dim],   # condition decoding on state
+            z=obs[:, self.net.state_dim: self.net.state_dim + self.net.latent_dim],
+            time_index = obs[:, self.net.state_dim + self.net.latent_dim:] # or [:, -self.net.n_rollout_steps:]
+        )
+
+    def _get_concatenate_obs(self, split_obs):
+        return torch.cat((split_obs.cond_input, split_obs.z, split_obs.time_index), dim=-1)

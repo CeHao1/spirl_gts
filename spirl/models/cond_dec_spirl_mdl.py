@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from spirl.utils.general_utils import batch_apply, ParamDict
-from spirl.utils.pytorch_utils import get_constant_parameter, make_one_hot
+from spirl.utils.pytorch_utils import make_one_hot
 from spirl.models.skill_prior_mdl import SkillPriorMdl, ImageSkillPriorMdl
 from spirl.modules.subnetworks import Predictor, BaseProcessingLSTM, Encoder
 from spirl.modules.variational_inference import MultivariateGaussian
@@ -20,7 +20,6 @@ class CDSPiRLMdl(SkillPriorMdl):
                                  output_size= self.action_size * 2,
                                  mid_size=self._hp.nz_mid_prior)
         self.p = self._build_prior_ensemble()
-        # self._log_sigma = get_constant_parameter(0., learnable=False)
 
     def decode(self, z, cond_inputs, steps, inputs=None):
         # the decode only use for training, so here we use deterministic 
