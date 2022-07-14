@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from spirl.utils.general_utils import batch_apply, ParamDict
-from spirl.utils.pytorch_utils import make_one_hot
+from spirl.utils.pytorch_utils import get_constant_parameter, make_one_hot
 from spirl.models.skill_prior_mdl import SkillPriorMdl, ImageSkillPriorMdl
 from spirl.modules.subnetworks import Predictor, BaseProcessingLSTM, Encoder
 from spirl.modules.variational_inference import MultivariateGaussian
@@ -20,7 +20,7 @@ class CDSPiRLMdl(SkillPriorMdl):
                                  output_size= self.action_size * 2,
                                  mid_size=self._hp.nz_mid_prior)
         self.p = self._build_prior_ensemble()
-        # self._log_sigma = get_constant_parameter(0., learnable=False)
+        self._log_sigma = get_constant_parameter(0., learnable=False)
 
     def decode(self, z, cond_inputs, steps, inputs=None):
         # the decode only use for training, so here we use deterministic 
@@ -28,13 +28,6 @@ class CDSPiRLMdl(SkillPriorMdl):
         assert inputs is not None       # need additional state sequence input for full decode
         seq_enc = self._get_seq_enc(inputs)
         decode_inputs = torch.cat((seq_enc[:, :steps], z[:, None].repeat(1, steps, 1)), dim=-1)
-
-        print('='*20)
-        print('seq_enc', seq_enc.shape, 'z', z.shape)
-        print('seq_enc[:, :steps]', seq_enc[:, :steps].shape)
-        print('z repeat', z[:, None].repeat(1, steps, 1).shape)
-        print('decode_inputs',  decode_inputs.shape)
-
 
         output = batch_apply(decode_inputs, self.decoder)
         output = output[..., :self.action_size]
@@ -100,10 +93,18 @@ class TimeIndexCDSPiRLMDL(CDSPiRLMdl):
         assert inputs is not None       # need additional state sequence input for full decode
         seq_enc = self._get_seq_enc(inputs)
 
-        idx = torch.tensor((seq_enc.shape[0], torch.arange(steps)), device=self.device)
-        one_hot = make_one_hot(idx, steps)
-
+        idx = torch.tensor(torch.arange(steps), device=self.device)
+        one_hot = make_one_hot(idx, steps).repeat(seq_enc.shape[0], 1, 1)
         decode_inputs = torch.cat((seq_enc[:, :steps], z[:, None].repeat(1, steps, 1), one_hot), dim=-1)
+
+        # print('='*20)
+        # print('seq_enc', seq_enc.shape, 'z', z.shape)
+        # print('seq_enc[:, :steps]', seq_enc[:, :steps].shape)
+        # print('z repeat', z[:, None].repeat(1, steps, 1).shape)
+        # print('decode_inputs',  decode_inputs.shape)
+
+        # # print('idx', idx.shape)
+        # print('one hot', one_hot.shape)
 
         output = batch_apply(decode_inputs, self.decoder)
         output = output[..., :self.action_size]

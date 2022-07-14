@@ -3,7 +3,7 @@ import os
 # from spirl.models.skill_prior_mdl import SkillSpaceLogger
 from spirl.components.logger import Logger
 from spirl.models.closed_loop_spirl_mdl import ClSPiRLMdl
-from spirl.models.cond_dec_spirl_mdl import CDSPiRLMdl
+from spirl.models.cond_dec_spirl_mdl import CDSPiRLMdl, TimeIndexCDSPiRLMDL
 from spirl.utils.general_utils import AttrDict
 from spirl.configs.default_data_configs.gts import data_spec
 from spirl.components.evaluator import TopOfNSequenceEvaluator
@@ -14,7 +14,8 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 configuration = {
     # 'model': ClSPiRLMdl,
-    'model': CDSPiRLMdl,
+    # 'model': CDSPiRLMdl,
+    'model': TimeIndexCDSPiRLMDL,
     'logger': Logger,
     'data_dir': os.path.join(os.environ['DATA_DIR'], 'gts'),
     'epoch_cycles_train': 10,
