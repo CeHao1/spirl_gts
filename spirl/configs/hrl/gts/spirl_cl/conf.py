@@ -4,10 +4,7 @@ from spirl.rl.components.critic import SplitObsMLPCritic
 from spirl.models.closed_loop_spirl_mdl import ClSPiRLMdl
 from spirl.rl.policies.cl_model_policies import ClModelPolicy
 
-from spirl.rl.components.agent import FixedIntervalTimeIndexedHierarchicalAgent
 
-
-configuration.agent = FixedIntervalTimeIndexedHierarchicalAgent
 
 # update model params to conditioned decoder on state
 ll_model_params.cond_decode = True
