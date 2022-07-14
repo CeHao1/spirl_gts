@@ -29,6 +29,13 @@ class CDSPiRLMdl(SkillPriorMdl):
         seq_enc = self._get_seq_enc(inputs)
         decode_inputs = torch.cat((seq_enc[:, :steps], z[:, None].repeat(1, steps, 1)), dim=-1)
 
+        print('='*20)
+        print('seq_enc', seq_enc.shape, 'z', z.shape)
+        print('seq_enc[:, :steps]', seq_enc[:, :steps].shape)
+        print('z repeat', z[:, None].repeat(1, steps, 1).shape)
+        print('decode_inputs',  decode_inputs.shape)
+
+
         output = batch_apply(decode_inputs, self.decoder)
         output = output[..., :self.action_size]
         return output
