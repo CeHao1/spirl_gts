@@ -86,7 +86,9 @@ class LLVarClModelPolicy(ClModelPolicy):
     def _build_network(self):
         net = self._hp.policy_model(self._hp.policy_model_params, None)
         if self._hp.load_weights:
-            BaseAgent.load_model_weights(net, self._hp.policy_model_checkpoint, self._hp.policy_model_epoch)       
+            BaseAgent.load_model_weights(net, self._hp.policy_model_checkpoint, self._hp.policy_model_epoch)  
+        self._log_sigma = torch.tensor(self._hp.initial_log_sigma * np.ones(self.action_dim, dtype=np.float32),
+                                       device=self.device, requires_grad=True)     
         return net
 
     def _compute_action_dist(self, obs):
@@ -109,6 +111,7 @@ class LLVarClModelPolicy(ClModelPolicy):
         act_mean = act[..., : self.net.action_size]
         act_log_std = act[..., self.net.action_size :]
         log_sigma =  act_log_std + self._log_sigma[None].repeat(act.shape[0], 1)
+        # log_sigma =  act_log_std 
 
         return MultivariateGaussian(mu=act_mean, log_sigma=log_sigma)
 
