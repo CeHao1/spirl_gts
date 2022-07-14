@@ -20,7 +20,7 @@ class CDSPiRLMdl(SkillPriorMdl):
                                  output_size= self.action_size * 2,
                                  mid_size=self._hp.nz_mid_prior)
         self.p = self._build_prior_ensemble()
-        self._log_sigma = get_constant_parameter(0., learnable=False)
+        # self._log_sigma = get_constant_parameter(0., learnable=False)
 
     def decode(self, z, cond_inputs, steps, inputs=None):
         # the decode only use for training, so here we use deterministic 

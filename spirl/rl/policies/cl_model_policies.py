@@ -111,7 +111,6 @@ class LLVarClModelPolicy(ClModelPolicy):
         act_mean = act[..., : self.net.action_size]
         act_log_std = act[..., self.net.action_size :]
         log_sigma =  act_log_std + self._log_sigma[None].repeat(act.shape[0], 1)
-        # log_sigma =  act_log_std 
 
         return MultivariateGaussian(mu=act_mean, log_sigma=log_sigma)
 
