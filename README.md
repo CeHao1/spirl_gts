@@ -85,7 +85,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/no_prior/ --seed=0 --pref
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## The structure of agent and policy
 
-                | no prior          |  spirl                            | spirl cl          |
+                | no prior          |  spirl                            | spirl cl          |   sc + ll
 
  LL model       | SkillPriorMdl     |                                   | ClSPiRLMdl        |
  LL policy      |                   |                                   | ClModelPolicy     |
@@ -106,4 +106,5 @@ ForwardLSTMCell(CustomLSTMCell) 可以人为的初始化每个层的 hidden vari
 CustomLSTM 自己写的lstm，是base
 BaseProcessingLSTM 这个东西是不支持 输出 hidden variable 的
 
+state-conditioned:sc, low-level fine tuning: ll
 

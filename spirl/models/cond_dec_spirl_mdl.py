@@ -17,16 +17,21 @@ class CDSPiRLMdl(SkillPriorMdl):
         self.q = self._build_inference_net()
         self.decoder = Predictor(self._hp,
                                  input_size=self.enc_size + self._hp.nz_vae,
-                                 output_size=self._hp.action_dim,
+                                 output_size= self.action_size * 2,
                                  mid_size=self._hp.nz_mid_prior)
         self.p = self._build_prior_ensemble()
-        self.log_sigma = get_constant_parameter(0., learnable=False)
+        self._log_sigma = get_constant_parameter(0., learnable=False)
 
     def decode(self, z, cond_inputs, steps, inputs=None):
+        # the decode only use for training, so here we use deterministic 
+        
         assert inputs is not None       # need additional state sequence input for full decode
         seq_enc = self._get_seq_enc(inputs)
         decode_inputs = torch.cat((seq_enc[:, :steps], z[:, None].repeat(1, steps, 1)), dim=-1)
-        return batch_apply(decode_inputs, self.decoder)
+
+        output = batch_apply(decode_inputs, self.decoder)
+        output = output[..., :self.action_size]
+        return output
 
     def _build_inference_net(self):
         # condition inference on states since decoder is conditioned on states too
@@ -63,3 +68,8 @@ class CDSPiRLMdl(SkillPriorMdl):
     @property
     def enc_size(self):
         return self._hp.state_dim
+
+    @property
+    def action_size(self):
+        return self._hp.action_dim
+
