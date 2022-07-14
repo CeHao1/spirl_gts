@@ -34,8 +34,6 @@ class CDSPiRLMdl(SkillPriorMdl):
         return output
 
     def _build_inference_net(self):
-        # condition inference on states since decoder is conditioned on states too
-        # input_size = self._hp.action_dim + self.prior_input_size
         input_size  = self._hp.action_dim 
         return torch.nn.Sequential(
             BaseProcessingLSTM(self._hp, in_dim=input_size, out_dim=self._hp.nz_enc),
@@ -43,8 +41,6 @@ class CDSPiRLMdl(SkillPriorMdl):
         )
 
     def _run_inference(self, inputs):
-        # run inference with state sequence conditioning
-        # inf_input = torch.cat((inputs.actions, self._get_seq_enc(inputs)), dim=-1)
         inf_input = inputs.actions
         return MultivariateGaussian(self.q(inf_input)[:, -1])
 
