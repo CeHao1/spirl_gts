@@ -52,11 +52,7 @@ class ClModelPolicy(Policy):
         else:
             # during update (ie with batch size > 1) recompute LL action from z
             act = self.net.decoder(torch.cat((split_obs.cond_input, split_obs.z), dim=-1))
-
-        act_mean = act[..., : self.net.action_size]
-        act_log_std = act[..., self.net.action_size :]
-        log_sigma =  act_log_std + self._log_sigma[None].repeat(act.shape[0], 1)
-        return MultivariateGaussian(mu=act_mean, log_sigma=log_sigma)
+        return MultivariateGaussian(mu=act, log_sigma=self._log_sigma[None].repeat(act.shape[0], 1))
 
     def sample_rand(self, obs):
         if len(obs.shape) == 1:
@@ -109,7 +105,12 @@ class LLVarClModelPolicy(ClModelPolicy):
             # during update (ie with batch size > 1) recompute LL action from z
             concatenate_obs = torch.cat((split_obs.cond_input, split_obs.z), dim=-1)
             act = self.net.decoder(concatenate_obs)
-        return MultivariateGaussian(mu=act)
+
+        act_mean = act[..., : self.net.action_size]
+        act_log_std = act[..., self.net.action_size :]
+        log_sigma =  act_log_std + self._log_sigma[None].repeat(act.shape[0], 1)
+
+        return MultivariateGaussian(mu=act_mean, log_sigma=log_sigma)
 
 class ACClModelPolicy(ClModelPolicy):
     """Handles image observations in ClModelPolicy."""

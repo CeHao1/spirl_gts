@@ -14,8 +14,8 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 configuration = {
     # 'model': ClSPiRLMdl,
-    # 'model': CDSPiRLMdl,
-    'model': TimeIndexCDSPiRLMDL,
+    'model': CDSPiRLMdl,
+    # 'model': TimeIndexCDSPiRLMDL,
     'logger': Logger,
     'data_dir': os.path.join(os.environ['DATA_DIR'], 'gts'),
     'epoch_cycles_train': 10,

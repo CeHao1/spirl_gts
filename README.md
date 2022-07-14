@@ -87,8 +87,8 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/no_prior/ --seed=0 --pref
 
                 | no prior          |  spirl                            | spirl cl          |   sc + ll
 
- LL model       | SkillPriorMdl     |                                   | ClSPiRLMdl        |
- LL policy      |                   |                                   | ClModelPolicy     |
+ LL model       | SkillPriorMdl     |                                   | ClSPiRLMdl        | CDSPiRLMdl TimeIndexCDSPiRLMDL
+ LL policy      |                   |                                   | ClModelPolicy     | 
  LL agent       | SkillSpaceAgent   |                                   | SACAgent          |
 
  HL policy      | MLPPolicy         | LearnedPriorAugmentedPIPolicy     |                   |
