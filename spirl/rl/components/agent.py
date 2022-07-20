@@ -246,19 +246,19 @@ class HierarchicalAgent(BaseAgent):
 
         return self._remove_batch(output) if len(obs.shape) == 1 else output
 
-    def no_pop_act(self, obs):
-        obs_input = obs[None] if len(obs.shape) == 1 else obs    # need batch input for agents
-        output = AttrDict()
-        hl_output = self.hl_agent.act(obs_input)
-        output.update(self.ll_agent.no_pop_act(self.make_ll_obs(obs_input, hl_output.action)))
+    # def no_pop_act(self, obs):
+    #     obs_input = obs[None] if len(obs.shape) == 1 else obs    # need batch input for agents
+    #     output = AttrDict()
+    #     hl_output = self.hl_agent.act(obs_input)
+    #     output.update(self.ll_agent.no_pop_act(self.make_ll_obs(obs_input, hl_output.action)))
 
-        return self._remove_batch(output) if len(obs.shape) == 1 else output
+    #     return self._remove_batch(output) if len(obs.shape) == 1 else output
 
-    def get_prior_action(self, obs):
-        obs = map2torch(obs, self._hp.device)
-        obs_input = obs[None] if len(obs.shape) == 1 else obs
+    # def get_prior_action(self, obs):
+    #     obs = map2torch(obs, self._hp.device)
+    #     obs_input = obs[None] if len(obs.shape) == 1 else obs
 
-        return self.hl_agent.policy.get_prior_actions(obs_input)
+    #     return self.hl_agent.policy.get_prior_actions(obs_input)
 
 
     def update(self, experience_batches):
