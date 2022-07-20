@@ -8,9 +8,9 @@ export DATA_DIR=./data
 =====================================================================================
 # for state conditioned 
 ## train model
-python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cd --val_data_size=160 --prefix=cd_gts_01 --resume=latest
+python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cd --val_data_size=160 --prefix=cd_gts_t01 --resume=latest
 ## train agent
-python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/spirl_cd/ --prefix=cd_gts_01 --gpu=0 --resume=latest
+python3 spirl/rl/train.py --gpu=0 --path=spirl/configs/hrl/gts/spirl_cd/ --prefix=cd_gts_t01  --resume=latest
 
 
 =====================================================================================
