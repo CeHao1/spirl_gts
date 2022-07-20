@@ -108,4 +108,19 @@ CustomLSTM 自己写的lstm，是base
 BaseProcessingLSTM 这个东西是不支持 输出 hidden variable 的
 
 state-conditioned:sc, low-level fine tuning: ll
+需要增加的部分：
 
+ActionPriorSACAgent, 用来掌管critic的，用的KLD 代替entropy。需要修改 value, critic_loss的计算方法，分别为HL和LL。
+其中LL 的V 就是HL的Q， HL的V也用来更新LL的Q。
+因此（1）要区分HL，LL的 SACagent，（2）要把他们的critic互相存储， （3）LL要能够利用obs split之后恢复k，判断beta
+
+LearnedPriorAugmentedPIPolicy 这是HL 的policy，貌似没变可以用。
+但是在LL的 ClModelPolicy 需要结合， LearnedPriorAugmentedPIPolicy 的初始化和reg。
+LL 的agent 也用 ActionPriorSACAgent 拓展出来的结果。
+
+然后joint agent 也要修改成为对应的。
+
+1. 创建新的 joint agent, HL agent, LL agent, HL policy, LL policy
+2. joint agent 需要将 HL agent, LL agent 内的critic相互同步
+3. 写出正确的skill-critic 的 policy loss, Q loss
+4. 考虑一下update 时候的lr 和 batch_size
