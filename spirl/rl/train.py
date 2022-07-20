@@ -15,8 +15,7 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'HRL01'
-# WANDB_PROJECT_NAME = 'SAC01'
+WANDB_PROJECT_NAME = 'HRL02'
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -104,7 +103,7 @@ class RLTrainer:
     def train(self, start_epoch):
         """Run outer training loop."""
 
-        # self._hp.n_warmup_steps = 256
+        # self._hp.n_warmup_steps = 0
         if self._hp.n_warmup_steps > 0:
             self.warmup()
 

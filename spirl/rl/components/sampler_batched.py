@@ -6,7 +6,7 @@ from spirl.utils.general_utils import listdict2dictlist, AttrDict, ParamDict, ob
 from spirl.modules.variational_inference import MultivariateGaussian
 from spirl.rl.utils.reward_fcns import sparse_threshold
 
-class Sampler:
+class SamplerBatched:
     """Collects rollouts from the environment using the given agent."""
     def __init__(self, config, env, agent, logger, max_episode_len):
         self._hp = self._default_hparams().overwrite(config)
@@ -46,6 +46,9 @@ class Sampler:
                             continue
                         agent_output = self._postprocess_agent_output(agent_output)
                         obs, reward, done, info = self._env.step(agent_output.action)
+                        assert len(obs.shape) == 2 # must be batched array. first dim is batch size, second dim is the obs data
+                        batch_length = obs.shape[0]
+
                         obs = self._postprocess_obs(obs)
                         experience_batch.append(AttrDict(
                             observation=self._obs,
@@ -57,17 +60,20 @@ class Sampler:
 
                         # update stored observation
                         self._obs = obs
-                        step += 1; self._episode_step += 1; self._episode_reward += reward
+                        step += batch_length; 
+                        self._episode_step += batch_length; 
+                        self._episode_reward += np.mean(reward)
 
                         # reset if episode ends
-                        if done or self._episode_step >= self._max_episode_len:
-                            if not done:    # force done to be True for timeout
-                                experience_batch[-1].done = True
+                        if np.any(done) or self._episode_step >= self._max_episode_len:
+                            if not np.all(done):    # force done to be True for timeout
+                                for exp in experience_batch[-1]:
+                                    exp.done = True
                             self._episode_reset(global_step)
 
         return listdict2dictlist(experience_batch), step
 
-    def sample_episode(self, is_train, render=False, deterministic_action=False, return_list=False):
+    def sample_episode(self, is_train, render=False, deterministic_action=False):
         """Samples one episode from the environment."""
         self.init(is_train)
         episode, done = [], False
@@ -86,6 +92,9 @@ class Sampler:
 
                         # print(agent_output.action)
                         obs, reward, done, info = self._env.step(agent_output.action)
+                        assert len(obs.shape) == 2
+                        batch_length = obs.shape[0]
+
                         obs = self._postprocess_obs(obs)
                         episode.append(AttrDict(
                             observation=self._obs,
@@ -101,12 +110,12 @@ class Sampler:
                         
                         # update stored observation
                         self._obs = obs
-                        self._episode_step += 1
-                        self._episode_reward += reward
+                        self._episode_step += batch_length
+                        self._episode_reward += np.mean(reward)
 
-        episode[-1].done = True     # make sure episode is marked as done at final time step
-        if return_list:
-            return [listdict2dictlist(episode)]
+        # episode[-1].done = True     # make sure episode is marked as done at final time step
+        for exp in episode[-1]:
+            exp.done = True
 
         return listdict2dictlist(episode)
 
@@ -138,16 +147,12 @@ class Sampler:
         """Optionally post-process / store agent output."""
         if deterministic_action:
             if isinstance(agent_output.dist, MultivariateGaussian):
-                # print('change the action to determin')
                 agent_output.ori_action = agent_output.action
                 agent_output.action = agent_output.dist.mean[0]
-
-                # print('ori action',agent_output.ori_action )
-                # print('new action', agent_output.action)
         return agent_output
 
 
-class HierarchicalSampler(Sampler):
+class HierarchicalSamplerBached(SamplerBatched):
     """Collects experience batches by rolling out a hierarchical agent. Aggregates low-level batches into HL batch."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -166,6 +171,9 @@ class HierarchicalSampler(Sampler):
                         agent_output = self.sample_action(self._obs)
                         agent_output = self._postprocess_agent_output(agent_output)
                         obs, reward, done, info = self._env.step(agent_output.action)
+                        assert len(obs.shape) == 2
+                        batch_length = obs.shape[0]
+
                         obs = self._postprocess_obs(obs)
 
                         # update last step's 'observation_next' with HL action
@@ -184,7 +192,7 @@ class HierarchicalSampler(Sampler):
                             ))
 
                         # store HL experience batch if this was HL action or episode is done
-                        if agent_output.is_hl_step or (done or self._episode_step >= self._max_episode_len-1):
+                        if agent_output.is_hl_step or (np.any(done) or self._episode_step >= self._max_episode_len-1):
                             if self.last_hl_obs is not None and self.last_hl_action is not None:
                                 hl_experience_batch.append(AttrDict(
                                     observation=self.last_hl_obs,
@@ -193,26 +201,35 @@ class HierarchicalSampler(Sampler):
                                     action=self.last_hl_action,
                                     observation_next=obs,
                                 ))
-                                hl_step += 1
-                                if done:
-                                    hl_experience_batch[-1].reward += reward  # add terminal reward
-                                if hl_step % 1000 == 0:
-                                    print("Sample step {}".format(hl_step))
+                                hl_step += batch_length
+                                if np.any(done):
+                                    # hl_experience_batch[-1].reward += reward  # add terminal reward
+                                    for exp, r in zip(hl_experience_batch[-1].reward, reward):
+                                        exp.reward += r
+                                # if hl_step % 1000 == 0:
+                                #     print("Sample step {}".format(hl_step))
                             self.last_hl_obs = self._obs if self._episode_step == 0 else obs
                             self.last_hl_action = agent_output.hl_action
                             self.reward_since_last_hl = 0
 
                         # update stored observation
                         self._obs = obs
-                        env_steps += 1; self._episode_step += 1; self._episode_reward += reward
-                        self.reward_since_last_hl += reward
+                        env_steps += batch_length; 
+                        self._episode_step += batch_length; 
+                        self._episode_reward += np.mean(reward)
+                        self.reward_since_last_hl += np.array(reward)
 
                         # reset if episode ends
-                        if done or self._episode_step >= self._max_episode_len:
-                            if not done:    # force done to be True for timeout
-                                ll_experience_batch[-1].done = True
+                        if np.any(done) or self._episode_step >= self._max_episode_len:
+                        # if done or self._episode_step >= self._max_episode_len:
+                            if not np.all(done):    # force done to be True for timeout
+                                # ll_experience_batch[-1].done = True
+                                for exp in ll_experience_batch[-1].done:
+                                    exp = True
                                 if hl_experience_batch:   # can potentially be empty 
-                                    hl_experience_batch[-1].done = True
+                                    # hl_experience_batch[-1].done = True
+                                    for exp in hl_experience_batch[-1].done:
+                                        exp = True
                             print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
                             self._episode_reset(global_step)
         return AttrDict(
@@ -224,63 +241,3 @@ class HierarchicalSampler(Sampler):
         super()._episode_reset(global_step)
         self.last_hl_obs, self.last_hl_action = None, None
         self.reward_since_last_hl = 0
-
-
-class ImageAugmentedSampler(Sampler):
-    """Appends image rendering to raw observation."""
-    def _postprocess_obs(self, obs):
-        img = self._env.render().transpose(2, 0, 1) * 2. - 1.0
-        return np.concatenate((obs, img.flatten()))
-
-
-class MultiImageAugmentedSampler(Sampler):
-    """Appends multiple past images to current observation."""
-    def _episode_reset(self, global_step=None):
-        self._past_frames = deque(maxlen=self._hp.n_frames)     # build ring-buffer of past images
-        super()._episode_reset(global_step)
-
-    def _postprocess_obs(self, obs):
-        img = self._env.render().transpose(2, 0, 1) * 2. - 1.0
-        if not self._past_frames:   # initialize past frames with N copies of current frame
-            [self._past_frames.append(img) for _ in range(self._hp.n_frames - 1)]
-        self._past_frames.append(img)
-        stacked_img = np.concatenate(list(self._past_frames), axis=0)
-        return np.concatenate((obs, stacked_img.flatten()))
-
-
-class ACImageAugmentedSampler(ImageAugmentedSampler):
-    """Adds no-op renders to make sure agent-centric camera reaches agent."""
-    def _reset_env(self):
-        obs = super()._reset_env()
-        for _ in range(100):  # so that camera can "reach" agent
-            self._env.render(mode='rgb_array')
-        return obs
-
-
-class ACMultiImageAugmentedSampler(MultiImageAugmentedSampler, ACImageAugmentedSampler):
-    def _reset_env(self):
-        return ACImageAugmentedSampler._reset_env(self)
-
-
-class ImageAugmentedHierarchicalSampler(HierarchicalSampler, ImageAugmentedSampler):
-    def _postprocess_obs(self, *args, **kwargs):
-        return ImageAugmentedSampler._postprocess_obs(self, *args, **kwargs)
-
-
-class MultiImageAugmentedHierarchicalSampler(HierarchicalSampler, MultiImageAugmentedSampler):
-    def _postprocess_obs(self, *args, **kwargs):
-        return MultiImageAugmentedSampler._postprocess_obs(self, *args, **kwargs)
-
-    def _episode_reset(self, *args, **kwargs):
-        return MultiImageAugmentedSampler._episode_reset(self, *args, **kwargs)
-
-
-class ACImageAugmentedHierarchicalSampler(ImageAugmentedHierarchicalSampler, ACImageAugmentedSampler):
-    def _reset_env(self):
-        return ACImageAugmentedSampler._reset_env(self)
-
-
-class ACMultiImageAugmentedHierarchicalSampler(MultiImageAugmentedHierarchicalSampler,
-                                               ACImageAugmentedHierarchicalSampler):
-    def _reset_env(self):
-        return ACImageAugmentedHierarchicalSampler._reset_env(self)

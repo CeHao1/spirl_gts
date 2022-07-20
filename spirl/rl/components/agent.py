@@ -8,7 +8,7 @@ from torch.optim import Adam, SGD
 
 from spirl.utils.general_utils import ParamDict, get_clipped_optimizer, AttrDict, prefix_dict, map_dict, \
                                         nan_hook, np2obj, ConstantSchedule
-from spirl.utils.pytorch_utils import RAdam, remove_grads, map2np, map2torch
+from spirl.utils.pytorch_utils import RAdam, remove_grads, map2np, map2torch, make_one_hot
 from spirl.utils.vis_utils import add_caption_to_img, add_captions_to_seq
 from spirl.rl.components.normalization import DummyNormalizer
 from spirl.rl.components.policy import Policy
@@ -266,9 +266,11 @@ class HierarchicalAgent(BaseAgent):
         assert isinstance(experience_batches, AttrDict)  # update requires batches for both HL and LL
         update_outputs = AttrDict()
         if self._hp.update_hl:
+            print('updating hl agent', type(self.hl_agent))
             hl_update_outputs = self.hl_agent.update(experience_batches.hl_batch)
             update_outputs.update(prefix_dict(hl_update_outputs, "hl_"))
         if self._hp.update_ll:
+            print('updating ll agent', type(self.ll_agent))
             ll_update_outputs = self.ll_agent.update(experience_batches.ll_batch)
             update_outputs.update(ll_update_outputs)
         return update_outputs
@@ -359,3 +361,19 @@ class FixedIntervalHierarchicalAgent(HierarchicalAgent):
     def reset(self):
         super().reset()
         self._steps_since_hl = 0     # start new episode with high-level step
+
+class FixedIntervalTimeIndexedHierarchicalAgent(FixedIntervalHierarchicalAgent):
+    def make_ll_obs(self, obs, hl_action):
+        """Creates low-level agent's observation from env observation,  HL action and time index."""
+        idx = torch.tensor([self._steps_since_hl % self._hp.hl_interval])
+        one_hot_torch = make_one_hot(idx, self._hp.hl_interval).repeat(obs.shape[0], 1)
+        one_hot_np = map2np(one_hot_torch)
+
+        # print("="*20)
+        # print('obs',obs.shape, type(obs))
+        # print('hl_action', hl_action.shape, type(hl_action))
+        # print('idx', idx.shape)
+        # print('one hot torch', one_hot_torch.shape, type(one_hot_torch))
+        # print('one hot np', one_hot_np.shape, type(one_hot_np))
+        
+        return np.concatenate((obs, hl_action, one_hot_np), axis=-1)

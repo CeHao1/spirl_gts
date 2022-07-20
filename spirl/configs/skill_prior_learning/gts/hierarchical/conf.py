@@ -8,7 +8,6 @@ from spirl.components.evaluator import TopOfNSequenceEvaluator
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
-
 configuration = {
     'model': SkillPriorMdl,
     'logger': Logger,
@@ -17,6 +16,8 @@ configuration = {
     'evaluator': TopOfNSequenceEvaluator,
     'top_of_n_eval': 100,
     'top_comp_metric': 'mse',
+
+    'batch_size':128,
 }
 configuration = AttrDict(configuration)
 
@@ -29,14 +30,22 @@ model_config = AttrDict(
 
     n_processing_layers=5,
     n_rollout_steps = 4,
-    nz_vae = 4,
+    nz_vae = 6,
 
 
+    #============== for vae training ==========
     reconstruction_mse_weight = 100.,
     kl_div_weight=5e-4,
-    learned_prior_weight = 1e-10,
-    action_dim_weights = [10.0, 1.0],
+    # learned_prior_weight = 1e-10,
+    action_dim_weights = [100.0, 1.0],
     # action_dim_weights = [1.0, 1.0],
+
+    learned_prior_weight = 1e-3,
+
+    # ============= for prior training =========
+    # reconstruction_mse_weight = 1e-10,
+    # kl_div_weight=1e-10,
+    # learned_prior_weight = 1,
 )
 
 # Dataset

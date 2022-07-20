@@ -23,7 +23,7 @@ from spirl.components.trainer_base import BaseTrainer
 from spirl.utils.wandb import WandBLogger
 from spirl.components.params import get_args
 
-WANDB_PROJECT_NAME = 'hrl_prior'
+WANDB_PROJECT_NAME = 'cl_prior'
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -71,8 +71,7 @@ class ModelTrainer(BaseTrainer):
             start_epoch = self.resume(args.resume, conf.ckpt_path)
 
 
-        print('start epch is ', start_epoch)
-        # self._hp.num_epochs = 2
+        print('start epoch is ', start_epoch)
 
         if args.val_sweep:
             self.run_val_sweep()
@@ -107,8 +106,8 @@ class ModelTrainer(BaseTrainer):
         return default_dict
     
     def train(self, start_epoch):
-        if not self.args.skip_first_val:
-            self.val()
+        # if not self.args.skip_first_val:
+        #     self.val()
             
         for epoch in range(start_epoch, self._hp.num_epochs):
             self.train_epoch(epoch)
@@ -121,8 +120,8 @@ class ModelTrainer(BaseTrainer):
                     'optimizer': self.optimizer.state_dict(),
                 },  os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name(epoch))
 
-            if epoch % self.args.val_interval == 0:
-                self.val()
+            # if epoch % self.args.val_interval == 0:
+            #     self.val()
 
     def train_epoch(self, epoch):
         self.model.train()
@@ -252,6 +251,7 @@ class ModelTrainer(BaseTrainer):
     def postprocess_conf(self, conf):
         conf.model['batch_size'] = self._hp.batch_size if not torch.cuda.is_available() \
             else int(self._hp.batch_size / torch.cuda.device_count())
+        # conf.model['batch_size'] = 64
         conf.model.update(conf.data.dataset_spec)
         conf.model['device'] = conf.data['device'] = self.device.type
         return conf

@@ -13,6 +13,7 @@ from spirl.configs.default_data_configs.gts import data_spec
 
 from spirl.rl.envs.gts_multi import GTSEnv_Multi
 from spirl.rl.components.sampler_multi import HierarchicalSamplerMulti
+from spirl.rl.components.sampler_batched import SamplerBatched, HierarchicalSamplerBached
 
 from spirl.rl.envs.gts import GTSEnv_Base
 from spirl.rl.components.sampler import HierarchicalSampler
@@ -25,7 +26,7 @@ notes = 'hierarchical RL on the gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    # do_init = False,
+    do_init = False,
     action_standard = True,
 
     # reward_function = eval_time_trial_reward_function,
@@ -40,16 +41,21 @@ configuration = {
     'data_dir': '.',
     'num_epochs': 300,
     'max_rollout_len': 10000,
-    'n_steps_per_epoch': 10000,
-    # 'n_warmup_steps': 40000,
-    'n_warmup_steps': 8000,
+    # 'n_steps_per_epoch': 10000,
+    # 'n_warmup_steps': 2000,
+    # 'n_warmup_steps': 8000,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Multi,
-    'sampler':HierarchicalSamplerMulti,
+    # 'sampler':HierarchicalSamplerMulti,
 
     # 'environment':GTSEnv_Base,
-    # 'sampler':HierarchicalSampler
+    # 'sampler':HierarchicalSampler,
+    'sampler':HierarchicalSamplerBached,
+
+
+    'n_steps_per_epoch': 200,
+    'n_warmup_steps': 200,
 
 }
 configuration = AttrDict(configuration)
@@ -68,7 +74,8 @@ obs_norm_params = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    batch_size=256, #256,
+    # batch_size=256, #256,
+    batch_size=64, 
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -85,7 +92,7 @@ ll_model_params = AttrDict(
     nz_mid=128,
     n_processing_layers=5,
     # nz_vae=10,
-    nz_vae = 4,
+    nz_vae = 6,
     n_rollout_steps=4,
 )
 

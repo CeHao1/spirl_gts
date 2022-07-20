@@ -142,6 +142,12 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
                                             cond_inputs=self._learned_prior_input(inputs),
                                             steps=self._hp.n_rollout_steps,
                                             inputs=inputs)
+
+        # print('='*10)
+        # print('actions', inputs.actions.shape, 'states', inputs.states.shape)
+        # print('input actions\n', inputs.actions[0])
+        # print('output recon\n', output.reconstruction[0])
+
         return output
 
     def loss(self, model_output, inputs):
@@ -153,6 +159,9 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
 
         weights = self._hp.action_dim_weights
 
+        # print('input actions', inputs.actions[0])
+        # print('output recon', model_output.reconstruction[0])
+
         # reconstruction loss, assume unit variance model output Gaussian
         # losses.rec_mse = NLL(self._hp.reconstruction_mse_weight) \
         #     (Gaussian(model_output.reconstruction, torch.zeros_like(model_output.reconstruction)),
@@ -163,9 +172,6 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         losses.rec_mse = MSE(self._hp.reconstruction_mse_weight) \
                         (model_output.reconstruction, self._regression_targets(inputs), 
                         weights=weights, separate_dim=True)
-
-        # import time
-        # time.sleep(100)
 
         # KL loss
         losses.kl_loss = KLDivLoss(self.beta)(model_output.q, model_output.p)
