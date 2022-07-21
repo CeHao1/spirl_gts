@@ -169,7 +169,7 @@ class LLActionAgent(SACAgent):
     def _compute_termination_mask(self, obs):
         # [1,0,0] is the start of a new hl step, so return 1 in the mask
         split_obs  = self._split_obs(obs) # to s,z,k
-        beta_onehot = split_obs.k
+        beta_onehot = split_obs.time_index
         beta = parse_one_hot(beta_onehot)
         beta_mask = torch.where(beta==torch.tensor(0), 1, 0)
         return beta_mask
@@ -178,9 +178,9 @@ class LLActionAgent(SACAgent):
     def _split_obs(self, obs):
         assert obs.shape[1] == self.state_dim + self.latent_dim + self.onehot_dim
         return AttrDict(
-            s=obs[:, :self.state_dim],   # condition decoding on state
+            cond_input=obs[:, :self.state_dim],   # condition decoding on state
             z=obs[:, self.state_dim:-self.onehot_dim],
-            k=obs[:, -self.onehot_dim:],
+            time_index=obs[:, -self.onehot_dim:],
         )
 
     # ====================================== property =======================================

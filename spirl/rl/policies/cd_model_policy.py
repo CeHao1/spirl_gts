@@ -7,6 +7,8 @@ from spirl.rl.components.policy import Policy
 from spirl.rl.components.agent import BaseAgent
 from spirl.modules.variational_inference import MultivariateGaussian
 
+from spirl.rl.policies.prior_policies import LearnedPriorAugmentedPolicy
+
 class CDModelPolicy(Policy):
 
     def __init__(self, config):
@@ -114,3 +116,12 @@ class TimeIndexedCDMdlPolicy(CDModelPolicy):
 
     def _get_concatenate_obs(self, split_obs):
         return torch.cat((split_obs.cond_input, split_obs.z, split_obs.time_index), dim=-1)
+
+
+class LearnedPriorAugmented_TimeIndexedCDMdlPolicy(TimeIndexedCDMdlPolicy, LearnedPriorAugmentedPolicy):
+    def __init__(self, config):
+        LearnedPriorAugmentedPolicy.__init__(self, config)
+
+    def forward(self, obs):
+        with no_batchnorm_update(self):
+            return LearnedPriorAugmentedPolicy.forward(self, obs)
