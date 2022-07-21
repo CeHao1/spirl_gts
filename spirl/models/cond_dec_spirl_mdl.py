@@ -86,7 +86,7 @@ class TimeIndexCDSPiRLMDL(CDSPiRLMdl):
         # the decode only use for training, so here we use deterministic 
         
         assert inputs is not None       # need additional state sequence input for full decode
-        seq_enc = self._get_seq_enc(inputs)
+        seq_enc = self._get_seq_enc(inputs) # states
 
         idx = torch.tensor(torch.arange(steps), device=self.device)
         one_hot = make_one_hot(idx, steps).repeat(seq_enc.shape[0], 1, 1)
