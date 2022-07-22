@@ -18,8 +18,8 @@ class HLSKillAgent(ActionPriorSACAgent):
         # policy is PIz(z|s) when k=0
         # Qa will generate the Q target
  
-    def update_by_ll_agent(self, ll_agent):
-        self.ll_agent = ll_agent
+    # def update_by_ll_agent(self, ll_agent):
+    #     self.ll_agent = ll_agent
 
     def update(self, experience_batch):
 
@@ -75,7 +75,7 @@ class HLSKillAgent(ActionPriorSACAgent):
         # update the input as (s, z, k0), k0 =  one-hot method 
         # PIz(z|s) = argmax E[ Qz(s,z,k0) - alpz*DKL(PIz||Pa) ] 
 
-        k0 = self._get_k0_onehot()
+        k0 = self._get_k0_onehot(experience_batch.observation)
         input = torch.cat((experience_batch.observation, self._prep_actionpolicy_output.action, k0), dim=-1)
         
         q_est = torch.min(*[critic(input).q for critic in self.critics])
@@ -94,10 +94,6 @@ class HLSKillAgent(ActionPriorSACAgent):
     @property
     def n_rollout_steps(self):
         return self._hp.hl_policy_params.prior_model_params.n_rollout_steps
-
-
-
-
 
 
     

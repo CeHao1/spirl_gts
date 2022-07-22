@@ -62,7 +62,7 @@ class RLTrainer:
         self.conf.agent.num_workers = self.conf.mpi.num_workers
         self.agent = self._hp.agent(self.conf.agent)
         self.agent.to(self.device)
-        self.agent.post_process() # post process any change to the agent
+        # self.agent.post_process() # post process any change to the agent
 
         # build sampler
         self.sampler = self._hp.sampler(self.conf.sampler, self.env, self.agent, self.logger, self._hp.max_rollout_len)

@@ -3,12 +3,12 @@ from spirl.rl.components.agent import HierarchicalAgent, FixedIntervalHierarchic
 
 
 class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
-    # def __init__(self, config):
-    #     super().__init__(config)
+    def __init__(self, config):
+        super().__init__(config)
     #     # the HRL agent will initialize 
 
-    def post_process(self):
-        self.hl_agent.update_by_ll_agent(self.ll_agent)
+    # def post_process(self):
+        # self.hl_agent.update_by_ll_agent(self.ll_agent)
         self.ll_agent.update_by_hl_agent(self.hl_agent)
 
     # def act(self, obs): # obs is numpy array
