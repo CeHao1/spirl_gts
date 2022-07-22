@@ -11,7 +11,7 @@ from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
 
 class HLSKillAgent(ActionPriorSACAgent):
     def __init__(self, config):
-        HLSKillAgent.__init__(self, config)
+        ActionPriorSACAgent.__init__(self, config)
         # SAC agent will initialize policy, and double-Q, double-Q-target
 
         # critics is Qz(s, z, k)

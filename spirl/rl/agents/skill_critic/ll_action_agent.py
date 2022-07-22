@@ -5,10 +5,11 @@ import torch
 
 # this agent should be similar to the state-conditioned close-loop agent
 from spirl.rl.agents.ac_agent import SACAgent
+from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
 
-class LLActionAgent(SACAgent):
+class LLActionAgent(ActionPriorSACAgent):
     def __init__(self, config):
-        LLActionAgent.__init__(self, config)
+        ActionPriorSACAgent.__init__(self, config)
         # critic is Qa(s,z,k,a)
         # policy is PIa(a|s,z,k)
 
@@ -85,12 +86,12 @@ class LLActionAgent(SACAgent):
                 pi_log_prob=policy_output.log_prob.mean(),
                 policy_entropy=policy_output.dist.entropy().mean(),
                 avg_sigma = policy_output.dist.sigma.mean(),
-                q_target=hl_q_target.mean(),
-                q_1=hl_qs[0].mean(),
-                q_2=hl_qs[1].mean(),
-                q_target=ll_q_target.mean(),
-                q_1=ll_qs[0].mean(),
-                q_2=ll_qs[1].mean(),
+                hl_q_target=hl_q_target.mean(),
+                hl_q_1=hl_qs[0].mean(),
+                hl_q_2=hl_qs[1].mean(),
+                ll_q_target=ll_q_target.mean(),
+                ll_q_1=ll_qs[0].mean(),
+                ll_q_2=ll_qs[1].mean(),
             ))
             info.update(self._aux_info(experience_batch, policy_output))
             info = map_dict(ten2ar, info)

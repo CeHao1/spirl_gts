@@ -12,6 +12,8 @@ python3 spirl/train.py --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hie
 ## train agent
 python3 spirl/rl/train.py --gpu=0 --path=spirl/configs/hrl/gts/spirl_cd/ --prefix=cd_gts_t01  --resume=latest
 
+## for skill critic
+python3 spirl/rl/train.py --gpu=0 --path=spirl/configs/hrl/gts/sk/ --prefix=csk_gts_01  --resume=latest
 
 =====================================================================================
 ## test close loop dim

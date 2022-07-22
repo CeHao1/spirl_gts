@@ -12,7 +12,7 @@ from spirl.rl.envs.gts_multi import GTSEnv_Multi
 from spirl.rl.components.sampler_batched import HierarchicalSamplerBached
 
 
-from rl.agents.skill_critic.joint_agent import JointAgent
+from spirl.rl.agents.skill_critic.joint_agent import JointAgent
 from spirl.models.cond_dec_spirl_mdl import TimeIndexCDSPiRLMDL
 from spirl.rl.policies.cd_model_policy import LearnedPriorAugmented_TimeIndexedCDMdlPolicy
 from spirl.rl.policies.prior_policies import LearnedPriorAugmentedPIPolicy
@@ -82,6 +82,8 @@ ll_model_params = AttrDict(
     n_processing_layers=5,
     nz_vae = 6,
     n_rollout_steps=4,
+
+    cond_decode = True,
 )
 
 # policy
