@@ -31,13 +31,14 @@ ll_critic_params = AttrDict(
     # unused_obs_size = ll_model_params.nz_vae + ll_model_params.n_rollout_steps, # whether remove latent variable, or add it
 )
 
-# create LL SAC agent (by default we will only use it for rolling out decoded skills, not finetuning skill decoder)
-ll_agent_config = AttrDict(
+ll_agent_config = copy.deepcopy(base_agent_params)
+ll_agent_config.update(AttrDict(
     policy=TimeIndexedCDMdlPolicy,
     policy_params=ll_policy_params,
     critic=MLPCritic,                   
     critic_params=ll_critic_params
-)
+))
+
 
 # update HL policy model params
 hl_policy_params.update(AttrDict(

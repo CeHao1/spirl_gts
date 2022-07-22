@@ -645,6 +645,11 @@ class ParamDict(AttrDict):
             self.__setattr__(param, new_params[param])
         return self
 
+    def temp_overwrite(self, new_params):
+        tmp = self.copy()
+        for param in new_params: 
+            tmp[param] = new_params[param]
+        return tmp
 
 class Schedule:
     """Container for parameter schedules."""
