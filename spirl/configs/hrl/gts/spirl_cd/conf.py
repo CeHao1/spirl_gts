@@ -22,9 +22,8 @@ ll_policy_params = AttrDict(
 ll_policy_params.update(ll_model_params)
 
 ll_critic_params = AttrDict(
-    action_dim=data_spec.state_dim,
-    # input_dim=data_spec.n_actions,
-    input_dim=data_spec.n_actions + ll_model_params.nz_vae + ll_model_params.n_rollout_steps,
+    action_dim=data_spec.n_actions,
+    input_dim=data_spec.state_dim + ll_model_params.nz_vae + ll_model_params.n_rollout_steps,
     output_dim=1,
     n_layers=5,  # number of policy network layer
     nz_mid=256,
@@ -37,7 +36,7 @@ ll_agent_config = AttrDict(
     # policy=CDModelPolicy,
     policy=TimeIndexedCDMdlPolicy,
     policy_params=ll_policy_params,
-    critic=MLPCritic,                   # LL critic is not used since we are not finetuning LL
+    critic=MLPCritic,                   
     # critic=SplitObsMLPCritic,
     critic_params=ll_critic_params
 )
