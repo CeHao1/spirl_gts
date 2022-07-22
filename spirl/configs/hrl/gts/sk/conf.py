@@ -14,7 +14,7 @@ from spirl.rl.components.sampler_batched import HierarchicalSamplerBached
 
 from rl.agents.skill_critic.joint_agent import JointAgent
 from spirl.models.cond_dec_spirl_mdl import TimeIndexCDSPiRLMDL
-from spirl.rl.policies.cd_model_policy import LearnedPriorAugmented_TimeIndexedCDMdlPolicy
+from spirl.rl.policies.cd_model_policy import DecoderRegu_TimeIndexedCDMdlPolicy
 from spirl.rl.policies.prior_policies import LearnedPriorAugmentedPIPolicy
 from spirl.rl.components.critic import MLPCritic
 
@@ -89,6 +89,8 @@ ll_policy_params = AttrDict(
     policy_model = TimeIndexCDSPiRLMDL,
     policy_model_params=ll_model_params,
     policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/hierarchical_cd"),
+
+    
     manual_log_sigma=[1e-10, 1e-12],
 )
 ll_policy_params.update(ll_model_params)
@@ -106,7 +108,7 @@ ll_critic_params = AttrDict(
 # agent
 ll_agent_config = copy.deepcopy(base_agent_params)
 ll_agent_config.update(AttrDict(
-    policy=LearnedPriorAugmented_TimeIndexedCDMdlPolicy,
+    policy=DecoderRegu_TimeIndexedCDMdlPolicy,
     policy_params=ll_policy_params,
     critic=MLPCritic,                
     critic_params=ll_critic_params

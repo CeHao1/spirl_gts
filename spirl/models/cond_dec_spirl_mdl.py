@@ -29,7 +29,7 @@ class CDSPiRLMdl(SkillPriorMdl):
         decode_inputs = torch.cat((seq_enc[:, :steps], z[:, None].repeat(1, steps, 1)), dim=-1)
 
         output = batch_apply(decode_inputs, self.decoder)
-        output = output[..., :self.action_size]
+        output = output[..., :self.action_size] # only get the mean
         return output
 
     def _build_inference_net(self):

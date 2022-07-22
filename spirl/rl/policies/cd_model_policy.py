@@ -5,7 +5,7 @@ from spirl.utils.general_utils import AttrDict, ParamDict
 from spirl.utils.pytorch_utils import no_batchnorm_update
 from spirl.rl.components.policy import Policy
 from spirl.rl.components.agent import BaseAgent
-from spirl.modules.variational_inference import MultivariateGaussian
+from spirl.modules.variational_inference import MultivariateGaussian, mc_kl_divergence
 
 from spirl.rl.policies.prior_policies import LearnedPriorAugmentedPolicy
 
@@ -53,23 +53,14 @@ class CDModelPolicy(Policy):
     def _compute_action_dist(self, obs):
         assert len(obs.shape) == 2
         split_obs = self._split_obs(obs)
-        # if obs.shape[0] == 1:
-        #     # during rollouts use HL z every H steps and execute LL policy every step
-        #     if self.steps_since_hl > self.horizon - 1:
-        #         self.last_z = split_obs.z
-        #         self.steps_since_hl = 0
-
-        #     concatenate_obs = torch.cat((split_obs.cond_input, self.last_z), dim=-1)
-        #     act = self.net.decoder(concatenate_obs)
-        #     self.steps_since_hl += 1
-        # else:
-        #     # during update (ie with batch size > 1) recompute LL action from z
-        #     concatenate_obs = torch.cat((split_obs.cond_input, split_obs.z), dim=-1)
-        #     act = self.net.decoder(concatenate_obs)
-
         concatenate_obs = self._get_concatenate_obs(split_obs)
+
+        concatenate_obs = obs
         act = self.net.decoder(concatenate_obs)
 
+        return self._get_constrainted_distribution(act)
+
+    def _get_constrainted_distribution(self, act):
         act_mean = act[..., : self.net.action_size]
         act_log_std = act[..., self.net.action_size :]
         log_sigma =  act_log_std + self._log_sigma[None].repeat(act.shape[0], 1)
@@ -118,10 +109,46 @@ class TimeIndexedCDMdlPolicy(CDModelPolicy):
         return torch.cat((split_obs.cond_input, split_obs.z, split_obs.time_index), dim=-1)
 
 
-class LearnedPriorAugmented_TimeIndexedCDMdlPolicy(TimeIndexedCDMdlPolicy, LearnedPriorAugmentedPolicy):
+class DecoderRegu_TimeIndexedCDMdlPolicy(TimeIndexedCDMdlPolicy):
     def __init__(self, config):
-        LearnedPriorAugmentedPolicy.__init__(self, config)
+        TimeIndexedCDMdlPolicy.__init__(self, config)
+        # add the decoder net
+        self.decoder_net = self._hp.policy_model(self._hp.policy_model_params, None)
+        BaseAgent.load_model_weights(self.decoder_net, self._hp.policy_model_checkpoint, self._hp.policy_model_epoch)  
+
+    def _default_hparams(self):
+        default_dict = ParamDict({
+            'num_mc_samples': 10,             # number of samples for monte-carlo KL estimate
+            'max_divergence_range': 100,   # range at which prior divergence gets clipped
+        })
+        return super()._default_hparams().overwrite(default_dict)
 
     def forward(self, obs):
-        with no_batchnorm_update(self):
-            return LearnedPriorAugmentedPolicy.forward(self, obs)
+        policy_output = super().forward(obs)
+        if not self._rollout_mode:
+            raw_decoder_divergence, policy_output.prior_dist = self._compute_decoder_divergence(policy_output, obs)
+            policy_output.prior_divergence = self.clamp_divergence(raw_decoder_divergence)
+
+        return policy_output
+
+    def clamp_divergence(self, divergence):
+        return torch.clamp(divergence, -self._hp.max_divergence_range, self._hp.max_divergence_range)
+
+    def _compute_decoder_divergence(self, policy_output, obs):
+        with no_batchnorm_update(self.decoder_net): 
+            act = self.decoder_net.decode(obs).detach()
+            decoder_dist = self._get_constrainted_distribution(act)
+            return self._mc_divergence(policy_output, decoder_dist), decoder_dist
+
+    def _mc_divergence(self, policy_output, decoder_dist):
+        return mc_kl_divergence(policy_output.dist, decoder_dist, n_samples=self._hp.num_mc_samples)
+
+    def sample_rand(self, obs):
+        with torch.no_grad():
+            with no_batchnorm_update(self.decoder_net):
+                act = self.decoder_net.decode(obs).detach()
+                decoder_dist = self._get_constrainted_distribution(act)
+        action = decoder_dist.sample()
+        action, log_prob = self._tanh_squash_output(action, 0)
+        return AttrDict(action=action, log_prob=log_prob)
+
