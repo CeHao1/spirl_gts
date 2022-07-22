@@ -111,7 +111,7 @@ class TimeIndexedCDMdlPolicy(CDModelPolicy):
 
 class DecoderRegu_TimeIndexedCDMdlPolicy(TimeIndexedCDMdlPolicy):
     def __init__(self, config):
-        TimeIndexedCDMdlPolicy.__init__(self, config)
+        super().__init__(config)
         # add the decoder net
         self.decoder_net = self._hp.policy_model(self._hp.policy_model_params, None)
         BaseAgent.load_model_weights(self.decoder_net, self._hp.policy_model_checkpoint, self._hp.policy_model_epoch)  
@@ -136,7 +136,7 @@ class DecoderRegu_TimeIndexedCDMdlPolicy(TimeIndexedCDMdlPolicy):
 
     def _compute_decoder_divergence(self, policy_output, obs):
         with no_batchnorm_update(self.decoder_net): 
-            act = self.decoder_net.decode(obs).detach()
+            act = self.decoder_net.decoder(obs).detach()
             decoder_dist = self._get_constrainted_distribution(act)
             return self._mc_divergence(policy_output, decoder_dist), decoder_dist
 
@@ -146,7 +146,7 @@ class DecoderRegu_TimeIndexedCDMdlPolicy(TimeIndexedCDMdlPolicy):
     def sample_rand(self, obs):
         with torch.no_grad():
             with no_batchnorm_update(self.decoder_net):
-                act = self.decoder_net.decode(obs).detach()
+                act = self.decoder_net.decoder(obs).detach()
                 decoder_dist = self._get_constrainted_distribution(act)
         action = decoder_dist.sample()
         action, log_prob = self._tanh_squash_output(action, 0)
