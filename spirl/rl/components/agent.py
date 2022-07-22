@@ -106,6 +106,10 @@ class BaseAgent(nn.Module):
         """Syncs network parameters across workers."""
         raise NotImplementedError
 
+    def post_process(self):
+        "post process the agent after convert the agent to device"
+        pass
+
     def _soft_update_target_network(self, target, source):
         """Copies weights from source to target with weight [0,1]."""
         for target_param, param in zip(target.parameters(), source.parameters()):
