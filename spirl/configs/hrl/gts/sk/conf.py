@@ -95,8 +95,8 @@ ll_policy_params.update(ll_model_params)
 
 # critic
 ll_critic_params = AttrDict(
-    action_dim=data_spec.state_dim,
-    input_dim=data_spec.n_actions + ll_model_params.nz_vae + ll_model_params.n_rollout_steps,
+    action_dim=data_spec.n_actions,
+    input_dim=data_spec.state_dim + ll_model_params.nz_vae + ll_model_params.n_rollout_steps,
     output_dim=1,
     n_layers=5,  # number of policy network layer
     nz_mid=256,
@@ -104,12 +104,13 @@ ll_critic_params = AttrDict(
 )
 
 # agent
-ll_agent_config = AttrDict(
+ll_agent_config = copy.deepcopy(base_agent_params)
+ll_agent_config.update(AttrDict(
     policy=LearnedPriorAugmented_TimeIndexedCDMdlPolicy,
     policy_params=ll_policy_params,
     critic=MLPCritic,                
     critic_params=ll_critic_params
-)
+))
 
 # ================= high level ====================
 
@@ -139,15 +140,15 @@ hl_critic_params = AttrDict(
 )
 
 # agent
-hl_agent_config =AttrDict(
+hl_agent_config = copy.deepcopy(base_agent_params)
+hl_agent_config.update(AttrDict(
     policy=LearnedPriorAugmentedPIPolicy,
     policy_params=hl_policy_params,
     critic=MLPCritic,
     critic_params=hl_critic_params,
 
     td_schedule_params=AttrDict(p=5.),
-)
-
+))
 # ================== joint agent ===================
 agent_config = AttrDict(
     hl_agent=HLSKillAgent,
