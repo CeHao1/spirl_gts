@@ -164,3 +164,6 @@ agent_config = AttrDict(
     discount_factor = 0.98 ,
 )
 
+# Dataset - Random data
+data_config = AttrDict()
+data_config.dataset_spec = data_spec
