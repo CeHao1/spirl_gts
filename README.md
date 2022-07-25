@@ -86,11 +86,11 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/no_prior/ --seed=0 --pref
 
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## The structure of agent and policy
+## The structure of agent and policy(in spirl)
 
-                | no prior          |  spirl                            | spirl cl          |   sc + ll
+                | no prior          |  spirl                            | spirl cl          |   
 
- LL model       | SkillPriorMdl     |                                   | ClSPiRLMdl        | CDSPiRLMdl TimeIndexCDSPiRLMDL
+ LL model       | SkillPriorMdl     |                                   | ClSPiRLMdl        | 
  LL policy      |                   |                                   | ClModelPolicy     | 
  LL agent       | SkillSpaceAgent   |                                   | SACAgent          |
 
@@ -104,25 +104,36 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/no_prior/ --seed=0 --pref
  Joint agent    | FixedIntervalHierarchicalAgent
 
 
+## The strucure of agent and policy (new algorithm)
 
-ForwardLSTMCell(CustomLSTMCell) 可以人为的初始化每个层的 hidden variable
-CustomLSTM 自己写的lstm，是base
-BaseProcessingLSTM 这个东西是不支持 输出 hidden variable 的
+ Method         | state-con decoder     | time-indexed decoder  | skill-critic          |
+________________|_______________________|_______________________|_______________________|
+ LL model       | CDSPiRLMdl            |              TimeIndexCDSPiRLMDL              |
+ LL policy      | CDModelPolicy         | TimeIndexedCDMdlPolicy| DecoderRegu_TimeIndexedCDMdlPolicy |
+ LL agent       | SACAgent              | SACAgent              | LLActionAgent         |
+________________|_______________________|_______________________|_______________________|
+ HL policy      |                     LearnedPriorAugmentedPIPolicy                     |
+ HL agent       |             ActionPriorSACAgent               | HLSKillAgent          |
+________________|_______________________|_______________________|_______________________|
+ Encoder        | LSTM  
+ Decoder        | Predictor
+ Prior          | Predictor
 
-state-conditioned:sc, low-level fine tuning: ll
-需要增加的部分：
+ Joint agent    | JointAgent(FixedIntervalTimeIndexedHierarchicalAgent)
 
-ActionPriorSACAgent, 用来掌管critic的，用的KLD 代替entropy。需要修改 value, critic_loss的计算方法，分别为HL和LL。
-其中LL 的V 就是HL的Q， HL的V也用来更新LL的Q。
-因此（1）要区分HL，LL的 SACagent，（2）要把他们的critic互相存储， （3）LL要能够利用obs split之后恢复k，判断beta
+ ## explicit skill-critic structure
 
-LearnedPriorAugmentedPIPolicy 这是HL 的policy，貌似没变可以用。
-但是在LL的 ClModelPolicy 需要结合， LearnedPriorAugmentedPIPolicy 的初始化和reg。
-LL 的agent 也用 ActionPriorSACAgent 拓展出来的结果。
+High-level:
+Function:           at high-level step, choose skills(continuous) z based on the current state
+HL_Policy:          z ~ PI_z(s), initialized by the skill prior
+HL_Critic:          Qz(s,z,k0)  k0 denotes when k=0
+HL_Policy update:   Loss = Qz(s,z,k0) - alp_z*DKL(PI_z||prior)
+HL_replay:          (st, zt, st+1)
 
-然后joint agent 也要修改成为对应的。
-
-1. 创建新的 joint agent, HL agent, LL agent, HL policy, LL policy
-2. joint agent 需要将 HL agent, LL agent 内的critic相互同步
-3. 写出正确的skill-critic 的 policy loss, Q loss
-4. 考虑一下update 时候的lr 和 batch_size
+Low-level:
+Function:           at each step, given state, skill and hl step k, choose the action
+LL_Policy:          a ~ PI_a(s,z,k), initialized by the decoder
+LL_Critic:          Qa(s,z,k,a) 
+LL_Policy update:   Loss = Q(s,z,k,a) - alp_a*DKL(PI_a||decoder)
+HL_Critic TD Err:   Qz(s,z,k) = Qa(s,z,k,a) - alp_a*DKL(PI_a||decoder)
+LL_Critic TD Err:   Qa(s,z,k,a) = r + gam*U, U = (1-beta)*Qz(t+1) + (beta)*Vz(t+1), Vz = Qz(s,z,k) - alp_z*DKL(PI_z||prior)
