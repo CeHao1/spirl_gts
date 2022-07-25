@@ -87,7 +87,7 @@ def parse_one_hot(oh):
     else:
         oh_input = oh
 
-    position = torch.where(oh_input, torch.tensor(1))
+    position = torch.where(oh_input == torch.tensor(1))
     return position[1]
 
 
