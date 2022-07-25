@@ -4,12 +4,14 @@ from spirl.utils.general_utils import AttrDict
 from spirl.rl.policies.mlp_policies import MLPPolicy
 from spirl.rl.components.critic import MLPCritic
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
-from spirl.rl.envs.gts import GTSEnv_Base
+
 from spirl.rl.envs.gts_multi import GTSEnv_Multi
 
 from spirl.rl.agents.ac_agent import SACAgent
+from spirl.rl.components.sampler_batched import SamplerBatched
+
+from spirl.rl.envs.gts import GTSEnv_Base
 from spirl.rl.components.sampler import Sampler
-from spirl.rl.components.sampler_multi import SamplerMulti
 
 from spirl.rl.components.normalization import Normalizer
 from spirl.configs.default_data_configs.gts import data_spec
@@ -25,10 +27,11 @@ notes = 'non-hierarchical RL experiments in gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    # do_init = False,
+    do_init = False,
+    action_standard = True,
 
-    reward_function = eval_time_trial_reward_function,
-    done_function = eval_time_trial_done_function,
+    # reward_function = eval_time_trial_reward_function,
+    # done_function = eval_time_trial_done_function,
 )
 
 configuration = {
@@ -36,17 +39,14 @@ configuration = {
     'agent': SACAgent,
     
     'data_dir': '.',
-    'num_epochs': 2000,
-    'max_rollout_len': 20000,
+    'num_epochs': 300,
+    'max_rollout_len': 10000,
     'n_steps_per_epoch': 20000,
     'n_warmup_steps': 80000,
     'use_update_after_sampling':True,
 
-    # 'environment': GTSEnv_Base,
-    # 'sampler' : Sampler,
-    
     'environment': GTSEnv_Multi,
-    'sampler':SamplerMulti,
+    'sampler':SamplerBatched,
 }
 
 configuration = AttrDict(configuration)
@@ -99,12 +99,8 @@ agent_config = AttrDict(
     log_videos=False,
 
     discount_factor = 0.98,
-
     fixed_alpha = 0.1,
     update_iterations = 512,
-
-    critic_lr = 1e-3,
-    policy_lr = 1e-3,
 
     
 )
