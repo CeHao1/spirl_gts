@@ -76,9 +76,11 @@ class HLSKillAgent(ActionPriorSACAgent):
         # PIz(z|s) = argmax E[ Qz(s,z,k0) - alpz*DKL(PIz||Pa) ] 
 
         k0 = self._get_k0_onehot(experience_batch.observation)
-        input = torch.cat((experience_batch.observation, self._prep_actionpolicy_output.action, k0), dim=-1)
-        
-        q_est = torch.min(*[critic(input).q for critic in self.critics])
+        # input = torch.cat((experience_batch.observation, self._prep_action(policy_output.action), k0), dim=-1) 
+        act = torch.cat((self._prep_action(policy_output.action), k0), dim=-1)
+        # print('obs ', experience_batch.observation.shape)
+        # print('act', act.shape)      
+        q_est = torch.min(*[critic(experience_batch.observation, act).q for critic in self.critics])
 
         policy_loss = -1 * q_est + self.alpha * policy_output.prior_divergence[:, None]
         check_shape(policy_loss, [self._hp.batch_size, 1])
@@ -87,13 +89,13 @@ class HLSKillAgent(ActionPriorSACAgent):
     def _get_k0_onehot(self, obs):
         # generate one-hot, length=high-level steps, index=0
         idx = torch.tensor(torch.arange(1), device=self.device)
-        k0 = make_one_hot(idx, self.n_rollout_steps).repeat(obs.shape[0], 1, 1)
+        k0 = make_one_hot(idx, self.n_rollout_steps).repeat(obs.shape[0], 1)
         return k0
 
 
     @property
     def n_rollout_steps(self):
-        return self._hp.hl_policy_params.prior_model_params.n_rollout_steps
+        return self._hp.policy_params.prior_model_params.n_rollout_steps
 
 
     

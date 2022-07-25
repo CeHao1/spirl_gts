@@ -135,7 +135,7 @@ hl_policy_params = AttrDict(
 
 # critic
 hl_critic_params = AttrDict(
-    action_dim=hl_policy_params.action_dim,
+    action_dim=hl_policy_params.action_dim + hl_policy_params.prior_model_params.n_rollout_steps,
     input_dim=hl_policy_params.input_dim,
     output_dim=1,
     n_layers=5,  # number of policy network layer
