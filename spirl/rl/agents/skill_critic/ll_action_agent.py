@@ -114,10 +114,14 @@ class LLActionAgent(ActionPriorSACAgent):
     # ================================ hl critic ================================
     def _compute_hl_q_target(self, experience_batch, policy_output): 
         # Qz(s,z,k) = Qa(s,z,k,a) - alph * DKL(PIa)
+        split_obs = self._split_obs(experience_batch.observation_next)
+        state = split_obs.cond_input
+        act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
+
         with torch.no_grad():
-            qa_target = torch.min(*[critic_target(experience_batch.observation_next, self._prep_action(policy_output.action)).q
-                                for critic_target in self.critic_targets])
+            qa_target = torch.min(*[critic_target(state, act).q for critic_target in self.hl_critic_targets])
             hl_q_target = qa_target - self.alpha * policy_output.prior_divergence[:, None]
+            hl_q_target = hl_q_target.squeeze(-1)
             hl_q_target = hl_q_target.detach()
             check_shape(hl_q_target, [self._hp.batch_size])
 
@@ -125,7 +129,11 @@ class LLActionAgent(ActionPriorSACAgent):
 
     def _compute_hl_critic_loss(self, experience_batch, hl_q_target): 
         # Qz(s,z,k), the input is only obs, not action(a) here
-        hl_qs = [critic(experience_batch.observation).q.squeeze(-1) for critic in self.hl_critics]
+        split_obs = self._split_obs(experience_batch.observation)
+        state = split_obs.cond_input
+        act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
+
+        hl_qs = [critic(state, act).q.squeeze(-1) for critic in self.hl_critics]
         check_shape(hl_qs[0], [self._hp.batch_size])
         hl_critic_losses = [0.5 * (q - hl_q_target).pow(2).mean() for q in hl_qs] # mse loss
         return hl_critic_losses, hl_qs
@@ -147,6 +155,7 @@ class LLActionAgent(ActionPriorSACAgent):
 
             # (3) ll_q_target
             ll_q_target = experience_batch.reward * self._hp.reward_scale + (1 - experience_batch.done) * self._hp.discount_factor * u_next
+            ll_q_target = ll_q_target.squeeze(-1)
             ll_q_target = ll_q_target.detach()
             check_shape(ll_q_target, [self._hp.batch_size])
 
@@ -154,7 +163,8 @@ class LLActionAgent(ActionPriorSACAgent):
 
     def _compute_ll_critic_loss(self, experience_batch, ll_q_target):
         # Qa(s,z,k,a)
-        ll_qs = [critic(experience_batch.observation, self._prep_action(experience_batch.action.detach())).q.squeeze(-1) for critic in self.critics]     # no gradient propagation into policy here!
+        ll_qs = [critic(experience_batch.observation, self._prep_action(experience_batch.action.detach())).q.squeeze(-1) \
+                for critic in self.critics]     # no gradient propagation into policy here!
 
         check_shape(ll_qs[0], [self._hp.batch_size])
         ll_critic_losses = [0.5 * (q - ll_q_target).pow(2).mean() for q in ll_qs]
@@ -187,16 +197,16 @@ class LLActionAgent(ActionPriorSACAgent):
     # ====================================== property =======================================
     @property
     def state_dim(self):
-        return self._hp.ll_policy_params.ll_model_params.state_dim
+        return self._hp.policy_params.policy_model_params.state_dim
 
     @property
     def latent_dim(self):
-        return self._hp.ll_policy_params.ll_model_params.nz_vae
+        return self._hp.policy_params.policy_model_params.nz_vae
 
     @property
     def onehot_dim(self):
-        return self._hp.ll_policy_params.ll_model_params.n_rollout_steps
+        return self._hp.policy_params.policy_model_params.n_rollout_steps
 
     @property
     def action_dim(self):
-        return self._hp.ll_policy_params.ll_model_params.action_dim
+        return self._hp.policy_params.policy_model_params.action_dim
