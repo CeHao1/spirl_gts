@@ -1,4 +1,8 @@
-# Accelerating Reinforcement Learning with Learned Skill Priors
+
+
+## prefix name rules
+
+type_feature_index, sac_nz10_01
 
 
 

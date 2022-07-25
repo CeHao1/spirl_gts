@@ -15,7 +15,7 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'HRL02'
+WANDB_PROJECT_NAME = 'RL_TRAIN_2022fall'
 WANDB_ENTITY_NAME = 'cehao'
 
 
