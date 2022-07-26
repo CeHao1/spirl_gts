@@ -36,6 +36,7 @@ python3 spirl/rl/train.py \
 
 1. SAC
  --path=spirl/configs/rl/gts/SAC 
+python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --gpu=0  --prefix=sac_base_01
 
 2. SAC + BC
 --path=spirl/configs/rl/gts/prior_initialized/bc_finetune/ 

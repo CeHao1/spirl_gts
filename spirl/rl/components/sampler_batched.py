@@ -45,6 +45,7 @@ class SamplerBatched:
                             self._episode_reset(global_step)
                             continue
                         agent_output = self._postprocess_agent_output(agent_output)
+
                         obs, reward, done, info = self._env.step(agent_output.action)
                         assert len(obs.shape) == 2 # must be batched array. first dim is batch size, second dim is the obs data
                         batch_length = obs.shape[0]
