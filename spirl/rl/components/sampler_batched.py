@@ -62,14 +62,18 @@ class SamplerBatched:
                         # update stored observation
                         self._obs = obs
                         step += batch_length; 
-                        self._episode_step += batch_length; 
+                        self._episode_step += 1; 
                         self._episode_reward += np.mean(reward)
 
                         # reset if episode ends
                         if np.any(done) or self._episode_step >= self._max_episode_len:
+                            if np.any(done):
+                                print('restart, done one sample')
+                            if self._episode_step >= self._max_episode_len:
+                                print(f'restart, step {self._episode_step} exceed max episode len {self._max_episode_len}')
                             if not np.all(done):    # force done to be True for timeout
-                                for exp in experience_batch[-1]:
-                                    exp.done = True
+                                for exp in experience_batch[-1].done:
+                                    exp = True
                             self._episode_reset(global_step)
 
         return listdict2dictlist(experience_batch), step
@@ -111,7 +115,7 @@ class SamplerBatched:
                         
                         # update stored observation
                         self._obs = obs
-                        self._episode_step += batch_length
+                        self._episode_step += 1
                         self._episode_reward += np.mean(reward)
 
         # episode[-1].done = True     # make sure episode is marked as done at final time step
@@ -167,7 +171,7 @@ class HierarchicalSamplerBached(SamplerBatched):
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
-                    while hl_step < batch_size or len(ll_experience_batch) <= 1:
+                    while env_steps < batch_size or len(ll_experience_batch) <= 1:
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
                         agent_output = self._postprocess_agent_output(agent_output)
@@ -204,7 +208,7 @@ class HierarchicalSamplerBached(SamplerBatched):
                                 ))
                                 hl_step += batch_length
                                 if np.any(done):
-                                    # hl_experience_batch[-1].reward += reward  # add terminal reward
+                                    # add terminal reward
                                     for exp, r in zip(hl_experience_batch[-1].reward, reward):
                                         exp.reward += r
                                 # if hl_step % 1000 == 0:
@@ -216,19 +220,16 @@ class HierarchicalSamplerBached(SamplerBatched):
                         # update stored observation
                         self._obs = obs
                         env_steps += batch_length; 
-                        self._episode_step += batch_length; 
+                        self._episode_step += 1; 
                         self._episode_reward += np.mean(reward)
                         self.reward_since_last_hl += np.array(reward)
 
                         # reset if episode ends
                         if np.any(done) or self._episode_step >= self._max_episode_len:
-                        # if done or self._episode_step >= self._max_episode_len:
                             if not np.all(done):    # force done to be True for timeout
-                                # ll_experience_batch[-1].done = True
                                 for exp in ll_experience_batch[-1].done:
                                     exp = True
                                 if hl_experience_batch:   # can potentially be empty 
-                                    # hl_experience_batch[-1].done = True
                                     for exp in hl_experience_batch[-1].done:
                                         exp = True
                             print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))

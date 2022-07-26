@@ -41,8 +41,8 @@ configuration = {
     'data_dir': '.',
     'num_epochs': 300,
     'max_rollout_len': 10000,
-    'n_steps_per_epoch': 20000,
-    'n_warmup_steps': 80000,
+    'n_steps_per_epoch': 20000 ,
+    'n_warmup_steps': 80000 ,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Multi,
@@ -99,7 +99,7 @@ agent_config = AttrDict(
     log_videos=False,
 
     discount_factor = 0.98,
-    fixed_alpha = 0.1,
+    # fixed_alpha = 0.1,
     update_iterations = 512,
 
     

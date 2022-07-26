@@ -173,16 +173,16 @@ class RLTrainer:
         with timers['batch'].time():
             # collect experience
             with timers['rollout'].time(): # collect all sample for each epoch
-                print('!! start of sample batch')
+                # print('!! start of sample batch')
                 experience_batch, env_steps = self.sampler.sample_batch(batch_size=self._hp.n_steps_per_epoch,
                                                                         global_step=self.global_step)
-                print('!! after sample batch')
-                print('self.use_multiple_workers', self.use_multiple_workers)
+                # print('!! after sample batch')
+                # print('self.use_multiple_workers', self.use_multiple_workers)
                 if self.use_multiple_workers:
                     experience_batch = mpi_gather_experience(experience_batch)
                 self.global_step += mpi_sum(env_steps)
 
-        print('!! global step is', self.global_step)
+        # print('!! global step is', self.global_step)
 
         # update policy
         with timers['update'].time():
