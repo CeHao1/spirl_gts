@@ -85,12 +85,16 @@ class SamplerBatched:
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
-                    while not done and self._episode_step < self._max_episode_len:
+                    while not np.any(done):
+                    #  and self._episode_step < self._max_episode_len:
+
+
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
-                        # print('agent_output', agent_output)
-                        if agent_output.action is None:
-                            break
+
+                        # if agent_output.action is None:
+                        #     break
+
                         agent_output = self._postprocess_agent_output(agent_output, deterministic_action=deterministic_action)
                         if render:
                             render_obs = self._env.render()
@@ -98,7 +102,7 @@ class SamplerBatched:
                         # print(agent_output.action)
                         obs, reward, done, info = self._env.step(agent_output.action)
                         assert len(obs.shape) == 2
-                        batch_length = obs.shape[0]
+                        # batch_length = obs.shape[0]
 
                         obs = self._postprocess_obs(obs)
                         episode.append(AttrDict(
