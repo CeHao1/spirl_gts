@@ -39,7 +39,7 @@ configuration = {
     'agent': SACAgent,
     
     'data_dir': '.',
-    'num_epochs': 300,
+    'num_epochs': 2000,
     'max_rollout_len': 10000,
     'n_steps_per_epoch': 20000 ,
     'n_warmup_steps': 80000 ,
