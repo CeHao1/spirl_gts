@@ -38,10 +38,10 @@ configuration = AttrDict(    {
     'agent': JointAgent,
     
     'data_dir': '.',
-    'num_epochs': 300,
+    'num_epochs': 2000,
     'max_rollout_len': 10000,
-    'n_steps_per_epoch': 200,
-    'n_warmup_steps': 100,
+    'n_steps_per_epoch': 2000,
+    'n_warmup_steps': 8000,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Multi,

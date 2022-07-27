@@ -26,6 +26,10 @@ configuration = {
 configuration = AttrDict(configuration)
 
 
+weights_01 = [100, 5e-4, 1e-3] # -> err [2e-2, 2e-3, 1e-3] -> vis (prior too bad)
+weights_02 = [100, 5e-4, 1e-2] 
+model_weight = weights_02
+
 model_config = AttrDict(
     state_dim=data_spec.state_dim,
     action_dim=data_spec.n_actions,
@@ -37,9 +41,9 @@ model_config = AttrDict(
     n_rollout_steps = 4,
     nz_vae = 6,
 
-    reconstruction_mse_weight = 100.,
-    kl_div_weight=5e-4,
     action_dim_weights = [100.0, 1.0],
     
-    learned_prior_weight = 1e-3,
+    reconstruction_mse_weight = model_weight[0],
+    kl_div_weight=model_weight[1],
+    learned_prior_weight = model_weight[2],
 )

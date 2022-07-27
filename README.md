@@ -26,6 +26,8 @@ python3 spirl/train.py \
 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cl
 
 4. state-conditioned decoder(time-indexed)
+python3 spirl/train.py \
+--val_data_size=160 --gpu=0 --prefix=cd_base_02  \
 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cd
 
 
@@ -36,7 +38,8 @@ python3 spirl/rl/train.py \
 
 1. SAC
  --path=spirl/configs/rl/gts/SAC 
-python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --gpu=0  --prefix=sac_autoalp_01 --resume=latest 
+python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --gpu=0  --prefix=sac_autoalp_01 --resume=latest \
+--mode='val' --deterministic_action
 
 2. SAC + BC
 --path=spirl/configs/rl/gts/prior_initialized/bc_finetune/ 
@@ -51,7 +54,8 @@ python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --gpu=0  --prefix=sac_
 --path=spirl/configs/hrl/gts/spirl_cd
 
 6. skill-critic
---path=spirl/configs/hrl/gts/spirl_sc
+--path=spirl/configs/hrl/gts/sc
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_prerest_03
 
 ## eval
 --mode='val'
@@ -64,13 +68,13 @@ python3 spirl/rl/train.py --path=xx --prefix=xx --gpu=0 --resume='latest' --mode
 --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical --resume=latest
 
 1. vis model
-%run spirl/viz/viz_mdl.py 
+%run spirl/vis/vis_mdl.py 
 
 2. vis rl
-%run spirl/viz/viz_rl.py 
+%run spirl/vis/vis_rl.py 
 
 3. vis hrl
-%run spirl/viz/viz_hrl.py 
+%run spirl/vis/vis_hrl.py 
 
 
 

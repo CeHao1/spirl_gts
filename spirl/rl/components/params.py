@@ -27,7 +27,7 @@ def get_args():
                         help='if True, uses strict weight loading function')
     parser.add_argument('--deterministic', default=False, type=int,
                         help='if True, sets fixed seeds for torch and numpy')
-    parser.add_argument('--deterministic_action', default=False, type=int,
+    parser.add_argument('--deterministic_action', action='store_true',
                         help='if True, use deterministic action without variance')
     parser.add_argument('--n_val_samples', default=10, type=int,
                         help='number of validation episodes')

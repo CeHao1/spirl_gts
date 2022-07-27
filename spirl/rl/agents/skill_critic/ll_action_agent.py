@@ -82,10 +82,10 @@ class LLActionAgent(ActionPriorSACAgent):
                     critic_2_grad_norm=avg_grad_norm(self.critics[1]),
                 ))
             info.update(AttrDict(       # misc
-                alpha=self.alpha,
-                pi_log_prob=policy_output.log_prob.mean(),
-                policy_entropy=policy_output.dist.entropy().mean(),
-                avg_sigma = policy_output.dist.sigma.mean(),
+                ll_alpha=self.alpha,
+                ll_pi_log_prob=policy_output.log_prob.mean(),
+                ll_policy_entropy=policy_output.dist.entropy().mean(),
+                ll_avg_sigma = policy_output.dist.sigma.mean(),
                 hl_q_target=hl_q_target.mean(),
                 hl_q_1=hl_qs[0].mean(),
                 hl_q_2=hl_qs[1].mean(),

@@ -157,7 +157,7 @@ class SamplerBatched:
         if deterministic_action:
             if isinstance(agent_output.dist, MultivariateGaussian):
                 agent_output.ori_action = agent_output.action
-                agent_output.action = agent_output.dist.mean[0]
+                agent_output.action = agent_output.dist.mean
         return agent_output
 
 
@@ -214,7 +214,7 @@ class HierarchicalSamplerBached(SamplerBatched):
                                 if np.any(done):
                                     # add terminal reward
                                     for exp, r in zip(hl_experience_batch[-1].reward, reward):
-                                        exp.reward += r
+                                        exp += r
                                 # if hl_step % 1000 == 0:
                                 #     print("Sample step {}".format(hl_step))
                             self.last_hl_obs = self._obs if self._episode_step == 0 else obs
