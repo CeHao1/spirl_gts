@@ -157,7 +157,7 @@ class SamplerBatched:
         if deterministic_action:
             if isinstance(agent_output.dist, MultivariateGaussian):
                 agent_output.ori_action = agent_output.action
-                agent_output.action = agent_output.dist.mean[0]
+                agent_output.action = agent_output.dist.mean
         return agent_output
 
 

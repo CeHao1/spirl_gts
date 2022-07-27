@@ -350,7 +350,7 @@ def evaluation_done_function(state):
     return state["lap_count"] > 2 or state["current_lap_time_msec"]/1000.0 > max_eval_lap if state else False
 
 def eval_time_trial_done_function(state):
-    return state["lap_count"] > 2 and state["current_lap_time_msec"]/1000.0 > 5.0 if state else False
+    return state["lap_count"] > 3 and state["current_lap_time_msec"]/1000.0 > 5.0 if state else False
 
 def reward_function(state, previous_state, course_length):
     if previous_state \
