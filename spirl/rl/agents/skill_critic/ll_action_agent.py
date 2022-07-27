@@ -114,12 +114,15 @@ class LLActionAgent(ActionPriorSACAgent):
     # ================================ hl critic ================================
     def _compute_hl_q_target(self, experience_batch, policy_output): 
         # Qz(s,z,k) = Qa(s,z,k,a) - alph * DKL(PIa)
-        split_obs = self._split_obs(experience_batch.observation_next)
-        state = split_obs.cond_input
-        act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
+        # split_obs = self._split_obs(experience_batch.observation_next)
+        # state = split_obs.state
+        # act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
+
+        state = experience_batch.observation_next
+        act = experience_batch.action
 
         with torch.no_grad():
-            qa_target = torch.min(*[critic_target(state, act).q for critic_target in self.hl_critic_targets])
+            qa_target = torch.min(*[critic_target(state, act).q for critic_target in self.critic_targets])# this part is
             hl_q_target = qa_target - self.alpha * policy_output.prior_divergence[:, None]
             hl_q_target = hl_q_target.squeeze(-1)
             hl_q_target = hl_q_target.detach()
@@ -130,10 +133,10 @@ class LLActionAgent(ActionPriorSACAgent):
     def _compute_hl_critic_loss(self, experience_batch, hl_q_target): 
         # Qz(s,z,k), the input is only obs, not action(a) here
         split_obs = self._split_obs(experience_batch.observation)
-        state = split_obs.cond_input
+        obs = split_obs.state
         act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
 
-        hl_qs = [critic(state, act).q.squeeze(-1) for critic in self.hl_critics]
+        hl_qs = [critic(obs, act).q.squeeze(-1) for critic in self.hl_critics]
         check_shape(hl_qs[0], [self._hp.batch_size])
         hl_critic_losses = [0.5 * (q - hl_q_target).pow(2).mean() for q in hl_qs] # mse loss
         return hl_critic_losses, hl_qs
@@ -142,12 +145,16 @@ class LLActionAgent(ActionPriorSACAgent):
     def _compute_ll_q_target(self, experience_batch):
         # Qa(s,z,k,a) = r + gamma * U_next
         # U_next = [1-beta] * Qz_next + [beta] * V_next
-        # V_next = Qz_next - hl_alp * DKL(PIa_next)
+        # V_next = Qz_next - hl_alp * DKL(PIz_next)
 
         with torch.no_grad():
-            policy_output_next = self._run_policy(experience_batch.observation_next)
+            # (0) use s to generate hl policy
+            split_obs = self._split_obs(experience_batch.observation_next)
+            hl_policy_output_next = self.hl_agent._run_policy(split_obs.state)
+            # policy_output_next = self._run_policy(experience_batch.observation_next)
+
             # (1) V_next
-            v_next, q_next = self._compute_next_value(experience_batch, policy_output_next)
+            v_next, q_next = self._compute_next_value(experience_batch, hl_policy_output_next)
 
             # (2) U_next 
             beta_mask = self._compute_termination_mask(experience_batch.observation_next)
@@ -170,10 +177,14 @@ class LLActionAgent(ActionPriorSACAgent):
         ll_critic_losses = [0.5 * (q - ll_q_target).pow(2).mean() for q in ll_qs]
         return ll_critic_losses, ll_qs
 
-    def _compute_next_value(self, experience_batch, policy_output): 
-        q_next = torch.min(*[critic_target(experience_batch.observation_next, self._prep_action(policy_output.action)).q
-                             for critic_target in self.critic_targets])
-        next_val = (q_next - self.alpha * policy_output.log_prob[:, None])
+    def _compute_next_value(self, experience_batch, hl_policy_output): 
+        # V = Qz - alp_z * DKL(PI_z)
+        split_obs = self._split_obs(experience_batch.observation_next)
+        q_next = torch.min(*[critic_target(split_obs.state, split_obs.z).q for critic_target in self.hl_critic_targets])
+
+        # q_next = torch.min(*[critic_target(experience_batch.observation_next, self._prep_action(policy_output.action)).q
+        #                      for critic_target in self.critic_targets])
+        next_val = (q_next - self.alpha * hl_policy_output.log_prob[:, None])
         check_shape(next_val, [self._hp.batch_size, 1])
         return next_val.squeeze(-1), q_next.squeeze(-1)
 
@@ -189,7 +200,7 @@ class LLActionAgent(ActionPriorSACAgent):
     def _split_obs(self, obs):
         assert obs.shape[1] == self.state_dim + self.latent_dim + self.onehot_dim
         return AttrDict(
-            cond_input=obs[:, :self.state_dim],   # condition decoding on state
+            state=obs[:, :self.state_dim],   # condition decoding on state
             z=obs[:, self.state_dim:-self.onehot_dim],
             time_index=obs[:, -self.onehot_dim:],
         )
