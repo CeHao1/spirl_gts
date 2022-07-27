@@ -59,10 +59,10 @@ class HLSKillAgent(ActionPriorSACAgent):
                 ))
 
             info.update(AttrDict(       # misc
-                alpha=self.alpha,
-                pi_log_prob=policy_output.log_prob.mean(),
-                policy_entropy=policy_output.dist.entropy().mean(),
-                avg_sigma = policy_output.dist.sigma.mean(),
+                hl_alpha=self.alpha,
+                hl_pi_log_prob=policy_output.log_prob.mean(),
+                hl_policy_entropy=policy_output.dist.entropy().mean(),
+                hl_avg_sigma = policy_output.dist.sigma.mean(),
             ))
             info.update(self._aux_info(experience_batch, policy_output))
             info = map_dict(ten2ar, info)
