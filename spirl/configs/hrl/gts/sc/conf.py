@@ -46,6 +46,9 @@ configuration = AttrDict(    {
 
     'environment': GTSEnv_Multi,
     'sampler':HierarchicalSamplerBached,
+
+    # 'n_steps_per_epoch': 200,
+    # 'n_warmup_steps': 200,
 } )
 
 sampler_config = AttrDict(
@@ -99,8 +102,8 @@ ll_policy_params.update(ll_model_params)
 
 # critic
 ll_critic_params = AttrDict(
-    action_dim=data_spec.n_actions,
     input_dim=data_spec.state_dim + ll_model_params.nz_vae + ll_model_params.n_rollout_steps,
+    action_dim=data_spec.n_actions,
     output_dim=1,
     n_layers=5,  # number of policy network layer
     nz_mid=256,

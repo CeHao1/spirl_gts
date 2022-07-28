@@ -55,7 +55,7 @@ python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --gpu=0  --prefix=sac_
 
 6. skill-critic
 --path=spirl/configs/hrl/gts/sc
-python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_prerest_03
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_debug_01
 
 ## eval
 --mode='val'

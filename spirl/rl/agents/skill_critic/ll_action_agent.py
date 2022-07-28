@@ -1,3 +1,4 @@
+from posixpath import split
 from spirl.utils.general_utils import ParamDict, map_dict, AttrDict
 from spirl.utils.pytorch_utils import ten2ar, avg_grad_norm, TensorModule, check_shape, map2torch, map2np, parse_one_hot
 
@@ -179,8 +180,10 @@ class LLActionAgent(ActionPriorSACAgent):
 
     def _compute_next_value(self, experience_batch, hl_policy_output): 
         # V = Qz - alp_z * DKL(PI_z)
-        split_obs = self._split_obs(experience_batch.observation_next)
-        q_next = torch.min(*[critic_target(split_obs.state, split_obs.z).q for critic_target in self.hl_critic_targets])
+        split_obs = self._split_obs(experience_batch.observation)
+        obs = split_obs.state
+        act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
+        q_next = torch.min(*[critic_target(obs, act).q for critic_target in self.hl_critic_targets])
 
         # q_next = torch.min(*[critic_target(experience_batch.observation_next, self._prep_action(policy_output.action)).q
         #                      for critic_target in self.critic_targets])
