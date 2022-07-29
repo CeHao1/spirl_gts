@@ -178,16 +178,16 @@ class LLActionAgent(ActionPriorSACAgent):
         ll_critic_losses = [0.5 * (q - ll_q_target).pow(2).mean() for q in ll_qs]
         return ll_critic_losses, ll_qs
 
-    def _compute_next_value(self, experience_batch, hl_policy_output): 
+    def _compute_next_value(self, experience_batch, hl_policy_output_next): 
         # V = Qz - alp_z * DKL(PI_z)
-        split_obs = self._split_obs(experience_batch.observation)
+        split_obs = self._split_obs(experience_batch.observation_next)
         obs = split_obs.state
         act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
         q_next = torch.min(*[critic_target(obs, act).q for critic_target in self.hl_critic_targets])
 
         # q_next = torch.min(*[critic_target(experience_batch.observation_next, self._prep_action(policy_output.action)).q
         #                      for critic_target in self.critic_targets])
-        next_val = (q_next - self.alpha * hl_policy_output.log_prob[:, None])
+        next_val = (q_next - self.alpha * hl_policy_output_next.log_prob[:, None])
         check_shape(next_val, [self._hp.batch_size, 1])
         return next_val.squeeze(-1), q_next.squeeze(-1)
 
