@@ -59,12 +59,17 @@ class Policy(nn.Module):
 
     def sample_rand(self, unused_obs):
         """Samples random action."""
+        assert len(unused_obs.shape) == 2 # batch input
+        length_of_batch = unused_obs.shape[0]
         with torch.no_grad():
             # TODO: implement proper ActionSpace class with sample() method
             return AttrDict(
-                action=self._hp.max_action_range * (2 * torch.rand((self._hp.action_dim,)) - 1.),
-                log_prob=-torch.log(torch.tensor(2 * self._hp.max_action_range)) * self._hp.action_dim,
+                # action=self._hp.max_action_range * (2 * torch.rand((self._hp.action_dim,)) - 1.),
+                # log_prob=-torch.log(torch.tensor(2 * self._hp.max_action_range)) * self._hp.action_dim,
                 # assumes symmetric action range
+                
+                action=self._hp.max_action_range * (2 * torch.rand((length_of_batch, self._hp.action_dim,)) - 1.),
+                log_prob=-torch.log(torch.ones(length_of_batch) * 2 * self._hp.max_action_range) * self._hp.action_dim,
             )
 
     def reset(self):

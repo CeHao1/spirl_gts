@@ -38,15 +38,13 @@ class ACAgent(BaseAgent):
         return map2np(self.policy(obs))
 
     def _act_rand(self, obs):
-        '''
+        
         policy_output = self.policy.sample_rand(map2torch(obs, self.policy.device))
-        if 'dist' in policy_output:
-            del policy_output['dist']
+        # if 'dist' in policy_output:
+            # del policy_output['dist']
         return map2np(policy_output)
-        '''
-        # random is only the initial NN
-
-        return self._act(obs)
+        
+        # return self._act(obs)
 
     def state_dict(self, *args, **kwargs):
         d = super().state_dict()
