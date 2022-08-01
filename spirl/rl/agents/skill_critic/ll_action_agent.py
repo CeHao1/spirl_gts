@@ -45,7 +45,7 @@ class LLActionAgent(ActionPriorSACAgent):
             
 
             # (3) Qa(s,z,k,a) loss, Qa_target
-            ll_q_target = self._compute_ll_q_target(experience_batch)
+            ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch)
             ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)
             
 
@@ -76,12 +76,12 @@ class LLActionAgent(ActionPriorSACAgent):
                 qa_critic_loss_1=ll_critic_loss[0],
                 qa_critic_loss_2=ll_critic_loss[1],
             )
-            if self._update_steps % 100 == 0:
-                info.update(AttrDict(       # gradient norms
-                    policy_grad_norm=avg_grad_norm(self.policy),
-                    critic_1_grad_norm=avg_grad_norm(self.critics[0]),
-                    critic_2_grad_norm=avg_grad_norm(self.critics[1]),
-                ))
+            # if self._update_steps % 100 == 0:
+            #     info.update(AttrDict(       # gradient norms
+            #         policy_grad_norm=avg_grad_norm(self.policy),
+            #         critic_1_grad_norm=avg_grad_norm(self.critics[0]),
+            #         critic_2_grad_norm=avg_grad_norm(self.critics[1]),
+            #     ))
             info.update(AttrDict(       # misc
                 ll_alpha=self.alpha,
                 ll_pi_log_prob=policy_output.log_prob.mean(),
@@ -93,12 +93,14 @@ class LLActionAgent(ActionPriorSACAgent):
                 ll_q_target=ll_q_target.mean(),
                 ll_q_1=ll_qs[0].mean(),
                 ll_q_2=ll_qs[1].mean(),
+                v_next=v_next.mean(), 
+                q_next=q_next.mean(), 
+                u_next=u_next.mean(),
             ))
             info.update(self._aux_info(experience_batch, policy_output))
             info = map_dict(ten2ar, info)
 
             self._update_steps += 1
-
         return info
 
 
@@ -167,7 +169,7 @@ class LLActionAgent(ActionPriorSACAgent):
             ll_q_target = ll_q_target.detach()
             check_shape(ll_q_target, [self._hp.batch_size])
 
-        return ll_q_target
+        return ll_q_target, v_next, q_next, u_next
 
     def _compute_ll_critic_loss(self, experience_batch, ll_q_target):
         # Qa(s,z,k,a)
