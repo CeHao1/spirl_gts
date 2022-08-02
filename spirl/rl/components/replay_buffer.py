@@ -26,10 +26,7 @@ class ReplayBuffer:
 
     def append(self, experience_batch):
         """Appends the vals in the AttrDict experience_batch to the existing replay buffer."""
-
-        # print('before')
-        # print('reward', np.array(experience_batch.reward).shape)
-        # print('obs', np.array(experience_batch.observation).shape)
+        self.visualize_actoins(experience_batch)
 
         # process batched experience 
         if len(np.array(experience_batch.observation).shape) > 2:
@@ -40,10 +37,6 @@ class ReplayBuffer:
 
         if self._replay_buffer is None:
             self._init(experience_batch)
-
-        # print('after')
-        # for key in experience_batch:
-        #     print(key, np.array(experience_batch[key]).shape) 
 
         # compute indexing range
         n_samples = self._get_n_samples(experience_batch)
@@ -115,6 +108,32 @@ class ReplayBuffer:
 
     def __contains__(self, key):
         return key in self._replay_buffer
+
+    def visualize_actoins(self, experience_batch):
+        print('obs shape', np.array(experience_batch.observation).shape)
+        print('act shape', np.array(experience_batch.action).shape)
+        print('act shape', np.array(experience_batch.reward).shape)
+        
+        import matplotlib.pyplot as plt
+        obs = np.array(experience_batch.observation)[:,0,:]
+        act = np.array(experience_batch.action)[:,0,:]
+        rew = np.array(experience_batch.reward)[:,0]
+
+        # plot actions
+        act_dim = act.shape[1]
+        for act_idx in range(act_dim):
+            plt.figure(figsize=(7,5))
+            plt.plot(act[:, act_idx], 'b.')
+            plt.title('action dimension {}'.format(act_idx))
+
+        plt.show()
+
+        # plot reward
+        plt.figure(figsize=(7,5))
+        plt.plot(rew, 'b.')
+        plt.title('rewards')
+        plt.show()
+
 
 
 class UniformReplayBuffer(ReplayBuffer):
