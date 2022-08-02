@@ -73,12 +73,15 @@ class RLTrainer:
             start_epoch = self.resume(args.resume, self.conf.ckpt_path)
             self._hp.n_warmup_steps = 0     # no warmup if we reload from checkpoint!
 
+        # load specific info and work for debug
+
+
         # start training/evaluation
         if args.mode == 'train':
             self.train(start_epoch)
         elif args.mode == 'val':
             self.val()
-        else:
+        elif args.mode == 'rollout':
             self.generate_rollouts()
 
     def _default_hparams(self):
@@ -173,18 +176,13 @@ class RLTrainer:
         with timers['batch'].time():
             # collect experience
             with timers['rollout'].time(): # collect all sample for each epoch
-                # print('!! start of sample batch')
                 experience_batch, env_steps = self.sampler.sample_batch(batch_size=self._hp.n_steps_per_epoch,
                                                                         global_step=self.global_step)
-                # print('!! after sample batch')
-                # print('self.use_multiple_workers', self.use_multiple_workers)
                 if self.use_multiple_workers:
                     experience_batch = mpi_gather_experience(experience_batch)
                 self.global_step += mpi_sum(env_steps)
 
-        # print('!! global step is', self.global_step)
-
-        # update policy
+        # update policy and Q
         with timers['update'].time():
             if self.is_chef:
                 agent_outputs = self.agent.update(experience_batch)
@@ -350,6 +348,16 @@ class RLTrainer:
         self.agent.load_state(self._hp.exp_path)
         self.agent.to(self.device)
         return start_epoch
+
+    def offline(self):
+        # customized method
+        # load states means load replay buffer
+        self.agent.load_state(self._hp.exp_path) 
+        self.agent.to(self.device)
+
+        # do not train policy, only train Q
+        self.agent.ll_agent.offline()
+
 
     def print_train_update(self, epoch, agent_outputs, timers):
         print('GPU {}: {}'.format(os.environ["CUDA_VISIBLE_DEVICES"] if self.use_cuda else 'none',

@@ -8,6 +8,8 @@ import torch
 from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
 
+import matplotlib.pyplot as plt
+
 class LLActionAgent(ActionPriorSACAgent):
     def __init__(self, config):
         ActionPriorSACAgent.__init__(self, config)
@@ -103,17 +105,6 @@ class LLActionAgent(ActionPriorSACAgent):
             self._update_steps += 1
         return info
 
-
-    # ================================ policy ================================
-    # LL policy update is identical to the parent prior sac agent.
-
-    # def _compute_policy_loss(self, experience_batch, policy_output):
-    #     q_est = torch.min(*[critic(experience_batch.observation, self._prep_action(policy_output.action)).q
-    #                                   for critic in self.critics])
-    #     policy_loss = -1 * q_est + self.alpha * policy_output.prior_divergence[:, None]
-    #     check_shape(policy_loss, [self._hp.batch_size, 1])
-    #     return policy_loss.mean()
-
     # ================================ hl critic ================================
     def _compute_hl_q_target(self, experience_batch, policy_output): 
         # Qz(s,z,k) = Qa(s,z,k,a) - alph * DKL(PIa)
@@ -169,6 +160,22 @@ class LLActionAgent(ActionPriorSACAgent):
             ll_q_target = ll_q_target.detach()
             check_shape(ll_q_target, [self._hp.batch_size])
 
+
+        # plot values:
+        plt.figure(figsize=(15,10))
+        plt.plot(q_next, 'b.', label='q_next')
+        plt.plot(v_next, 'r.', label='v_next')
+        plt.plot(v_next-q_next, 'k.', label='KLD')
+        plt.legend()
+        plt.show()
+
+        plt.figure(figsize=(15,10))
+        plt.plot(u_next, 'b.', label='u_next')
+        plt.plot(experience_batch.reward, 'b.', label='reward')
+        plt.plot(ll_q_target, 'k.', label='ll q target')
+        plt.legend()
+        plt.show()
+
         return ll_q_target, v_next, q_next, u_next
 
     def _compute_ll_critic_loss(self, experience_batch, ll_q_target):
@@ -186,10 +193,7 @@ class LLActionAgent(ActionPriorSACAgent):
         obs = split_obs.state
         act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
         q_next = torch.min(*[critic_target(obs, act).q for critic_target in self.hl_critic_targets])
-
-        # q_next = torch.min(*[critic_target(experience_batch.observation_next, self._prep_action(policy_output.action)).q
-        #                      for critic_target in self.critic_targets])
-        next_val = (q_next - self.alpha * hl_policy_output_next.log_prob[:, None])
+        next_val = (q_next - self.alpha * hl_policy_output_next.prior_divergence[:, None])
         check_shape(next_val, [self._hp.batch_size, 1])
         return next_val.squeeze(-1), q_next.squeeze(-1)
 
@@ -226,3 +230,55 @@ class LLActionAgent(ActionPriorSACAgent):
     @property
     def action_dim(self):
         return self._hp.policy_params.policy_model_params.action_dim
+
+
+    # ================================== offline ================================
+    def offline(self):
+        for _ in range(self._hp.update_iterations):
+            # sample batch and normalize
+            experience_batch = self._sample_experience()
+            experience_batch = self._normalize_batch(experience_batch)
+            experience_batch = map2torch(experience_batch, self._hp.device)
+            experience_batch = self._preprocess_experience(experience_batch)
+
+
+            # (1) LL policy loss
+            policy_output = self._run_policy(experience_batch.observation)
+            # update alpha
+            # alpha_loss = self._update_alpha(experience_batch, policy_output)
+            # policy_loss = self._compute_policy_loss(experience_batch, policy_output)
+
+
+            # (2) Qz(s,z,k) loss, Qz_target
+            hl_q_target = self._compute_hl_q_target(experience_batch, policy_output)
+            hl_critic_loss, hl_qs = self._compute_hl_critic_loss(experience_batch, hl_q_target)
+            
+
+            # (3) Qa(s,z,k,a) loss, Qa_target
+            ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch)
+            ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)
+            
+
+            # (4) update loss
+            # policy
+            # self._perform_update(policy_loss, self.policy_opt, self.policy)
+            # hl
+            [self._perform_update(critic_loss, critic_opt, critic)
+                    for critic_loss, critic_opt, critic in zip(hl_critic_loss, self.hl_critic_opts, self.hl_critics)]
+            # ll
+            [self._perform_update(critic_loss, critic_opt, critic)
+                    for critic_loss, critic_opt, critic in zip(ll_critic_loss, self.critic_opts, self.critics)]
+
+
+            # (5) soft update targets
+            [self._soft_update_target_network(critic_target, critic)
+                    for critic_target, critic in zip(self.hl_critic_targets, self.hl_critics)]
+
+            [self._soft_update_target_network(critic_target, critic)
+                    for critic_target, critic in zip(self.critic_targets, self.critics)]
+
+
+            # ==========================================================
+            # plot the values for it
+
+            # (1) LL, 
