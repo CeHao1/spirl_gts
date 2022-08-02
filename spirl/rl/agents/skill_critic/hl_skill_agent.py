@@ -60,7 +60,7 @@ class HLSKillAgent(ActionPriorSACAgent):
 
             info.update(AttrDict(       # misc
                 hl_alpha=self.alpha,
-                hl_pi_log_prob=policy_output.log_prob.mean(),
+                hl_pi_KLD=policy_output.prior_divergence.mean(),
                 hl_policy_entropy=policy_output.dist.entropy().mean(),
                 hl_avg_sigma = policy_output.dist.sigma.mean(),
             ))
@@ -90,6 +90,27 @@ class HLSKillAgent(ActionPriorSACAgent):
         idx = torch.tensor([0], device=self.device)
         k0 = make_one_hot(idx, self.n_rollout_steps).repeat(obs.shape[0], 1)
         return k0
+
+    # =================== offline ===================
+    def offline(self):
+
+        for _ in range(self._hp.update_iterations):
+            # sample batch and normalize
+            experience_batch = self._sample_experience()
+            experience_batch = self._normalize_batch(experience_batch)
+            experience_batch = map2torch(experience_batch, self._hp.device)
+            experience_batch = self._preprocess_experience(experience_batch)
+
+            policy_output = self._run_policy(experience_batch.observation)
+
+            # update alpha
+            alpha_loss = self._update_alpha(experience_batch, policy_output)
+
+            # compute policy loss
+            policy_loss = self._compute_policy_loss(experience_batch, policy_output)
+        
+            self._perform_update(policy_loss, self.policy_opt, self.policy)
+
 
 
     @property

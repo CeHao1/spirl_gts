@@ -176,6 +176,7 @@ class HierarchicalSamplerBached(SamplerBatched):
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
                     while env_steps < batch_size or (self._episode_step != 0): #must complete one sampling
+                    # while env_steps < batch_size:
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
                         agent_output = self._postprocess_agent_output(agent_output)

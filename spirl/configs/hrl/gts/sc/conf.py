@@ -40,15 +40,15 @@ configuration = AttrDict(    {
     'data_dir': '.',
     'num_epochs': 2000,
     'max_rollout_len': 10000,
-    'n_steps_per_epoch': 40000,
-    'n_warmup_steps': 160000,
+    # 'n_steps_per_epoch': 40000,
+    # 'n_warmup_steps': 160000,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Multi,
     'sampler':HierarchicalSamplerBached,
 
-    # 'n_steps_per_epoch': 200,
-    # 'n_warmup_steps': 200,
+    'n_steps_per_epoch': 10000,
+    'n_warmup_steps': 10000,
 } )
 
 sampler_config = AttrDict(
@@ -65,7 +65,7 @@ obs_norm_params = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    # batch_size=256, #256,
+    # batch_size=64, #256,
     batch_size=4096, 
     replay=UniformReplayBuffer,
     replay_params=replay_params,

@@ -86,7 +86,7 @@ class LLActionAgent(ActionPriorSACAgent):
             #     ))
             info.update(AttrDict(       # misc
                 ll_alpha=self.alpha,
-                ll_pi_log_prob=policy_output.log_prob.mean(),
+                ll_pi_KLD=policy_output.prior_divergence.mean(),
                 ll_policy_entropy=policy_output.dist.entropy().mean(),
                 ll_avg_sigma = policy_output.dist.sigma.mean(),
                 hl_q_target=hl_q_target.mean(),
@@ -162,18 +162,22 @@ class LLActionAgent(ActionPriorSACAgent):
 
 
         if if_off_plot:
+            figsize=(10,7)
+
             # plot values:
-            plt.figure(figsize=(15,10))
-            plt.plot(q_next, 'b.', label='q_next')
-            plt.plot(v_next, 'r.', label='v_next')
-            plt.plot(v_next-q_next, 'k.', label='KLD')
+            plt.figure(figsize=figsize)
+            plt.plot(map2np(q_next), 'b.', label='q_next')
+            plt.plot(map2np(v_next), 'r.', label='v_next')
+            plt.plot(map2np(v_next-q_next), 'k.', label='KLD')
+            plt.title('values')
             plt.legend()
             plt.show()
 
-            plt.figure(figsize=(15,10))
-            plt.plot(u_next, 'b.', label='u_next')
-            plt.plot(experience_batch.reward, 'b.', label='reward')
-            plt.plot(ll_q_target, 'k.', label='ll q target')
+            plt.figure(figsize=figsize)
+            plt.plot(map2np(u_next), 'b.', label='u_next')
+            plt.plot(map2np(experience_batch.reward), 'r.', label='reward')
+            plt.plot(map2np(ll_q_target), 'k.', label='ll q target')
+            plt.title('q target components')
             plt.legend()
             plt.show()
 
@@ -235,7 +239,12 @@ class LLActionAgent(ActionPriorSACAgent):
 
     # ================================== offline ================================
     def offline(self):
-        for _ in range(self._hp.update_iterations):
+        from tqdm import tqdm
+        q_target_store = []
+        update_time = self._hp.update_iterations
+        # update_time = int(1e4)
+        for idx in tqdm(range(update_time)):
+            # print('======= iter =====', idx )
             # sample batch and normalize
             experience_batch = self._sample_experience()
             experience_batch = self._normalize_batch(experience_batch)
@@ -246,8 +255,8 @@ class LLActionAgent(ActionPriorSACAgent):
             # (1) LL policy loss
             policy_output = self._run_policy(experience_batch.observation)
             # update alpha
-            # alpha_loss = self._update_alpha(experience_batch, policy_output)
-            # policy_loss = self._compute_policy_loss(experience_batch, policy_output)
+            alpha_loss = self._update_alpha(experience_batch, policy_output)
+            policy_loss = self._compute_policy_loss(experience_batch, policy_output)
 
 
             # (2) Qz(s,z,k) loss, Qz_target
@@ -259,6 +268,7 @@ class LLActionAgent(ActionPriorSACAgent):
             ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch, if_off_plot=True)
             ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)
             
+            q_target_store.append(map2np(ll_q_target.mean()))
 
             # (4) update loss
             # policy
@@ -279,7 +289,8 @@ class LLActionAgent(ActionPriorSACAgent):
                     for critic_target, critic in zip(self.critic_targets, self.critics)]
 
 
-            # ==========================================================
-            # plot the values for it
+        # finally plot the ll q target
+        plt.figure(figsize=(10,7))
+        plt.plot(q_target_store, 'b.')
+        plt.show()
 
-            # (1) LL, 
