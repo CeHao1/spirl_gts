@@ -24,7 +24,7 @@ from spirl.rl.agents.skill_critic.ll_action_agent import LLActionAgent
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    # do_init = False,
+    do_init = False,
     action_standard = True,
 
     # reward_function = eval_time_trial_reward_function,
@@ -40,8 +40,8 @@ configuration = AttrDict(    {
     'data_dir': '.',
     'num_epochs': 2000,
     'max_rollout_len': 10000,
-    'n_steps_per_epoch': 2000,
-    'n_warmup_steps': 8000,
+    'n_steps_per_epoch': 40000,
+    'n_warmup_steps': 160000,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Multi,
@@ -66,7 +66,7 @@ obs_norm_params = AttrDict(
 
 base_agent_params = AttrDict(
     # batch_size=256, #256,
-    batch_size=64, 
+    batch_size=4096, 
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
