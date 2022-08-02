@@ -136,7 +136,7 @@ class LLActionAgent(ActionPriorSACAgent):
         return hl_critic_losses, hl_qs
 
     # ================================ ll critic ================================
-    def _compute_ll_q_target(self, experience_batch):
+    def _compute_ll_q_target(self, experience_batch, if_off_plot=False):
         # Qa(s,z,k,a) = r + gamma * U_next
         # U_next = [1-beta] * Qz_next + [beta] * V_next
         # V_next = Qz_next - hl_alp * DKL(PIz_next)
@@ -161,20 +161,21 @@ class LLActionAgent(ActionPriorSACAgent):
             check_shape(ll_q_target, [self._hp.batch_size])
 
 
-        # plot values:
-        plt.figure(figsize=(15,10))
-        plt.plot(q_next, 'b.', label='q_next')
-        plt.plot(v_next, 'r.', label='v_next')
-        plt.plot(v_next-q_next, 'k.', label='KLD')
-        plt.legend()
-        plt.show()
+        if if_off_plot:
+            # plot values:
+            plt.figure(figsize=(15,10))
+            plt.plot(q_next, 'b.', label='q_next')
+            plt.plot(v_next, 'r.', label='v_next')
+            plt.plot(v_next-q_next, 'k.', label='KLD')
+            plt.legend()
+            plt.show()
 
-        plt.figure(figsize=(15,10))
-        plt.plot(u_next, 'b.', label='u_next')
-        plt.plot(experience_batch.reward, 'b.', label='reward')
-        plt.plot(ll_q_target, 'k.', label='ll q target')
-        plt.legend()
-        plt.show()
+            plt.figure(figsize=(15,10))
+            plt.plot(u_next, 'b.', label='u_next')
+            plt.plot(experience_batch.reward, 'b.', label='reward')
+            plt.plot(ll_q_target, 'k.', label='ll q target')
+            plt.legend()
+            plt.show()
 
         return ll_q_target, v_next, q_next, u_next
 
@@ -255,7 +256,7 @@ class LLActionAgent(ActionPriorSACAgent):
             
 
             # (3) Qa(s,z,k,a) loss, Qa_target
-            ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch)
+            ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch, if_off_plot=True)
             ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)
             
 

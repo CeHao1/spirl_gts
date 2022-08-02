@@ -73,8 +73,6 @@ class RLTrainer:
             start_epoch = self.resume(args.resume, self.conf.ckpt_path)
             self._hp.n_warmup_steps = 0     # no warmup if we reload from checkpoint!
 
-        # load specific info and work for debug
-
 
         # start training/evaluation
         if args.mode == 'train':
@@ -83,6 +81,8 @@ class RLTrainer:
             self.val()
         elif args.mode == 'rollout':
             self.generate_rollouts()
+        elif args.mode == 'offline':
+            self.offline()
 
     def _default_hparams(self):
         default_dict = ParamDict({
@@ -112,7 +112,6 @@ class RLTrainer:
             self.warmup()
 
         print('after warm up, start training epochs')
-        # self._hp.num_epochs = 2
 
         for epoch in range(start_epoch, self._hp.num_epochs):
             print("Epoch {}".format(epoch))
@@ -128,7 +127,7 @@ class RLTrainer:
                     'state_dict': self.agent.state_dict(),
                 }, os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name(epoch))
                 self.agent.save_state(self._hp.exp_path)
-                # self.val()
+                # self.val() # do not eval 
 
     def train_epoch(self, epoch):
         """Run inner training loop."""
@@ -352,10 +351,12 @@ class RLTrainer:
     def offline(self):
         # customized method
         # load states means load replay buffer
-        self.agent.load_state(self._hp.exp_path) 
-        self.agent.to(self.device)
+        # print('load agent')
+        # self.agent.load_state(self._hp.exp_path) 
+        # self.agent.to(self.device)
 
         # do not train policy, only train Q
+        print('train the offline')
         self.agent.ll_agent.offline()
 
 
