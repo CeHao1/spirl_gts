@@ -108,6 +108,7 @@ class SACAgent(ACAgent):
             'reward_scale': 1.0,      # SAC reward scale
             'clip_q_target': False,   # if True, clips Q target
             'target_entropy': None,   # target value for automatic entropy tuning, if None uses -action_dim
+            'visualize_values': False, # visualize action distribution and q targets
         })
         return super()._default_hparams().overwrite(default_dict)
 
@@ -183,12 +184,17 @@ class SACAgent(ACAgent):
 
             self._update_steps += 1
 
+        if self._hp.visualize_values:
+            with torch.no_grad():
+                self.visualize_Q(experience_batch, policy_output_next)
+
         return info
 
     def add_experience(self, experience_batch):
         """Adds experience to replay buffer."""
-        # visualize_actoins
-        self.visualize_actoins(experience_batch)
+        if self._hp.visualize_values:
+            # visualize_actoins
+            self.visualize_actoins(experience_batch)
 
         if not experience_batch:
             return  # pass if experience_batch is empty
@@ -294,9 +300,9 @@ class SACAgent(ACAgent):
     # ================= visualize distribution =================
 
     def visualize_actoins(self, experience_batch):
-        print('obs shape', np.array(experience_batch.observation).shape)
-        print('act shape', np.array(experience_batch.action).shape)
-        print('act shape', np.array(experience_batch.reward).shape)
+        # print('obs shape', np.array(experience_batch.observation).shape)
+        # print('act shape', np.array(experience_batch.action).shape)
+        # print('act shape', np.array(experience_batch.reward).shape)
         
         
         obs = np.array(experience_batch.observation)[:,0,:]
@@ -324,14 +330,14 @@ class SACAgent(ACAgent):
         policy_output = self.act(obs) # input (1000, x)
         dist_batch = policy_output['dist'] # (1000, x)
 
-        print('obs shape', obs.shape)
-        print('policy_output', dist_batch[0])
+        # print('obs shape', obs.shape)
+        # print('policy_output', dist_batch[0])
 
         mean = np.array([dist.mu for dist in dist_batch])
         sigma = np.array([np.exp(dist.log_sigma) for dist in dist_batch])
 
-        print('mean shape', mean.shape)
-        print('sigma shape', sigma.shape)
+        # print('mean shape', mean.shape)
+        # print('sigma shape', sigma.shape)
 
         plt.figure(figsize=(14, 8))
 
@@ -356,5 +362,29 @@ class SACAgent(ACAgent):
         plt.show()
 
 
+# ===================== visualize Q =======================
+    def visualize_Q(self, experience_batch, policy_output):
+        q_next = torch.min(*[critic_target(experience_batch.observation_next, self._prep_action(policy_output.action)).q
+                             for critic_target in self.critic_targets])
+        value_next = (q_next - self.alpha * policy_output.log_prob[:, None])
+        q_target = experience_batch.reward * self._hp.reward_scale + \
+                                (1 - experience_batch.done) * self._hp.discount_factor * value_next
 
+        plt.figure(figsize=(14, 8))
+        plt.subplot(2,2,1)
+        plt.plot(q_next, 'b.')
+        plt.title('q_next')
 
+        plt.subplot(2,2,2)
+        plt.plot(- self.alpha * policy_output.log_prob, 'b.')
+        plt.title('-alp * log prob')
+
+        plt.subplot(2,2,3)
+        plt.plot(value_next, 'b.')
+        plt.title('value_next')
+
+        plt.subplot(2,2,4)
+        plt.plot(q_target, 'b.')
+        plt.title('q_target')
+
+        plt.show()
