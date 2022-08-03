@@ -2,6 +2,7 @@ import torch
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+# matplotlib.use('TkAgg')
 
 from spirl.rl.components.agent import BaseAgent
 from spirl.utils.general_utils import ParamDict, map_dict, AttrDict
@@ -186,6 +187,9 @@ class SACAgent(ACAgent):
 
     def add_experience(self, experience_batch):
         """Adds experience to replay buffer."""
+        # visualize_actoins
+        self.visualize_actoins(experience_batch)
+
         if not experience_batch:
             return  # pass if experience_batch is empty
         self.replay_buffer.append(experience_batch)
@@ -302,23 +306,27 @@ class SACAgent(ACAgent):
         # plot actions
         act_dim = act.shape[1]
         for act_idx in range(act_dim):
-            plt.figure(figsize=(7,5))
+            plt.figure(figsize=(7,4))
             plt.plot(act[:, act_idx], 'b.')
             plt.title('action dimension {}'.format(act_idx))
-
-        plt.show()
+            plt.show()
 
         # plot reward
-        plt.figure(figsize=(7,5))
+        plt.figure(figsize=(7,4))
         plt.plot(rew, 'b.')
         plt.title('rewards')
         plt.show()
 
+
         # plot distribution
         policy_output = self.act(obs) # input (1000, x)
         dist_batch = policy_output['dist'] # (1000, x)
-        mean = np.array([dist.mean for dist in dist_batch])
-        sigma = np.array([dist.sigma for dist in dist_batch])
+
+        print('obs shape', obs.shape)
+        print('policy_output', dist_batch[0])
+
+        mean = np.array([dist.mu for dist in dist_batch])
+        sigma = np.array([np.exp(dist.log_sigma) for dist in dist_batch])
 
         print('mean shape', mean.shape)
         print('sigma shape', sigma.shape)
