@@ -311,18 +311,23 @@ class SACAgent(ACAgent):
 
         # plot actions
         act_dim = act.shape[1]
-        for act_idx in range(act_dim):
-            plt.figure(figsize=(7,4))
-            plt.plot(act[:, act_idx], 'b.')
-            plt.title('action dimension {}'.format(act_idx))
-            plt.grid()
-            plt.show()
 
-        # plot reward
-        plt.figure(figsize=(7,4))
+        plt.figure(figsize=(14, 8))
+        plt.subplot(2,2,1)
+        plt.plot(act[:, 0], 'b.')
+        plt.title('action 0, steer')
+        plt.grid()
+
+        plt.subplot(2,2,2)
+        plt.plot(act[:, 1], 'b.')
+        plt.title('action 1, pedal')
+        plt.grid()
+
+        plt.subplot(2,2,3)
         plt.plot(rew, 'b.')
         plt.title('rewards')
         plt.grid()
+
         plt.show()
 
 
@@ -372,19 +377,20 @@ class SACAgent(ACAgent):
 
         plt.figure(figsize=(14, 8))
         plt.subplot(2,2,1)
-        plt.plot(q_next, 'b.')
+        plt.plot(map2np(q_next), 'b.')
         plt.title('q_next')
 
         plt.subplot(2,2,2)
-        plt.plot(- self.alpha * policy_output.log_prob, 'b.')
+        log_p = - self.alpha * policy_output.log_prob
+        plt.plot(map2np(log_p), 'b.')
         plt.title('-alp * log prob')
 
         plt.subplot(2,2,3)
-        plt.plot(value_next, 'b.')
+        plt.plot(map2np(value_next), 'b.')
         plt.title('value_next')
 
         plt.subplot(2,2,4)
-        plt.plot(q_target, 'b.')
+        plt.plot(map2np(q_target), 'b.')
         plt.title('q_target')
 
         plt.show()

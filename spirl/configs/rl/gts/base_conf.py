@@ -50,8 +50,8 @@ configuration = {
     'environment': GTSEnv_Raw,
     'sampler':SamplerBatched,
 
-    # 'n_steps_per_epoch': 200 ,
-    # 'n_warmup_steps': 200 ,
+    # 'n_steps_per_epoch': 2000 ,
+    # 'n_warmup_steps': 2000 ,
 }
 
 configuration = AttrDict(configuration)
@@ -88,8 +88,8 @@ obs_norm_params = AttrDict(
 
 # Agent
 agent_config = AttrDict(
-    policy=MLPPolicy,
-    # policy=TanhLogstd_MLPPolicy,
+    # policy=MLPPolicy,
+    policy=TanhLogstd_MLPPolicy,
     policy_params=policy_params,
     critic=MLPCritic,
     critic_params=critic_params,
