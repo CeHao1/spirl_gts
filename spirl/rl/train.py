@@ -351,11 +351,9 @@ class RLTrainer:
     def offline(self):
         # customized method
         # load states means load replay buffer
-        # print('load agent')
         self.agent.load_state(self._hp.exp_path) 
         self.agent.to(self.device)
 
-        # do not train policy, only train Q
         print('train the offline')
         self.agent.hl_agent.offline()
         self.agent.ll_agent.offline()
