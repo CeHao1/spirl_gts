@@ -122,16 +122,17 @@ class ReplayBuffer:
         # plot actions
         act_dim = act.shape[1]
         for act_idx in range(act_dim):
-            plt.figure(figsize=(7,5))
+            plt.figure(figsize=(7,4))
             plt.plot(act[:, act_idx], 'b.')
             plt.title('action dimension {}'.format(act_idx))
-
-        plt.show()
+            plt.grid()
+            plt.show()
 
         # plot reward
-        plt.figure(figsize=(7,5))
+        plt.figure(figsize=(7,4))
         plt.plot(rew, 'b.')
         plt.title('rewards')
+        plt.grid()
         plt.show()
 
 
