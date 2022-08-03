@@ -335,17 +335,17 @@ class SACAgent(ACAgent):
 
         plt.subplot(2,2,1)
         plt.plot(mean[:,0], 'b.')
-        plt.title('pedal mean')
+        plt.title('steer mean')
         plt.subplot(2,2,2)
         plt.plot(mean[:,1], 'b.')
-        plt.title('steer mean')
+        plt.title('pedal mean')
 
         plt.subplot(2,2,3)
         plt.plot(sigma[:,0], 'b.')
-        plt.title('pedal sigma')
+        plt.title('steer sigma')
         plt.subplot(2,2,4)
         plt.plot(sigma[:,1], 'b.')
-        plt.title('steer sigma')
+        plt.title('pedal sigma')
 
         plt.show()
 
