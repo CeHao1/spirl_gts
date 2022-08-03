@@ -88,8 +88,8 @@ obs_norm_params = AttrDict(
 
 # Agent
 agent_config = AttrDict(
-    # policy=MLPPolicy,
-    policy=TanhLogstd_MLPPolicy,
+    policy=MLPPolicy,
+    # policy=TanhLogstd_MLPPolicy,
     policy_params=policy_params,
     critic=MLPCritic,
     critic_params=critic_params,

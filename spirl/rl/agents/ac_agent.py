@@ -309,12 +309,14 @@ class SACAgent(ACAgent):
             plt.figure(figsize=(7,4))
             plt.plot(act[:, act_idx], 'b.')
             plt.title('action dimension {}'.format(act_idx))
+            plt.grid()
             plt.show()
 
         # plot reward
         plt.figure(figsize=(7,4))
         plt.plot(rew, 'b.')
         plt.title('rewards')
+        plt.grid()
         plt.show()
 
 
@@ -335,16 +337,20 @@ class SACAgent(ACAgent):
 
         plt.subplot(2,2,1)
         plt.plot(mean[:,0], 'b.')
+        plt.grid()
         plt.title('steer mean')
         plt.subplot(2,2,2)
         plt.plot(mean[:,1], 'b.')
+        plt.grid()
         plt.title('pedal mean')
 
         plt.subplot(2,2,3)
         plt.plot(sigma[:,0], 'b.')
+        plt.grid()
         plt.title('steer sigma')
         plt.subplot(2,2,4)
         plt.plot(sigma[:,1], 'b.')
+        plt.grid()
         plt.title('pedal sigma')
 
         plt.show()
