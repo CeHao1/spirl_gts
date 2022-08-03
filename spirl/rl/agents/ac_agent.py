@@ -34,7 +34,6 @@ class ACAgent(BaseAgent):
             # if 'dist' in policy_output:
             #     del policy_output['dist']
             return map2np(policy_output)
-        res = map2np(self.policy(obs))
         return map2np(self.policy(obs))
 
     def _act_rand(self, obs):
@@ -44,10 +43,6 @@ class ACAgent(BaseAgent):
         #     del policy_output['dist']
         return map2np(policy_output)
         
-        # random is only the initial NN
-
-        # return self._act(obs)
-
     def state_dict(self, *args, **kwargs):
         d = super().state_dict()
         if self.policy.has_trainable_params:
@@ -289,3 +284,6 @@ class SACAgent(ACAgent):
     @property
     def schedule_steps(self):
         return self._update_steps
+
+    # ================= visualize distribution =================
+    def visualize_action_dist(self, experience_batch):
