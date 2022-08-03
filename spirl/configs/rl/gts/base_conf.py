@@ -106,6 +106,7 @@ agent_config = AttrDict(
     update_iterations = 64 * 20,
 
     # target_entropy = 0,
+    visualize_values = True,
     
 )
 
