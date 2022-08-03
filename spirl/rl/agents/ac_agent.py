@@ -1,6 +1,8 @@
 import torch
 import os
 import numpy as np
+import matplotlib.pyplot as plt
+# matplotlib.use('TkAgg')
 
 from spirl.rl.components.agent import BaseAgent
 from spirl.utils.general_utils import ParamDict, map_dict, AttrDict
@@ -34,7 +36,6 @@ class ACAgent(BaseAgent):
             # if 'dist' in policy_output:
             #     del policy_output['dist']
             return map2np(policy_output)
-        res = map2np(self.policy(obs))
         return map2np(self.policy(obs))
 
     def _act_rand(self, obs):
@@ -44,10 +45,6 @@ class ACAgent(BaseAgent):
         #     del policy_output['dist']
         return map2np(policy_output)
         
-        # random is only the initial NN
-
-        # return self._act(obs)
-
     def state_dict(self, *args, **kwargs):
         d = super().state_dict()
         if self.policy.has_trainable_params:
@@ -190,6 +187,9 @@ class SACAgent(ACAgent):
 
     def add_experience(self, experience_batch):
         """Adds experience to replay buffer."""
+        # visualize_actoins
+        self.visualize_actoins(experience_batch)
+
         if not experience_batch:
             return  # pass if experience_batch is empty
         self.replay_buffer.append(experience_batch)
@@ -290,3 +290,65 @@ class SACAgent(ACAgent):
     @property
     def schedule_steps(self):
         return self._update_steps
+
+    # ================= visualize distribution =================
+
+    def visualize_actoins(self, experience_batch):
+        print('obs shape', np.array(experience_batch.observation).shape)
+        print('act shape', np.array(experience_batch.action).shape)
+        print('act shape', np.array(experience_batch.reward).shape)
+        
+        
+        obs = np.array(experience_batch.observation)[:,0,:]
+        act = np.array(experience_batch.action)[:,0,:]
+        rew = np.array(experience_batch.reward)[:,0]
+
+        # plot actions
+        act_dim = act.shape[1]
+        for act_idx in range(act_dim):
+            plt.figure(figsize=(7,4))
+            plt.plot(act[:, act_idx], 'b.')
+            plt.title('action dimension {}'.format(act_idx))
+            plt.show()
+
+        # plot reward
+        plt.figure(figsize=(7,4))
+        plt.plot(rew, 'b.')
+        plt.title('rewards')
+        plt.show()
+
+
+        # plot distribution
+        policy_output = self.act(obs) # input (1000, x)
+        dist_batch = policy_output['dist'] # (1000, x)
+
+        print('obs shape', obs.shape)
+        print('policy_output', dist_batch[0])
+
+        mean = np.array([dist.mu for dist in dist_batch])
+        sigma = np.array([np.exp(dist.log_sigma) for dist in dist_batch])
+
+        print('mean shape', mean.shape)
+        print('sigma shape', sigma.shape)
+
+        plt.figure(figsize=(14, 8))
+
+        plt.subplot(2,2,1)
+        plt.plot(mean[:,0], 'b.')
+        plt.title('pedal mean')
+        plt.subplot(2,2,2)
+        plt.plot(mean[:,1], 'b.')
+        plt.title('steer mean')
+
+        plt.subplot(2,2,3)
+        plt.plot(sigma[:,0], 'b.')
+        plt.title('pedal sigma')
+        plt.subplot(2,2,4)
+        plt.plot(sigma[:,1], 'b.')
+        plt.title('steer sigma')
+
+        plt.show()
+
+
+
+

@@ -39,6 +39,7 @@ class SamplerBatched:
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
                     while step < batch_size or (self._episode_step != 0): # must complete one episode
+                    # while step < batch_size:
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
                         if agent_output.action is None:
