@@ -82,7 +82,8 @@ DEFAULT_FEATURE_KEYS = (
 chosen_feature_keys = DEFAULT_FEATURE_KEYS
 
 
-state_dim = len(ego_obs)
+# state_dim = len(ego_obs)
+state_dim = len(chosen_feature_keys)
 
 def obs2name(obs):
     state = {}
@@ -140,21 +141,6 @@ def initialize_gts(ip, num_cars, car_codes, course_code, tire_type, bops):
             bops = bops
         )
 
-# def make_env(ip, min_frames_per_action, feature_keys, builtin_controlled, spectator_mode=False,
-#             reward_function=None, done_function=None):
-#     env = gym.make(
-#                 'gts-v0', 
-#                 ip=ip,  
-#                 min_frames_per_action=min_frames_per_action,
-#                 builtin_controlled = builtin_controlled,
-#                 feature_keys = feature_keys,
-#                 standardize_observations = False,
-#                 store_states = False,
-#                 spectator_mode = spectator_mode,
-#                 reward_function = reward_function,
-#                 done_function = done_function
-#         )
-#     return env
 
 def make_env(**kwarg):
     env = gym.make('gts-v0', **kwarg)

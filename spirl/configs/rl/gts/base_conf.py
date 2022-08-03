@@ -6,6 +6,7 @@ from spirl.rl.components.critic import MLPCritic
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 
 from spirl.rl.envs.gts_multi import GTSEnv_Multi
+from spirl.rl.envs.gts_raw import GTSEnv_Raw
 
 from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.components.sampler_batched import SamplerBatched
@@ -45,7 +46,8 @@ configuration = {
     'n_warmup_steps': 80000 ,
     'use_update_after_sampling':True,
 
-    'environment': GTSEnv_Multi,
+    # 'environment': GTSEnv_Multi,
+    'environment': GTSEnv_Raw,
     'sampler':SamplerBatched,
 
     # 'n_steps_per_epoch': 200 ,
@@ -54,9 +56,6 @@ configuration = {
 
 configuration = AttrDict(configuration)
 
-# sampler_config = AttrDict(
-#     number_of_agents = 20,
-# )
 
 # Policy
 policy_params = AttrDict(
