@@ -1,6 +1,7 @@
 import torch
 import os
 import numpy as np
+import matplotlib.pyplot as plt
 
 from spirl.rl.components.agent import BaseAgent
 from spirl.utils.general_utils import ParamDict, map_dict, AttrDict
@@ -211,6 +212,7 @@ class SACAgent(ACAgent):
         return alpha_loss
 
     def _compute_alpha_loss(self, policy_output):
+        # print('@@target entropy is ', self._target_entropy)
         return -1 * (self.alpha * (self._target_entropy + policy_output.log_prob).detach()).mean()
 
     def _compute_policy_loss(self, experience_batch, policy_output):
@@ -286,4 +288,59 @@ class SACAgent(ACAgent):
         return self._update_steps
 
     # ================= visualize distribution =================
-    def visualize_action_dist(self, experience_batch):
+
+    def visualize_actoins(self, experience_batch):
+        print('obs shape', np.array(experience_batch.observation).shape)
+        print('act shape', np.array(experience_batch.action).shape)
+        print('act shape', np.array(experience_batch.reward).shape)
+        
+        
+        obs = np.array(experience_batch.observation)[:,0,:]
+        act = np.array(experience_batch.action)[:,0,:]
+        rew = np.array(experience_batch.reward)[:,0]
+
+        # plot actions
+        act_dim = act.shape[1]
+        for act_idx in range(act_dim):
+            plt.figure(figsize=(7,5))
+            plt.plot(act[:, act_idx], 'b.')
+            plt.title('action dimension {}'.format(act_idx))
+
+        plt.show()
+
+        # plot reward
+        plt.figure(figsize=(7,5))
+        plt.plot(rew, 'b.')
+        plt.title('rewards')
+        plt.show()
+
+        # plot distribution
+        policy_output = self.act(obs) # input (1000, x)
+        dist_batch = policy_output['dist'] # (1000, x)
+        mean = np.array([dist.mean for dist in dist_batch])
+        sigma = np.array([dist.sigma for dist in dist_batch])
+
+        print('mean shape', mean.shape)
+        print('sigma shape', sigma.shape)
+
+        plt.figure(figsize=(14, 8))
+
+        plt.subplot(2,2,1)
+        plt.plot(mean[:,0], 'b.')
+        plt.title('pedal mean')
+        plt.subplot(2,2,2)
+        plt.plot(mean[:,1], 'b.')
+        plt.title('steer mean')
+
+        plt.subplot(2,2,3)
+        plt.plot(sigma[:,0], 'b.')
+        plt.title('pedal sigma')
+        plt.subplot(2,2,4)
+        plt.plot(sigma[:,1], 'b.')
+        plt.title('steer sigma')
+
+        plt.show()
+
+
+
+
