@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch
 import copy
 
 from spirl.modules.layers import LayerBuilderParams
@@ -136,4 +137,14 @@ class HybridConvMLPPolicy(ConvPolicy):
             image=obs[:, self._hp.input_dim:].reshape(-1, self._hp.input_nc, self._hp.input_res, self._hp.input_res)
         )
         return super()._compute_action_dist(split_obs)
+
+
+class TanhLogstd_MLPPolicy(MLPPolicy):
+    '''Add a new activation to the variance head of the network'''
+    def _compute_action_dist(self, obs):
+        net_out = self.net(obs)
+        mu = net_out[:, :self._hp.action_dim]
+        log_sigma = net_out[:, self._hp.action_dim:]
+        log_sigma = torch.tanh(log_sigma)
+        return MultivariateGaussian(mu=mu, log_sigma=log_sigma)
 

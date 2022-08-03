@@ -1,7 +1,7 @@
 import os
 
 from spirl.utils.general_utils import AttrDict
-from spirl.rl.policies.mlp_policies import MLPPolicy
+from spirl.rl.policies.mlp_policies import MLPPolicy, TanhLogstd_MLPPolicy
 from spirl.rl.components.critic import MLPCritic
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 
@@ -89,7 +89,8 @@ obs_norm_params = AttrDict(
 
 # Agent
 agent_config = AttrDict(
-    policy=MLPPolicy,
+    # policy=MLPPolicy,
+    policy=TanhLogstd_MLPPolicy,
     policy_params=policy_params,
     critic=MLPCritic,
     critic_params=critic_params,
