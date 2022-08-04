@@ -80,6 +80,12 @@ class GTSEnv_Raw(GymEnv):
         return obs
 
     def step(self, actions):
-        actions = self.descaler_actions(actions)
         obs, rew, done, info = self._env.step(actions)
         return obs, rew, done, info
+
+    def _get_course_length(self):
+        course_length, course_code, course_name = self._env.get_course_meta()
+        return course_length
+
+    def render(self, mode='rgb_array'):
+        return [[[[0,0,0]]] for _ in range(self._hp.num_cars)]

@@ -191,8 +191,8 @@ class SACAgent(ACAgent):
     def add_experience(self, experience_batch):
         """Adds experience to replay buffer."""
         if self._hp.visualize_values:
-            # visualize_actoins
-            self.visualize_actoins(experience_batch)
+            # visualize_actions
+            self.visualize_actions(experience_batch)
 
         if not experience_batch:
             return  # pass if experience_batch is empty
@@ -297,7 +297,7 @@ class SACAgent(ACAgent):
 
     # ================= visualize distribution =================
 
-    def visualize_actoins(self, experience_batch):
+    def visualize_actions(self, experience_batch):
         # print('obs shape', np.array(experience_batch.observation).shape)
         # print('act shape', np.array(experience_batch.action).shape)
         # print('act shape', np.array(experience_batch.reward).shape)
@@ -309,16 +309,23 @@ class SACAgent(ACAgent):
 
         # plot actions
         act_dim = act.shape[1]
-        for act_idx in range(act_dim):
-            plt.figure(figsize=(7,4))
-            plt.plot(act[:, act_idx], 'b.')
-            plt.title('action dimension {}'.format(act_idx))
-            plt.show()
 
-        # plot reward
-        plt.figure(figsize=(7,4))
+        plt.figure(figsize=(14, 8))
+        plt.subplot(2,2,1)
+        plt.plot(act[:, 0], 'b.')
+        plt.title('action 0, steer')
+        plt.grid()
+
+        plt.subplot(2,2,2)
+        plt.plot(act[:, 1], 'b.')
+        plt.title('action 1, pedal')
+        plt.grid()
+
+        plt.subplot(2,2,3)
         plt.plot(rew, 'b.')
         plt.title('rewards')
+        plt.grid()
+
         plt.show()
 
 
@@ -339,17 +346,21 @@ class SACAgent(ACAgent):
 
         plt.subplot(2,2,1)
         plt.plot(mean[:,0], 'b.')
-        plt.title('pedal mean')
+        plt.grid()
+        plt.title('steer mean')
         plt.subplot(2,2,2)
         plt.plot(mean[:,1], 'b.')
-        plt.title('steer mean')
+        plt.grid()
+        plt.title('pedal mean')
 
         plt.subplot(2,2,3)
         plt.plot(sigma[:,0], 'b.')
-        plt.title('pedal sigma')
+        plt.grid()
+        plt.title('steer sigma')
         plt.subplot(2,2,4)
         plt.plot(sigma[:,1], 'b.')
-        plt.title('steer sigma')
+        plt.grid()
+        plt.title('pedal sigma')
 
         plt.show()
 
@@ -364,19 +375,20 @@ class SACAgent(ACAgent):
 
         plt.figure(figsize=(14, 8))
         plt.subplot(2,2,1)
-        plt.plot(q_next, 'b.')
+        plt.plot(map2np(q_next), 'b.')
         plt.title('q_next')
 
         plt.subplot(2,2,2)
-        plt.plot(- self.alpha * policy_output.log_prob, 'b.')
+        log_p = - self.alpha * policy_output.log_prob
+        plt.plot(map2np(log_p), 'b.')
         plt.title('-alp * log prob')
 
         plt.subplot(2,2,3)
-        plt.plot(value_next, 'b.')
+        plt.plot(map2np(value_next), 'b.')
         plt.title('value_next')
 
         plt.subplot(2,2,4)
-        plt.plot(q_target, 'b.')
+        plt.plot(map2np(q_target), 'b.')
         plt.title('q_target')
 
         plt.show()

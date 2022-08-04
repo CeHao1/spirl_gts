@@ -50,8 +50,8 @@ configuration = {
     'environment': GTSEnv_Raw,
     'sampler':SamplerBatched,
 
-    # 'n_steps_per_epoch': 200 ,
-    # 'n_warmup_steps': 200 ,
+    # 'n_steps_per_epoch': 2000 ,
+    # 'n_warmup_steps': 2000 ,
 }
 
 configuration = AttrDict(configuration)
