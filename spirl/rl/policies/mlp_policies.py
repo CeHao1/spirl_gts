@@ -145,10 +145,10 @@ class TanhLogstd_MLPPolicy(MLPPolicy):
         net_out = self.net(obs)
         mu = net_out[:, :self._hp.action_dim]
         log_sigma = net_out[:, self._hp.action_dim:]
-        LOG_STD_MAX = 2
-        LOG_STD_MIN = -20
+        # LOG_STD_MAX = 2
+        # LOG_STD_MIN = -20
 
-        log_sigma = LOG_STD_MIN + 0.5 *(LOG_STD_MAX - LOG_STD_MIN) * (log_sigma + 1)
+        # log_sigma = LOG_STD_MIN + 0.5 *(LOG_STD_MAX - LOG_STD_MIN) * (log_sigma + 1)
         log_sigma = torch.tanh(log_sigma)
         return MultivariateGaussian(mu=mu, log_sigma=log_sigma)
 

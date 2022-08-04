@@ -386,8 +386,8 @@ class SACAgent(ACAgent):
         plt.title('-alp * log prob')
 
         plt.subplot(2,2,3)
-        plt.plot(map2np(value_next), 'b.')
-        plt.title('value_next')
+        plt.plot(map2np(experience_batch.reward), 'b.')
+        plt.title('reward')
 
         plt.subplot(2,2,4)
         plt.plot(map2np(q_target), 'b.')
