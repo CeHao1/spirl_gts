@@ -28,18 +28,16 @@ class ACAgent(BaseAgent):
         return super()._default_hparams().overwrite(default_dict)
 
     def _act(self, obs):
-        # TODO implement non-sampling validation mode
         obs = map2torch(self._obs_normalizer(obs), self._hp.device)
         
         if len(obs.shape) == 1:     # we need batched inputs for policy
             policy_output = self._remove_batch(self.policy(obs[None]))
-            # if 'dist' in policy_output:
-            #     del policy_output['dist']
-            return map2np(policy_output)
-        return map2np(self.policy(obs))
+            policy_output = map2np(policy_output)
+        policy_output= map2np(self.policy(obs))
+        policy_output = self._post_process_policy_output(policy_output)
+        return policy_output
 
     def _act_rand(self, obs):
-        
         policy_output = self.policy.sample_rand(map2torch(obs, self.policy.device))
         # if 'dist' in policy_output:
         #     del policy_output['dist']

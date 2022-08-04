@@ -14,6 +14,7 @@ from spirl.rl.components.normalization import DummyNormalizer
 from spirl.rl.components.policy import Policy
 from spirl.components.checkpointer import CheckpointHandler
 from spirl.rl.utils.mpi import sync_grads
+from spirl.modules.variational_inference import MultivariateGaussian
 
 
 class BaseAgent(nn.Module):
@@ -24,6 +25,7 @@ class BaseAgent(nn.Module):
         self._is_train = True           # indicates whether agent should sample in training mode
         self._rand_act_mode = False     # indicates whether agent should act randomly (for warmup collection)
         self._rollout_mode = False      # indicates whether agent is run in rollout mode (omit certain policy outputs)
+        self._deterministic_act_mode = False # if true, use the mean value of policy distribution
         self._obs_normalizer = self._hp.obs_normalizer(self._hp.obs_normalizer_params)
 
     def _default_hparams(self):
@@ -207,6 +209,26 @@ class BaseAgent(nn.Module):
     def update_iterations(self):
         return self._hp.update_iterations
 
+    # ============== action determinstic related =================
+    @contextmanager
+    def deterministic_act_mode(self):
+        self._deterministic_act_mode = True
+        yield
+        self._deterministic_act_mode = False
+
+    def switch_on_deterministic_action_mode(self):
+        self._deterministic_act_mode = True
+
+    def switch_off_deterministic_action_mode(self):
+        self._deterministic_act_mode = False
+
+    def _post_process_policy_output(self, policy_output):
+        if self._deterministic_act_mode:
+            if 'dist' in policy_output and isinstance(policy_output.dist, MultivariateGaussian):
+                policy_output.ori_action = policy_output.action
+                policy_output.action = policy_output.dist.mean
+        return policy_output
+                
 
 class HierarchicalAgent(BaseAgent):
     """Implements a basic hierarchical agent with high-level and low-level policy/policies."""
