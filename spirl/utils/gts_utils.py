@@ -28,7 +28,7 @@ BOP     =   {
 # RH, RM, RS, RSS, (racing hard)
 # IM, HW, or DIRT (wet tire)
 
-TIRE_TYPE = 'SH'
+TIRE_TYPE = 'RH'
 
 RL_OBS_1 = ['lap_count', 'current_lap_time_msec', 'speed_kmph', 'frame_count', 'is_controllable',
                 'vx', 'vy', 'vz', 'pos','rot', 'angular_velocity', 'front_g', 'side_g', 'vertical_g',
