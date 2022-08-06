@@ -39,6 +39,8 @@ class GTSEnv_Raw(GymEnv):
             'reward_function' : reward_function,
             'done_function' : sampling_done_function,
             'standardize_observations' : True,
+            'store_states' : False,
+            'builtin_controlled': [],
             'min_frames_per_action': 6,
             'initial_velocity': 144,
         })
@@ -63,6 +65,8 @@ class GTSEnv_Raw(GymEnv):
             min_frames_per_action = self._hp.min_frames_per_action, 
             reward_function = self._hp.reward_function,
             done_function = self._hp.done_function,
+            builtin_controlled = self._hp.builtin_controlled,
+            store_states = self._hp.store_states,
             standardize_observations=self._hp.standardize_observations,
         )
 

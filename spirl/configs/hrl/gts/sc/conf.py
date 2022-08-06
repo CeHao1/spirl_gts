@@ -40,7 +40,7 @@ configuration = AttrDict(    {
     'data_dir': '.',
     'num_epochs': 2000,
     'max_rollout_len': 10000,
-    'n_steps_per_epoch': 40000,
+    'n_steps_per_epoch': 10000,
     'n_warmup_steps': 160000,
     'use_update_after_sampling':True,
 
@@ -167,7 +167,7 @@ agent_config = AttrDict(
     update_ll=True,
     log_video_caption=False,
 
-    update_iterations = 1024,
+    update_iterations = 1280,
     discount_factor = 0.98 ,
 )
 

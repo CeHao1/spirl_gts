@@ -28,11 +28,14 @@ notes = 'non-hierarchical RL experiments in gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    # do_init = False,
-    action_standard = True,
+    do_init = False,
+    # action_standard = True,
 
     # reward_function = eval_time_trial_reward_function,
     # done_function = eval_time_trial_done_function,
+
+    # num_cars = 1,
+
 )
 
 configuration = {
@@ -42,8 +45,8 @@ configuration = {
     'data_dir': '.',
     'num_epochs': 2000,
     'max_rollout_len': 10000,
-    'n_steps_per_epoch': 20000 ,
-    'n_warmup_steps': 80000 ,
+    'n_steps_per_epoch': 10000 ,
+    'n_warmup_steps': 160000 ,
     'use_update_after_sampling':True,
 
     # 'environment': GTSEnv_Multi,
@@ -88,8 +91,8 @@ obs_norm_params = AttrDict(
 
 # Agent
 agent_config = AttrDict(
-    # policy=MLPPolicy,
-    policy=TanhLogstd_MLPPolicy,
+    policy=MLPPolicy,
+    # policy=TanhLogstd_MLPPolicy,
     policy_params=policy_params,
     critic=MLPCritic,
     critic_params=critic_params,
@@ -102,11 +105,11 @@ agent_config = AttrDict(
     log_videos=False,
 
     discount_factor = 0.98,
-    fixed_alpha = 0.01,
+    fixed_alpha = 0.1,
     update_iterations = 64 * 20,
 
     # target_entropy = 0,
-    visualize_values = True,
+    # visualize_values = True,
     
 )
 
