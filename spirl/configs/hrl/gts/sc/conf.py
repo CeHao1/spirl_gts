@@ -134,6 +134,8 @@ hl_policy_params = AttrDict(
     prior_model=ll_policy_params.policy_model,
     prior_model_params=ll_policy_params.policy_model_params,
     prior_model_checkpoint=ll_policy_params.policy_model_checkpoint,
+
+    squash_output_dist = False, # do not squash the tanh output
 )
 
 # critic

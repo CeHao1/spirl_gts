@@ -220,7 +220,6 @@ class SACAgent(ACAgent):
         return alpha_loss
 
     def _compute_alpha_loss(self, policy_output):
-        # print('@@target entropy is ', self._target_entropy)
         return -1 * (self.alpha * (self._target_entropy + policy_output.log_prob).detach()).mean()
 
     def _compute_policy_loss(self, experience_batch, policy_output):

@@ -15,6 +15,15 @@ class LLActionAgent(ActionPriorSACAgent):
         ActionPriorSACAgent.__init__(self, config)
         # critic is Qa(s,z,k,a)
         # policy is PIa(a|s,z,k)
+        self._update_ll_policy_flag = True
+        self._update_hl_q_flag = True
+        self._update_ll_q_flag = True
+        
+
+    def fast_assign_flags(self, flags):
+        self._update_ll_policy_flag = flags[0]
+        self._update_hl_q_flag = flags[1]
+        self._update_ll_q_flag = flags[2]
 
     def update_by_hl_agent(self, hl_agent):
         self.hl_agent = hl_agent
@@ -38,36 +47,53 @@ class LLActionAgent(ActionPriorSACAgent):
             policy_output = self._run_policy(experience_batch.observation)
             # update alpha
             alpha_loss = self._update_alpha(experience_batch, policy_output)
-            policy_loss = self._compute_policy_loss(experience_batch, policy_output)
 
+            if self.self._update_ll_policy_flag:
+                policy_loss = self._compute_policy_loss(experience_batch, policy_output)
+            else:
+                with torch.no_grad():
+                    policy_loss = self._compute_policy_loss(experience_batch, policy_output)
 
             # (2) Qz(s,z,k) loss, Qz_target
-            hl_q_target = self._compute_hl_q_target(experience_batch, policy_output)
-            hl_critic_loss, hl_qs = self._compute_hl_critic_loss(experience_batch, hl_q_target)
-            
+            if self._update_hl_q_flag:
+                hl_q_target = self._compute_hl_q_target(experience_batch, policy_output)
+                hl_critic_loss, hl_qs = self._compute_hl_critic_loss(experience_batch, hl_q_target)
+            else:
+                with torch.no_grad():
+                    hl_q_target = self._compute_hl_q_target(experience_batch, policy_output)
+                    hl_critic_loss, hl_qs = self._compute_hl_critic_loss(experience_batch, hl_q_target)
 
             # (3) Qa(s,z,k,a) loss, Qa_target
-            ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch)
-            ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)
+            if self._update_ll_policy_flag:
+                ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch)
+                ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)
+            else:
+                with torch.no_grad():
+                    ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch)
+                    ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)
             
 
             # (4) update loss
             # policy
-            self._perform_update(policy_loss, self.policy_opt, self.policy)
+            if self.self._update_ll_policy_flag:
+                self._perform_update(policy_loss, self.policy_opt, self.policy)
             # hl
-            [self._perform_update(critic_loss, critic_opt, critic)
-                    for critic_loss, critic_opt, critic in zip(hl_critic_loss, self.hl_critic_opts, self.hl_critics)]
+            if self._update_hl_q_flag:
+                [self._perform_update(critic_loss, critic_opt, critic)
+                        for critic_loss, critic_opt, critic in zip(hl_critic_loss, self.hl_critic_opts, self.hl_critics)]
             # ll
-            [self._perform_update(critic_loss, critic_opt, critic)
-                    for critic_loss, critic_opt, critic in zip(ll_critic_loss, self.critic_opts, self.critics)]
+            if self._update_ll_policy_flag:
+                [self._perform_update(critic_loss, critic_opt, critic)
+                        for critic_loss, critic_opt, critic in zip(ll_critic_loss, self.critic_opts, self.critics)]
 
 
             # (5) soft update targets
-            [self._soft_update_target_network(critic_target, critic)
-                    for critic_target, critic in zip(self.hl_critic_targets, self.hl_critics)]
-
-            [self._soft_update_target_network(critic_target, critic)
-                    for critic_target, critic in zip(self.critic_targets, self.critics)]
+            if self._update_hl_q_flag:
+                [self._soft_update_target_network(critic_target, critic)
+                        for critic_target, critic in zip(self.hl_critic_targets, self.hl_critics)]
+            if self._update_ll_policy_flag:
+                [self._soft_update_target_network(critic_target, critic)
+                        for critic_target, critic in zip(self.critic_targets, self.critics)]
 
             # logging
             info = AttrDict(    # losses
@@ -236,6 +262,15 @@ class LLActionAgent(ActionPriorSACAgent):
     def action_dim(self):
         return self._hp.policy_params.policy_model_params.action_dim
 
+
+    # ================================== visualize =============================
+    # def visualize_actions(self, experience_batch): use the one from sac
+
+
+    def visualize_HL_Q(self, experience_batch, policy_output):
+        pass
+
+    
 
     # ================================== offline ================================
     def offline(self):
