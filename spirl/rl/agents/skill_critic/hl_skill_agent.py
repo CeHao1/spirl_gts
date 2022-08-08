@@ -17,9 +17,13 @@ class HLSKillAgent(ActionPriorSACAgent):
         # critics is Qz(s, z, k)
         # policy is PIz(z|s) when k=0
         # Qa will generate the Q target
+        self._update_hl_policy_flag = True
  
     # def update_by_ll_agent(self, ll_agent):
     #     self.ll_agent = ll_agent
+
+    def fast_assign_flags(self, flags):
+        self._update_hl_policy_flag = flags[0]
 
     def update(self, experience_batch):
 
@@ -42,10 +46,13 @@ class HLSKillAgent(ActionPriorSACAgent):
             alpha_loss = self._update_alpha(experience_batch, policy_output)
 
             # compute policy loss
-            policy_loss = self._compute_policy_loss(experience_batch, policy_output)
+            if self._update_hl_policy_flag: # update only when the flag is on
+                policy_loss = self._compute_policy_loss(experience_batch, policy_output)
         
-            self._perform_update(policy_loss, self.policy_opt, self.policy)
-
+                self._perform_update(policy_loss, self.policy_opt, self.policy)
+            else:
+                with torch.no_grad():
+                    policy_loss = self._compute_policy_loss(experience_batch, policy_output)
 
             # logging
             info = AttrDict(    # losses

@@ -3,6 +3,15 @@ from spirl.rl.components.agent import HierarchicalAgent, FixedIntervalHierarchic
 
 from spirl.utils.general_utils import ParamDict, get_clipped_optimizer, AttrDict, prefix_dict, map_dict
 
+from enum import Enum
+
+class skill_critic_stages(Enum):
+    WARM_START = 0
+    HL_TRAIN = 1
+    LL_TRAIN = 2
+    HYBRID = 3
+
+
 class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
     def __init__(self, config):
         super().__init__(config)
@@ -15,6 +24,52 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
     3) Use deterministic policy
 
     '''
+
+    def train_stages_control(self, stage=None):
+        print('!! Change SC stage to ', stage)
+
+        if stage == skill_critic_stages.WARM_START:
+        # 1) warm-start stage
+            # policy: HL var, LL var
+            # update: HL Q, LL Q (to convergence)
+            self.hl_agent.switch_off_deterministic_action_mode()
+            self.ll_agent.switch_off_deterministic_action_mode()
+            self.hl_agent.fast_assign_flags([False])
+            self.ll_agent.fast_assign_flags([False, True, True])
+
+        elif stage == skill_critic_stages.HL_TRAIN:
+        # 2) HL training stage:
+            # policy: HL var, LL determine
+            # update: HL Q, LL Q, HL Pi
+            self.hl_agent.switch_off_deterministic_action_mode()
+            self.ll_agent.switch_on_deterministic_action_mode()
+            self.hl_agent.fast_assign_flags([True])
+            self.ll_agent.fast_assign_flags([False, True, True])
+
+        elif stage == skill_critic_stages.LL_TRAIN:
+        # 3) LL training stage:
+            # policy: HL var, LL var
+            # update: HL Q, LL Q, LL Pi
+            self.hl_agent.switch_on_deterministic_action_mode()
+            self.ll_agent.switch_off_deterministic_action_mode()
+            self.hl_agent.fast_assign_flags([False])
+            self.ll_agent.fast_assign_flags([True, True, True])
+
+        elif stage == skill_critic_stages.HYBRID:
+        # 4) hybrid stage
+            # policy: all var
+            # update: all
+            self.hl_agent.switch_off_deterministic_action_mode()
+            self.ll_agent.switch_off_deterministic_action_mode()
+            self.hl_agent.fast_assign_flags([True])
+            self.ll_agent.fast_assign_flags([True, True, True])
+
+        else:
+            self.hl_agent.switch_off_deterministic_action_mode()
+            self.ll_agent.switch_off_deterministic_action_mode()
+            self.hl_agent.fast_assign_flags([True])
+            self.ll_agent.fast_assign_flags([True, True, True])
+
     '''
     # 
     def act(self, obs): # obs is numpy array
