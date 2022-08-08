@@ -15,7 +15,7 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
     3) Use deterministic policy
 
     '''
-
+    '''
     # 
     def act(self, obs): # obs is numpy array
         """Output dict contains is_hl_step in case high-level action was performed during this action."""
@@ -37,7 +37,7 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
         output.update(self.ll_agent.act(self.make_ll_obs(obs_input, self._last_hl_output.action)))
 
         return self._remove_batch(output) if len(obs.shape) == 1 else output
-
+    '''
 
 
     # ====================== for update, we have some stages ====================

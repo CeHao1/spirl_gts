@@ -80,7 +80,7 @@ DEFAULT_FEATURE_KEYS = (
 )
 
 chosen_feature_keys = DEFAULT_FEATURE_KEYS
-
+# chosen_feature_keys = ego_obs
 
 # state_dim = len(ego_obs)
 state_dim = len(chosen_feature_keys)

@@ -40,8 +40,16 @@ class Policy(nn.Module):
     def _tanh_squash_output(self, action, log_prob):
         """Passes continuous output through a tanh function to constrain action range, adjusts log_prob."""
         action_new = self._hp.max_action_range * torch.tanh(action)
+
+        
         log_prob_update = np.log(self._hp.max_action_range) + 2 * (np.log(2.) - action -
               torch.nn.functional.softplus(-2. * action)).sum(dim=-1)  # maybe more stable version from Youngwoon Lee
+        
+        '''
+        # the original way to update, it will cut the gradident when action is large(about 7)
+        EPS = 1e-6
+        log_prob_update = np.log(self._hp.max_action_range * (1 - action_new**2) + EPS).sum(dim=-1)
+        '''
         return action_new, log_prob - log_prob_update
 
     @property
