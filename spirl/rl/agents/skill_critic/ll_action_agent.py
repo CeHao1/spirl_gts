@@ -263,6 +263,15 @@ class LLActionAgent(ActionPriorSACAgent):
         return self._hp.policy_params.policy_model_params.action_dim
 
 
+    # ================================== visualize =============================
+    # def visualize_actions(self, experience_batch): use the one from sac
+
+
+    def visualize_HL_Q(self, experience_batch, policy_output):
+        pass
+
+    
+
     # ================================== offline ================================
     def offline(self):
         from tqdm import tqdm

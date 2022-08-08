@@ -1,5 +1,7 @@
 
 import torch
+import numpy as np
+import matplotlib.pyplot as plt
 
 from spirl.utils.pytorch_utils import ten2ar, avg_grad_norm, TensorModule, check_shape, map2torch, map2np, make_one_hot
 from spirl.utils.general_utils import ParamDict, map_dict, AttrDict
@@ -18,9 +20,6 @@ class HLSKillAgent(ActionPriorSACAgent):
         # policy is PIz(z|s) when k=0
         # Qa will generate the Q target
         self._update_hl_policy_flag = True
- 
-    # def update_by_ll_agent(self, ll_agent):
-    #     self.ll_agent = ll_agent
 
     def fast_assign_flags(self, flags):
         self._update_hl_policy_flag = flags[0]
@@ -97,6 +96,47 @@ class HLSKillAgent(ActionPriorSACAgent):
         idx = torch.tensor([0], device=self.device)
         k0 = make_one_hot(idx, self.n_rollout_steps).repeat(obs.shape[0], 1)
         return k0
+
+    # =================== visualize =================
+    def visualize_actions(self, experience_batch):
+        # visualize the latent variables
+        obs = np.array(experience_batch.observation)[:,0,:]
+        act = np.array(experience_batch.action)[:,0,:]
+        rew = np.array(experience_batch.reward)[:,0]
+
+        act_dim = act.shape[1] # dimension of the latent variable
+        plt_rows = int(act_dim/2)
+
+        # show latent variables
+        plt.figure(figsize=(14, 4 *plt_rows))
+        for idx in range(act_dim):
+            plt.subplot(plt_rows, 2, idx+1)
+            plt.plot(act[:, idx], 'b.')
+            plt.title('action dim {}'.format(idx))
+            plt.grid()
+        plt.show()
+
+        # show the distributions
+        policy_output = self.act(obs) # input (1000, x)
+        dist_batch = policy_output['dist'] # (1000, x)
+
+        mean = np.array([dist.mu for dist in dist_batch])
+        sigma = np.array([np.exp(dist.log_sigma) for dist in dist_batch])
+        
+        plt.figure(figsize=(14, 4 *act_dim))
+        for idx in range(act_dim):
+            plt.subplot(act_dim, 2, 2*idx + 1)
+            plt.plot(mean[:,idx], 'b.')
+            plt.grid()
+            plt.title('dim {} mean'.format(idx))
+
+            plt.subplot(act_dim, 2, 2*idx + 1 + 1)
+            plt.plot(sigma[:,idx], 'b.')
+            plt.grid()
+            plt.title('dim {} sigma'.format(idx))
+
+        plt.show()
+        
 
     # =================== offline ===================
     def offline(self):
