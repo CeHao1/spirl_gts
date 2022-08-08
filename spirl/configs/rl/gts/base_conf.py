@@ -32,9 +32,10 @@ env_config = AttrDict(
     # action_standard = True,
 
     # reward_function = eval_time_trial_reward_function,
-    # done_function = eval_time_trial_done_function,
+    done_function = eval_time_trial_done_function,
 
     # num_cars = 1,
+    store_states = True,
 
 )
 

@@ -123,9 +123,8 @@ class SamplerBatched:
                         self._episode_step += 1
                         self._episode_reward += np.mean(reward)
 
-        # episode[-1].done = True     # make sure episode is marked as done at final time step
-        for exp in episode[-1]:
-            exp.done = True
+        for exp in episode[-1].done:# make sure episode is marked as done at final time step
+            exp = True
 
         return listdict2dictlist(episode)
 
