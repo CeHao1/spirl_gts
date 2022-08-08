@@ -16,7 +16,7 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
     def __init__(self, config):
         super().__init__(config)
         self.ll_agent.update_by_hl_agent(self.hl_agent)
-
+        self._train_stage = None
     '''
     We should define some different modes, such as \
     1) Full training,
@@ -24,6 +24,12 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
     3) Use deterministic policy
 
     '''
+
+    def _default_hparams(self):
+        default_dict = ParamDict({
+            'initial_train_stage': skill_critic_stages.WARM_START,
+        })
+        return super()._default_hparams().overwrite(default_dict)
 
     def train_stages_control(self, stage=None):
         print('!! Change SC stage to ', stage)
@@ -97,19 +103,13 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
 
     # ====================== for update, we have some stages ====================
 
-    # def update(self, experience_batches):
-    #     '''
-    #     assert isinstance(experience_batches, AttrDict)  # update requires batches for both HL and LL
-    #     update_outputs = AttrDict()
-    #     if self._hp.update_hl:
-    #         print('updating hl agent', type(self.hl_agent))
-    #         hl_update_outputs = self.hl_agent.update(experience_batches.hl_batch)
-    #         update_outputs.update(prefix_dict(hl_update_outputs, "hl_"))
-    #     if self._hp.update_ll:
-    #         print('updating ll agent', type(self.ll_agent))
-    #         ll_update_outputs = self.ll_agent.update(experience_batches.ll_batch)
-    #         update_outputs.update(ll_update_outputs)
-    #     return update_outputs
-    #     '''
+    def update(self, experience_batches):
 
-    #     # 
+        # update the trianing stage
+        if self._train_stage is None:
+            self._train_stage = self._hp.initial_train_stage
+
+        self.train_stages_control(self._train_stage)
+
+        super().update(experience_batches)
+

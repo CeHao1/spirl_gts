@@ -129,15 +129,16 @@ class LLActionAgent(ActionPriorSACAgent):
             info = map_dict(ten2ar, info)
 
             self._update_steps += 1
+
+        if self._hp.visualize:
+            hl_q_target = self._compute_hl_q_target(experience_batch, policy_output, vis=True)
+            ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch, vis=True)
+
         return info
 
     # ================================ hl critic ================================
-    def _compute_hl_q_target(self, experience_batch, policy_output): 
+    def _compute_hl_q_target(self, experience_batch, policy_output, vis=False): 
         # Qz(s,z,k) = Qa(s,z,k,a) - alph * DKL(PIa)
-        # split_obs = self._split_obs(experience_batch.observation_next)
-        # state = split_obs.state
-        # act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
-
         state = experience_batch.observation_next
         act = experience_batch.action
 
@@ -147,6 +148,9 @@ class LLActionAgent(ActionPriorSACAgent):
             hl_q_target = hl_q_target.squeeze(-1)
             hl_q_target = hl_q_target.detach()
             check_shape(hl_q_target, [self._hp.batch_size])
+
+        if vis:
+            self.visualize_HL_Q(qa_target, hl_q_target)
 
         return hl_q_target
 
@@ -162,7 +166,7 @@ class LLActionAgent(ActionPriorSACAgent):
         return hl_critic_losses, hl_qs
 
     # ================================ ll critic ================================
-    def _compute_ll_q_target(self, experience_batch, if_off_plot=False):
+    def _compute_ll_q_target(self, experience_batch, vis=False):
         # Qa(s,z,k,a) = r + gamma * U_next
         # U_next = [1-beta] * Qz_next + [beta] * V_next
         # V_next = Qz_next - hl_alp * DKL(PIz_next)
@@ -171,7 +175,6 @@ class LLActionAgent(ActionPriorSACAgent):
             # (0) use s to generate hl policy
             split_obs = self._split_obs(experience_batch.observation_next)
             hl_policy_output_next = self.hl_agent._run_policy(split_obs.state)
-            # policy_output_next = self._run_policy(experience_batch.observation_next)
 
             # (1) V_next
             v_next, q_next = self._compute_next_value(experience_batch, hl_policy_output_next)
@@ -186,26 +189,8 @@ class LLActionAgent(ActionPriorSACAgent):
             ll_q_target = ll_q_target.detach()
             check_shape(ll_q_target, [self._hp.batch_size])
 
-
-        if if_off_plot:
-            figsize=(10,7)
-
-            # plot values:
-            plt.figure(figsize=figsize)
-            plt.plot(map2np(q_next), 'b.', label='q_next')
-            plt.plot(map2np(v_next), 'r.', label='v_next')
-            plt.plot(map2np(v_next-q_next), 'k.', label='KLD')
-            plt.title('values')
-            plt.legend()
-            plt.show()
-
-            plt.figure(figsize=figsize)
-            plt.plot(map2np(u_next), 'b.', label='u_next')
-            plt.plot(map2np(experience_batch.reward), 'r.', label='reward')
-            plt.plot(map2np(ll_q_target), 'k.', label='ll q target')
-            plt.title('q target components')
-            plt.legend()
-            plt.show()
+            if vis:
+                self.visualize_LL_Q(ll_q_target, v_next, q_next, u_next, experience_batch.reward)
 
         return ll_q_target, v_next, q_next, u_next
 
@@ -267,10 +252,51 @@ class LLActionAgent(ActionPriorSACAgent):
     # def visualize_actions(self, experience_batch): use the one from sac
 
 
-    def visualize_HL_Q(self, experience_batch, policy_output):
-        pass
+    def visualize_HL_Q(self, qa_target, hl_q_target):
+        alp_KLD = hl_q_target - qa_target
+        plt.figure(figsize=(14, 8))
 
-    
+        plt.subplot(2,2,1)
+        plt.plot(qa_target, 'b.')
+        plt.grid()
+        plt.title('qa_target')
+
+        plt.subplot(2,2,2)
+        plt.plot(alp_KLD, 'b.')
+        plt.grid()
+        plt.title('LL alp_KLD')
+
+        plt.subplot(2,2,4)
+        plt.plot(hl_q_target, 'b.')
+        plt.grid()
+        plt.title('hl_q_target')
+
+
+    def visualize_LL_Q(self, ll_q_target, v_next, q_next, u_next, reward):
+        alp_KLD = v_next - q_next
+
+        plt.figure(figsize=(14, 8))
+
+        plt.subplot(2,2,1)
+        plt.plot(q_next, 'b.')
+        plt.grid()
+        plt.title('q_next')
+
+        plt.subplot(2,2,2)
+        plt.plot(alp_KLD, 'b.')
+        plt.grid()
+        plt.title('HL alp_KLD')
+
+        plt.subplot(2,2,3)
+        plt.plot(reward, 'b.')
+        plt.grid()
+        plt.title('reward')
+
+        plt.subplot(2,2,4)
+        plt.plot(ll_q_target, 'b.')
+        plt.grid()
+        plt.title('ll_q_target')
+
 
     # ================================== offline ================================
     def offline(self):
@@ -300,7 +326,7 @@ class LLActionAgent(ActionPriorSACAgent):
             
 
             # (3) Qa(s,z,k,a) loss, Qa_target
-            ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch, if_off_plot=True)
+            ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch)
             ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)
             
             q_target_store.append(map2np(ll_q_target.mean()))
