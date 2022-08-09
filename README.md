@@ -20,7 +20,9 @@ python3 spirl/train.py \
 --path=spirl/configs/skill_prior_learning/gts/flat 
 
 2. open-loop
---path=spirl/configs/skill_prior_learning/gts/hierarchical
+python3 spirl/train.py \
+--val_data_size=160 --gpu=0 --prefix=ol_rawobs_smooth_04 \
+--path=spirl/configs/skill_prior_learning/gts/hierarchical --resume=latest
 
 3. close-loop
 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cl

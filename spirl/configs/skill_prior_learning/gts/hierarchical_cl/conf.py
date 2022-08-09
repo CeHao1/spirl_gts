@@ -42,7 +42,7 @@ model_config = AttrDict(
     action_dim_weights = [100.0, 1.0],
     # action_dim_weights = [1.0, 1.0],
     
-    learned_prior_weight = 1e-3,
+    learned_prior_weight = 1e-1,
 )
 
 # Dataset

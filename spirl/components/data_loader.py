@@ -283,33 +283,50 @@ class GlobalSplitVideoDataset(VideoDataset, GlobalSplitDataset):
 class PreloadGlobalSplitVideoDataset(PreloadVideoDataset, GlobalSplitDataset):
     pass
 
+
+class SmoothDataset(GlobalSplitVideoDataset):
+    def smooth_actions(self, data, length):
+        # odd length
+        length = length//2 * 2 + 1
+        for idx in range(data.actions.shape[1]):
+            # clip to [-1,1]
+            data.actions[:, idx] = np.clip(data.actions[:, idx], -1.0, 1.0)
+            data.actions[:, idx] = smooth(data.actions[:, idx], length)
+        return data
+
+    def _get_raw_data(self, index):
+        data = super()._get_raw_data(index)
+        data = self.smooth_actions(data, self.spec.subseq_len)
+        return data
+
+# ===============================================
 class GTSDataset(GlobalSplitVideoDataset):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.smooth = 'smooth_actions' in self.spec and self.spec.smooth_actions
 
-        file_path = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/standard_table")
+        # file_path = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/standard_table")
         
-        import pickle
-        if not os.path.exists(file_path):
-            standard_table = self.standardlize()
-            f = open(file_path, "wb")
-            pickle.dump(standard_table, f)
-            f.close()
-            print('save standard_table')
-        else:
-            f = open(file_path, "rb")
-            standard_table = pickle.load(f)
-            f.close()
-            print('load standard_table')
-        self.state_scaler = standard_table['state']
-        self.action_scaler = standard_table['action']
+        # import pickle
+        # if not os.path.exists(file_path):
+        #     standard_table = self.standardlize()
+        #     f = open(file_path, "wb")
+        #     pickle.dump(standard_table, f)
+        #     f.close()
+        #     print('save standard_table')
+        # else:
+        #     f = open(file_path, "rb")
+        #     standard_table = pickle.load(f)
+        #     f.close()
+        #     print('load standard_table')
+        # self.state_scaler = standard_table['state']
+        # self.action_scaler = standard_table['action']
 
         # print the standard table 
-        print('===== action scaler =====')
-        print(self.action_scaler.mean_, self.action_scaler.scale_)
-        test_actions = [[-1.0, -1.0],[1.0, 1.0]]
-        print('converted action range', self.action_scaler.inverse_transform(test_actions))
+        # print('===== action scaler =====')
+        # print(self.action_scaler.mean_, self.action_scaler.scale_)
+        # test_actions = [[-1.0, -1.0],[1.0, 1.0]]
+        # print('converted action range', self.action_scaler.inverse_transform(test_actions))
 
     def getitem_(self, index):
         data = self._get_raw_data(index)
