@@ -163,6 +163,12 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
                                             steps=self._hp.n_rollout_steps,
                                             inputs=inputs)
 
+        # prior reconstruction
+        output.prior_reconstruction = self.decode(output.q_hat.sample(),
+                                            cond_inputs=self._learned_prior_input(inputs),
+                                            steps=self._hp.n_rollout_steps,
+                                            inputs=inputs)
+
         return output
 
     def loss(self, model_output, inputs):
@@ -192,7 +198,10 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         losses.kl_loss = KLDivLoss(self.beta)(model_output.q, model_output.p)
 
         # learned skill prior net loss
-        losses.q_hat_loss = self._compute_learned_prior_loss(model_output, weight=self._hp.learned_prior_weight)
+        # losses.q_hat_loss = self._compute_learned_prior_loss(model_output, weight=self._hp.learned_prior_weight)
+        losses.q_hat_loss = MSE(self._hp.learned_prior_weight) \
+                        (model_output.prior_reconstruction, self._regression_targets(inputs), 
+                        weights=weights, separate_dim=True)
 
         # Optionally update beta
         if self.training and self._hp.target_kl is not None:
