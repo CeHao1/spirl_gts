@@ -143,11 +143,6 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
                                             steps=self._hp.n_rollout_steps,
                                             inputs=inputs)
 
-        # print('='*10)
-        # print('actions', inputs.actions.shape, 'states', inputs.states.shape)
-        # print('input actions\n', inputs.actions[0])
-        # print('output recon\n', output.reconstruction[0])
-
         return output
 
     def loss(self, model_output, inputs):

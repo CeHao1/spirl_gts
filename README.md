@@ -29,8 +29,8 @@ python3 spirl/train.py \
 
 4. state-conditioned decoder(time-indexed)
 python3 spirl/train.py \
---val_data_size=160 --gpu=0 --prefix=cd_base_02  \
---path=spirl/configs/skill_prior_learning/gts/hierarchical_cd
+--val_data_size=160 --gpu=0 --prefix=cd_newobs_01  \
+--path=spirl/configs/skill_prior_learning/gts/hierarchical_cd --resume=latest
 
 
 =====================================================================================
