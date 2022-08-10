@@ -82,10 +82,11 @@ class MDLVisualizer(ModelTrainer):
         
         for batch_idx, sample_batched in enumerate(self.loader):
             inputs = AttrDict(map_dict(lambda x: x.to(self.device), sample_batched))
-
-            # self.model.switch_to_prior()            
+ 
+            # direct data is z~encoder(), a~decoder(z)    
             output = self.model(inputs)
 
+            # use prior 
             self.model.switch_to_prior()
             output_prior = self.model(inputs, use_learned_prior=True)
             self.model.switch_to_inference()

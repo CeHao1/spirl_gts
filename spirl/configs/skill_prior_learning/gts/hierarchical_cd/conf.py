@@ -46,4 +46,6 @@ model_config = AttrDict(
     reconstruction_mse_weight = model_weight[0],
     kl_div_weight=model_weight[1],
     learned_prior_weight = model_weight[2],
+
+    nll_prior_train = False,
 )

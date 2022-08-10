@@ -118,6 +118,16 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         :arg use_learned_prior: if True, decodes samples from learned prior instead of posterior, used for RL
         """
 
+        '''
+        Summary the meaning of each variable
+        self.q = encoder, self.decoder, self.p = prior
+
+        output.q = z~encoder()
+        output.p = N(0,I)
+        output.q_hat = z~prior()
+        if use_learned_prior(argument): make p = q_hat, why???
+        '''
+
         output = AttrDict()
         inputs.observations = inputs.actions    # for seamless evaluation
 
@@ -131,6 +141,16 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         output.q_hat = self.compute_learned_prior(self._learned_prior_input(inputs))
         if use_learned_prior:
             output.p = output.q_hat     # use output of learned skill prior for sampling
+
+        '''
+        if self._sample_prior:
+            1) z =   p.sample(), sample from N(0,I) or prior 
+            2) z_q = q.sample(). sample from encoder
+        else: ordinary condition
+            1) z =   q.sample(), sample from encoder
+            2) z_q = z as well.
+        '''
+
 
         # sample latent variable
         output.z = output.p.sample() if self._sample_prior else output.q.sample()
@@ -325,8 +345,10 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
 
     def _compute_learned_prior_loss(self, model_output, weight=1.0):
         if self._hp.nll_prior_train:
+            # q_hat = prior, z_q = z = encoder.sample
             loss = NLL(weight=weight, breakdown=0)(model_output.q_hat, model_output.z_q.detach())
         else:
+            # q = encoder, q_hat = prior
             loss = KLDivLoss(weight=weight, breakdown=0)(model_output.q.detach(), model_output.q_hat)
         # aggregate loss breakdown for each of the priors in the ensemble
         loss.breakdown = torch.stack([chunk.mean() for chunk in torch.chunk(loss.breakdown, self._hp.n_prior_nets)])
