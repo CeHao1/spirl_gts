@@ -21,7 +21,7 @@ python3 spirl/train.py \
 
 2. open-loop
 python3 spirl/train.py \
---val_data_size=160 --gpu=0 --prefix=ol_rawobs_smooth_04 \
+--val_data_size=160 --gpu=0 --prefix=ol_msePriorLoss_01 \
 --path=spirl/configs/skill_prior_learning/gts/hierarchical --resume=latest
 
 3. close-loop
@@ -29,7 +29,7 @@ python3 spirl/train.py \
 
 4. state-conditioned decoder(time-indexed)
 python3 spirl/train.py \
---val_data_size=160 --gpu=0 --prefix=cd_newobs_01  \
+--val_data_size=160 --gpu=0 --prefix=cd_msePriorLoss_01  \
 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cd --resume=latest
 
 

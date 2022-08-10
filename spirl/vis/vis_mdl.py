@@ -83,21 +83,22 @@ class MDLVisualizer(ModelTrainer):
         for batch_idx, sample_batched in enumerate(self.loader):
             inputs = AttrDict(map_dict(lambda x: x.to(self.device), sample_batched))
  
+
             # direct data is z~encoder(), a~decoder(z)    
             output = self.model(inputs)
 
+            '''
             # use prior 
             self.model.switch_to_prior()
             output_prior = self.model(inputs, use_learned_prior=True)
             self.model.switch_to_inference()
+            '''
 
             input_actions = to_numpy(inputs.actions)
             output_reconstruction = to_numpy(output.reconstruction)
-            output_prior_recon = to_numpy(output_prior.reconstruction)
 
-            # input_actions = self.loader.dataset.action_scaler.inverse_transform(input_actions)
-            # output_reconstruction = self.loader.dataset.action_scaler.inverse_transform(output_reconstruction)
-            # output_prior_recon = self.loader.dataset.action_scaler.inverse_transform(output_prior_recon)
+            # output_prior_recon = to_numpy(output_prior.reconstruction)
+            output_prior_recon = to_numpy(output.prior_reconstruction)
 
             break
         # print('finish')
