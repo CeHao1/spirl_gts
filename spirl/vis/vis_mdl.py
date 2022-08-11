@@ -6,7 +6,7 @@ from spirl.train import *
 
 import seaborn as sns
 from tqdm import tqdm
-
+from spirl.utils.pytorch_utils import map2np
 
 class MDLVisualizer(ModelTrainer):
 
@@ -62,9 +62,6 @@ class MDLVisualizer(ModelTrainer):
             plots(*self.get_data())
 
     def show_value_distribution(self):
-        inpt_mean = []
-        oupt_mean = []
-        prior_mean = []
         # for idx in tqdm(range(10)):
         output = self.get_data(all_data=True)
         plot_z_mean_var(output)
@@ -102,8 +99,8 @@ class MDLVisualizer(ModelTrainer):
 
 
 def plot_z_mean_var(output):
-    qs = to_numpy(output.q)
-    q_hats = to_numpy(output.q_hat)
+    qs = map2np(output.q)
+    q_hats = map2np(output.q_hat)
     # shape (batch, guassian)
 
     q_means = [q.mean for q in qs]
