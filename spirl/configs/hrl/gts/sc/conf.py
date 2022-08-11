@@ -42,14 +42,14 @@ configuration = AttrDict(    {
     'num_epochs': 2000,
     'max_rollout_len': 10000,
     'n_steps_per_epoch': 10000,
-    # 'n_warmup_steps': 160000,
+    'n_warmup_steps': 160000,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Raw,
     'sampler':HierarchicalSamplerBached,
 
     # 'n_steps_per_epoch': 200,
-    'n_warmup_steps': 200,
+    # 'n_warmup_steps': 200,
 } )
 
 sampler_config = AttrDict(
@@ -138,7 +138,7 @@ hl_policy_params = AttrDict(
     prior_model_params=ll_policy_params.policy_model_params,
     prior_model_checkpoint=ll_policy_params.policy_model_checkpoint,
 
-    squash_output_dist = False, # do not squash the tanh output
+    # squash_output_dist = False, # do not squash the tanh output
 )
 
 # critic
