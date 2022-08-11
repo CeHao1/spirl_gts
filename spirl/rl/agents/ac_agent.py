@@ -306,6 +306,7 @@ class SACAgent(ACAgent):
         act = np.array(experience_batch.action)[:,0,:]
         rew = np.array(experience_batch.reward)[:,0]
 
+        print('visualize the action policy')
         # plot actions
         act_dim = act.shape[1]
 

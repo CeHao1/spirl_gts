@@ -99,14 +99,14 @@ class MDLVisualizer(ModelTrainer):
 
 
 def plot_z_mean_var(output):
-    qs = map2np(output.q)
-    q_hats = map2np(output.q_hat)
+    qs = (output.q)
+    q_hats = (output.q_hat)
     # shape (batch, guassian)
 
-    q_means = [q.mean for q in qs]
-    q_vars = [q.sigma for q in qs]
-    qhat_means = [q.mean for q in q_hats]
-    qhat_vars = [q.sigma for q in q_hats]
+    q_means = map2np([q.mean for q in qs])
+    q_vars = map2np([q.sigma for q in qs])
+    qhat_means = map2np([q.mean for q in q_hats])
+    qhat_vars = map2np([q.sigma for q in q_hats])
 
     plt.figure(figsize=(14,8))
     plt.subplot(2,2,1)

@@ -107,12 +107,14 @@ class HLSKillAgent(ActionPriorSACAgent):
         act_dim = act.shape[1] # dimension of the latent variable
         plt_rows = int(act_dim/2)
 
+        print('visualize HL latent variances')
+
         # show latent variables
         plt.figure(figsize=(14, 4 *plt_rows))
         for idx in range(act_dim):
             plt.subplot(plt_rows, 2, idx+1)
             plt.plot(act[:, idx], 'b.')
-            plt.title('action dim {}'.format(idx))
+            plt.title('HL z value: dim {}'.format(idx))
             plt.grid()
         plt.show()
 
@@ -123,17 +125,18 @@ class HLSKillAgent(ActionPriorSACAgent):
         mean = np.array([dist.mu for dist in dist_batch])
         sigma = np.array([np.exp(dist.log_sigma) for dist in dist_batch])
         
+        
         plt.figure(figsize=(14, 4 *act_dim))
         for idx in range(act_dim):
             plt.subplot(act_dim, 2, 2*idx + 1)
             plt.plot(mean[:,idx], 'b.')
             plt.grid()
-            plt.title('dim {} mean'.format(idx))
+            plt.title('HL z mean, dim {} '.format(idx))
 
             plt.subplot(act_dim, 2, 2*idx + 1 + 1)
             plt.plot(sigma[:,idx], 'b.')
             plt.grid()
-            plt.title('dim {} sigma'.format(idx))
+            plt.title('HL z sigma, dim {} '.format(idx))
 
         plt.show()
         
