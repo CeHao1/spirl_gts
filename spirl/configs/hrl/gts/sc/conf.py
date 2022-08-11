@@ -9,6 +9,7 @@ from spirl.configs.default_data_configs.gts import data_spec
 
 
 from spirl.rl.envs.gts_multi import GTSEnv_Multi
+from spirl.rl.envs.gts_raw import GTSEnv_Raw
 from spirl.rl.components.sampler_batched import HierarchicalSamplerBached
 
 
@@ -25,7 +26,7 @@ from spirl.rl.agents.skill_critic.ll_action_agent import LLActionAgent
 env_config = AttrDict(
     reward_norm=1.,
     do_init = False,
-    action_standard = True,
+    # action_standard = True,
 
     # reward_function = eval_time_trial_reward_function,
     # done_function = eval_time_trial_done_function,
@@ -44,11 +45,11 @@ configuration = AttrDict(    {
     'n_warmup_steps': 160000,
     'use_update_after_sampling':True,
 
-    'environment': GTSEnv_Multi,
+    'environment': GTSEnv_Raw,
     'sampler':HierarchicalSamplerBached,
 
-    # 'n_steps_per_epoch': 10000,
-    # 'n_warmup_steps': 10000,
+    # 'n_steps_per_epoch': 200,
+    # 'n_warmup_steps': 200,
 } )
 
 sampler_config = AttrDict(
@@ -65,8 +66,8 @@ obs_norm_params = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    # batch_size=64, #256,
-    batch_size=4096, 
+    batch_size=64, #256,
+    # batch_size=4096, 
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -96,7 +97,7 @@ ll_policy_params = AttrDict(
     policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/hierarchical_cd"),
 
     
-    manual_log_sigma=[1e-10, 1e-12],
+    # manual_log_sigma=[1e-10, 1e-12],
 )
 ll_policy_params.update(ll_model_params)
 
@@ -170,6 +171,7 @@ agent_config = AttrDict(
     log_video_caption=False,
 
     update_iterations = 1280,
+    # update_iterations = 32,
     discount_factor = 0.98 ,
 )
 

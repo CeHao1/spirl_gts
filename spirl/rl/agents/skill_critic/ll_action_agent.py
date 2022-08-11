@@ -48,7 +48,7 @@ class LLActionAgent(ActionPriorSACAgent):
             # update alpha
             alpha_loss = self._update_alpha(experience_batch, policy_output)
 
-            if self.self._update_ll_policy_flag:
+            if self._update_ll_policy_flag:
                 policy_loss = self._compute_policy_loss(experience_batch, policy_output)
             else:
                 with torch.no_grad():
@@ -75,7 +75,7 @@ class LLActionAgent(ActionPriorSACAgent):
 
             # (4) update loss
             # policy
-            if self.self._update_ll_policy_flag:
+            if self._update_ll_policy_flag:
                 self._perform_update(policy_loss, self.policy_opt, self.policy)
             # hl
             if self._update_hl_q_flag:
@@ -130,7 +130,7 @@ class LLActionAgent(ActionPriorSACAgent):
 
             self._update_steps += 1
 
-        if self._hp.visualize:
+        if self._hp.visualize_values:
             hl_q_target = self._compute_hl_q_target(experience_batch, policy_output, vis=True)
             ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch, vis=True)
 

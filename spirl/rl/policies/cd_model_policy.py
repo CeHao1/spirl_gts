@@ -45,7 +45,7 @@ class CDModelPolicy(Policy):
             init_log_sigma = np.array(self._hp.manual_log_sigma, dtype=np.float32)
             assert init_log_sigma.shape[0] == self.action_dim
         else:
-            init_log_sigma = self._hp.initial_log_sigma * np.ones(self.action_dim, dtype=np.float32)
+            init_log_sigma = self._hp.initial_log_sigma * np.zeros(self.action_dim, dtype=np.float32)
 
         self._log_sigma = torch.tensor(init_log_sigma, device=self.device, requires_grad=True)     
         return net

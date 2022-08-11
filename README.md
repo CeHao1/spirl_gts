@@ -47,7 +47,8 @@ python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --gpu=0  --prefix=sac_
 --path=spirl/configs/rl/gts/prior_initialized/bc_finetune/ 
 
 3. open-loop spirl
---path=spirl/configs/hrl/gts/spirl
+python3 spirl/rl/train.py --gpu=0 --prefix=ol_newobs_01 \
+--path=spirl/configs/hrl/gts/spirl \
 
 4. close-loop spirl
 --path=spirl/configs/hrl/gts/spirl_cl
@@ -57,7 +58,7 @@ python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --gpu=0  --prefix=sac_
 
 6. skill-critic
 --path=spirl/configs/hrl/gts/sc
-python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_newtire_test_01
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_newobs_01
 
 ## eval
 --mode='val'

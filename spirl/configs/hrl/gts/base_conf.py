@@ -26,8 +26,8 @@ notes = 'hierarchical RL on the gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    do_init = False,
-    action_standard = True,
+    # do_init = False,
+    # action_standard = True,
 
     # reward_function = eval_time_trial_reward_function,
     # done_function = eval_time_trial_done_function,
@@ -39,7 +39,7 @@ configuration = {
     'agent': FixedIntervalHierarchicalAgent,
     
     'data_dir': '.',
-    'num_epochs': 300,
+    'num_epochs': 2000,
     'max_rollout_len': 10000,
     'n_steps_per_epoch': 10000,
     'n_warmup_steps': 160000,

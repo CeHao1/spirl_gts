@@ -299,6 +299,7 @@ class HierarchicalAgent(BaseAgent):
             print('updating ll agent', type(self.ll_agent))
             ll_update_outputs = self.ll_agent.update(experience_batches.ll_batch)
             update_outputs.update(ll_update_outputs)
+
         return update_outputs
 
     def log_outputs(self, logging_stats, rollout_storage, logger, log_images, step):

@@ -111,5 +111,5 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
 
         self.train_stages_control(self._train_stage)
 
-        super().update(experience_batches)
+        return super().update(experience_batches)
 
