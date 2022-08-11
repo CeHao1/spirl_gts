@@ -58,7 +58,8 @@ python3 spirl/rl/train.py --gpu=0 --prefix=ol_newobs_01 \
 
 6. skill-critic
 --path=spirl/configs/hrl/gts/sc
-python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_newobs_01
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_newobs_04 \
+--resume=latest
 
 ## eval
 --mode='val'

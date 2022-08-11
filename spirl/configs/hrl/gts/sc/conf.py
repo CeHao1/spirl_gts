@@ -97,7 +97,7 @@ ll_policy_params = AttrDict(
     policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/hierarchical_cd"),
 
     
-    # manual_log_sigma=[1e-10, 1e-12],
+    manual_log_sigma=[1e-10, 1e-12],
 )
 ll_policy_params.update(ll_model_params)
 

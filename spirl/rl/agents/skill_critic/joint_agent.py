@@ -109,7 +109,7 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
         if self._train_stage is None:
             self._train_stage = self._hp.initial_train_stage
 
-        self.train_stages_control(self._train_stage)
+        # self.train_stages_control(self._train_stage)
 
         return super().update(experience_batches)
 
