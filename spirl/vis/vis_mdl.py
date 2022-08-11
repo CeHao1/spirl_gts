@@ -41,8 +41,8 @@ class MDLVisualizer(ModelTrainer):
 
         # self.model.switch_to_prior()
         print('get model and data')
-        self.show_one_value()
-        # self.show_value_distribution()
+        # self.show_one_value()
+        self.show_value_distribution()
         
 
     def build_vizer(self, params, phase):
@@ -66,16 +66,8 @@ class MDLVisualizer(ModelTrainer):
         oupt_mean = []
         prior_mean = []
         # for idx in tqdm(range(10)):
-        inpt, oupt, prior = self.get_data(all_data=True)
-
-        # inpt_mean.append(np.mean(inpt, axis=0))
-        # oupt_mean.append(np.mean(oupt, axis=0))
-        # prior_mean.append(np.mean(prior, axis=0))
-
-        inpt_mean = np.mean(inpt, axis=1)
-        oupt_mean = np.mean(oupt, axis=1)
-        prior_mean = np.mean(prior, axis=1)
-        plots_distribution(inpt_mean, oupt_mean, prior_mean)
+        output = self.get_data(all_data=True)
+        plot_z_mean_var(output)
 
     def get_data(self, all_data=False):
         # sample_batched = self.loader.dataset[0]
@@ -103,10 +95,44 @@ class MDLVisualizer(ModelTrainer):
             break
         # print('finish')
         if all_data:
-            return input_actions, output_reconstruction, output_prior_recon
+            return output
         else:
             n = 0
             return input_actions[n], output_reconstruction[n], output_prior_recon[n]
+
+
+def plot_z_mean_var(output):
+    qs = to_numpy(output.q)
+    q_hats = to_numpy(output.q_hat)
+    # shape (batch, guassian)
+
+    q_means = [q.mean for q in qs]
+    q_vars = [q.sigma for q in qs]
+    qhat_means = [q.mean for q in q_hats]
+    qhat_vars = [q.sigma for q in q_hats]
+
+    plt.figure(figsize=(14,8))
+    plt.subplot(2,2,1)
+    plt.plot(q_means, 'b.')
+    plt.grid()
+    plt.title('q_means')
+
+    plt.subplot(2,2,2)
+    plt.plot(q_vars, 'b.')
+    plt.grid()
+    plt.title('q_vars')
+
+    plt.subplot(2,2,3)
+    plt.plot(qhat_means, 'b.')
+    plt.grid()
+    plt.title('qhat_means')
+
+    plt.subplot(2,2,4)
+    plt.plot(qhat_vars, 'b.')
+    plt.grid()
+    plt.title('qhat_vars')
+
+    plt.show()
 
 
 def plots(input, output, out_prior):
