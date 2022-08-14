@@ -66,8 +66,8 @@ obs_norm_params = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    batch_size=64, #256,
-    # batch_size=4096, 
+    # batch_size=64, #256,
+    batch_size=4096, 
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -119,7 +119,7 @@ ll_agent_config.update(AttrDict(
     critic=MLPCritic,                
     critic_params=ll_critic_params,
 
-    visualize_values = True,
+    # visualize_values = True,
 ))
 
 # ================= high level ====================
@@ -161,7 +161,7 @@ hl_agent_config.update(AttrDict(
 
     td_schedule_params=AttrDict(p=5.),
 
-    visualize_values = True,
+    # visualize_values = True,
 ))
 # ================== joint agent ===================
 agent_config = AttrDict(

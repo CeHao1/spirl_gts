@@ -21,7 +21,7 @@ python3 spirl/train.py \
 
 2. open-loop
 python3 spirl/train.py \
---val_data_size=160 --gpu=0 --prefix=ol_msePriorLoss_01 \
+--val_data_size=160 --gpu=0 --prefix=ol_TestDist_01 \
 --path=spirl/configs/skill_prior_learning/gts/hierarchical --resume=latest
 
 3. close-loop
@@ -40,7 +40,7 @@ python3 spirl/rl/train.py \
 
 1. SAC (sac_autoalp_01, sac_targetE1_01)
  --path=spirl/configs/rl/gts/SAC 
-python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --gpu=0  --prefix=sac_newtire_05 --resume=latest \
+python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --gpu=0  --prefix=sac_newtire_05_2 --resume=latest \
 --mode='val' --deterministic_action
 
 2. SAC + BC
@@ -58,7 +58,7 @@ python3 spirl/rl/train.py --gpu=0 --prefix=ol_newobs_01 \
 
 6. skill-critic
 --path=spirl/configs/hrl/gts/sc
-python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_newobs_05 \
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_newobs_07 \
 --mode='rollout'
 
 --resume=latest
