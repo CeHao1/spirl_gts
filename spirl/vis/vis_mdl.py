@@ -41,8 +41,9 @@ class MDLVisualizer(ModelTrainer):
 
         # self.model.switch_to_prior()
         print('get model and data')
-        # self.show_one_value()
         self.show_value_distribution()
+        self.show_one_value()
+        
         
 
     def build_vizer(self, params, phase):
@@ -108,39 +109,36 @@ def plot_z_mean_var(output):
     q_hats = (output.q_hat)
     # shape (batch, guassian)
 
-    q_means = map2np([q.mean for q in qs])
-    q_vars = map2np([q.sigma for q in qs])
-    qhat_means = map2np([q.mean for q in q_hats])
-    qhat_vars = map2np([q.sigma for q in q_hats])
+    q_means = np.array(map2np([q.mean for q in qs]))
+    q_vars = np.array(map2np([q.sigma for q in qs]))
+    qhat_means = np.array(map2np([q.mean for q in q_hats]))
+    qhat_vars = np.array(map2np([q.sigma for q in q_hats]))
 
-    RL_qhat_means = map2np([q.mean for q in output.RL_prior])
-    RL_qhat_vars = map2np([q.sigma for q in output.RL_prior])
+    RL_qhat_means = np.array(map2np([q.mean for q in output.RL_prior]))
+    RL_qhat_vars = np.array(map2np([q.sigma for q in output.RL_prior]))
 
-    plt.figure(figsize=(14,8))
-    plt.subplot(2,2,1)
-    plt.plot(q_means, 'b.')
-    plt.grid()
-    plt.title('q_means')
+    print('q means', q_means[0].shape)
 
-    plt.subplot(2,2,2)
-    plt.plot(q_vars, 'b.')
-    plt.grid()
-    plt.title('q_vars')
+    for idx in range(q_means[0].shape[0]):
+        print('dim', idx)
+        plt.figure(figsize=(14,4))
+        plt.subplot(1,2,1)
+        plt.plot(q_means[:, idx], 'b.', label='encoder')
+        plt.plot(qhat_means[:, idx], 'r.', label='prior')
+        # plt.plot(RL_qhat_means, 'r.')
 
-    plt.subplot(2,2,3)
-    plt.plot(qhat_means, 'b.')
-    plt.plot(RL_qhat_means, 'r.')
+        plt.grid()
+        plt.title('latent variable distribution mean')
+        plt.legend()
 
-    plt.grid()
-    plt.title('qhat_means')
+        plt.subplot(1,2,2)
+        plt.plot(q_vars[:, idx], 'b.')
+        plt.plot(qhat_vars[:, idx], 'r.')
+        # plt.plot(RL_qhat_vars, 'r.')
+        plt.grid()
+        plt.title('latent variable distribution variance')
 
-    plt.subplot(2,2,4)
-    plt.plot(qhat_vars, 'b.')
-    plt.plot(RL_qhat_vars, 'r.')
-    plt.grid()
-    plt.title('qhat_vars')
-
-    plt.show()
+        plt.show()
 
 
 

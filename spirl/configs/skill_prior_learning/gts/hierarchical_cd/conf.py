@@ -28,7 +28,8 @@ configuration = AttrDict(configuration)
 
 weights_01 = [100, 5e-4, 1e-3] # -> err [2e-2, 2e-3, 1e-3] -> vis (prior too bad)
 weights_02 = [100, 5e-4, 1e-2] 
-model_weight = weights_02
+weights_03 = [100, 5e-4, 2e-1] 
+model_weight = weights_03
 
 model_config = AttrDict(
     state_dim=data_spec.state_dim,
@@ -47,5 +48,6 @@ model_config = AttrDict(
     kl_div_weight=model_weight[1],
     learned_prior_weight = model_weight[2],
 
-    # nll_prior_train = False,
+    nll_prior_train = False,
+    squash_latent_variable = True,
 )

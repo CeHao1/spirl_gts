@@ -121,21 +121,23 @@ class HRLVisualizer(RLTrainer):
     def plot_hl_z(self, hl_output):
         dist = hl_output.dist
 
-        q_means = map2np([q.mean for q in dist])
-        q_vars = map2np([np.exp(q.log_sigma) for q in dist])
+        q_means = np.array(map2np([q.mean for q in dist]))
+        q_vars = np.array(map2np([np.exp(q.log_sigma) for q in dist]))
 
-        plt.figure(figsize=(14,8))
-        plt.subplot(2,1,1)
-        plt.plot(q_means, 'b.')
-        plt.grid()
-        plt.title('q_means')
+        for idx in range(q_means.shape[1]):
+            print('dim', idx)
+            plt.figure(figsize=(14,4))
+            plt.subplot(1,2,1)
+            plt.plot(q_means[:, idx], 'b.')
+            plt.grid()
+            plt.title('policy latent variable mean')
 
-        plt.subplot(2,1,2)
-        plt.plot(q_vars, 'b.')
-        plt.grid()
-        plt.title('q_vars')
+            plt.subplot(1,2,2)
+            plt.plot(q_vars[:, idx], 'b.')
+            plt.grid()
+            plt.title('policy latent variance variance')
 
-        plt.show()
+            plt.show()
 
 
 

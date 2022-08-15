@@ -36,7 +36,7 @@ model_config = AttrDict(
 
     #============== for vae training ==========
     reconstruction_mse_weight = 100.,
-    kl_div_weight=5e-4,
+    # kl_div_weight=5e-4,
     # learned_prior_weight = 1e-10,
     action_dim_weights = [100.0, 1.0],
     # action_dim_weights = [1.0, 1.0],
@@ -45,7 +45,7 @@ model_config = AttrDict(
 
     # ============= for prior training =========
     # reconstruction_mse_weight = 1e-10,
-    # kl_div_weight=1e-10,
+    kl_div_weight=1e-3,
     learned_prior_weight = 1e-1,
 
     nll_prior_train = False,

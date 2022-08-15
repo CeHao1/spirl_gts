@@ -159,6 +159,7 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
 
         # squash
         if self._hp.squash_latent_variable:
+            # print('squash!!')
             output.z = torch.tanh(output.z)
             output.z_q = torch.tanh(output.z_q)
 

@@ -21,7 +21,7 @@ python3 spirl/train.py \
 
 2. open-loop
 python3 spirl/train.py \
---val_data_size=160 --gpu=0 --prefix=ol_TestDist_01 \
+--val_data_size=160 --gpu=0 --prefix=ol_TestDist_largerN01_02 \
 --path=spirl/configs/skill_prior_learning/gts/hierarchical --resume=latest
 
 3. close-loop
@@ -29,7 +29,7 @@ python3 spirl/train.py \
 
 4. state-conditioned decoder(time-indexed)
 python3 spirl/train.py \
---val_data_size=160 --gpu=0 --prefix=cd_NLLPriorLoss_03  \
+--val_data_size=160 --gpu=0 --prefix=cd_squashZ_06  \
 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cd --resume=latest
 
 
