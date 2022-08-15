@@ -224,6 +224,7 @@ class BaseAgent(nn.Module):
 
     def _post_process_policy_output(self, policy_output):
         if self._deterministic_act_mode:
+            # print('post !')
             if 'dist' in policy_output and isinstance(policy_output.dist, MultivariateGaussian):
                 policy_output.ori_action = policy_output.action
                 policy_output.action = policy_output.dist.mean

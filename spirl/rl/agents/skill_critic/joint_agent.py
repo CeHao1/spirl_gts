@@ -17,13 +17,18 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
         super().__init__(config)
         self.ll_agent.update_by_hl_agent(self.hl_agent)
         self._train_stage = None
-    '''
-    We should define some different modes, such as \
-    1) Full training,
-    2) Only train Q, for something
-    3) Use deterministic policy
+        '''
+        We should define some different modes, such as \
+        1) Full training,
+        2) Only train Q, for something
+        3) Use deterministic policy
 
-    '''
+        '''
+        # update the trianing stage
+        if self._train_stage is None:
+            self._train_stage = self._hp.initial_train_stage
+
+        self.train_stages_control(self._train_stage)
 
     def _default_hparams(self):
         default_dict = ParamDict({
@@ -104,12 +109,6 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
     # ====================== for update, we have some stages ====================
 
     def update(self, experience_batches):
-
-        # update the trianing stage
-        if self._train_stage is None:
-            self._train_stage = self._hp.initial_train_stage
-
-        # self.train_stages_control(self._train_stage)
 
         return super().update(experience_batches)
 

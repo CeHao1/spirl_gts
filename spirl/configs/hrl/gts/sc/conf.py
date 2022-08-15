@@ -42,14 +42,14 @@ configuration = AttrDict(    {
     'num_epochs': 2000,
     'max_rollout_len': 10000,
     'n_steps_per_epoch': 10000,
-    'n_warmup_steps': 160000,
+    # 'n_warmup_steps': 160000,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Raw,
     'sampler':HierarchicalSamplerBached,
 
     # 'n_steps_per_epoch': 200,
-    # 'n_warmup_steps': 200,
+    'n_warmup_steps': 200,
 } )
 
 sampler_config = AttrDict(
@@ -97,7 +97,8 @@ ll_policy_params = AttrDict(
     policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/hierarchical_cd"),
 
     
-    manual_log_sigma=[0, 0],
+    # manual_log_sigma=[0, 0],
+    min_log_sigma = [-3, -1.2],
 )
 ll_policy_params.update(ll_model_params)
 
@@ -119,7 +120,7 @@ ll_agent_config.update(AttrDict(
     critic=MLPCritic,                
     critic_params=ll_critic_params,
 
-    # visualize_values = True,
+    visualize_values = True,
 ))
 
 # ================= high level ====================
@@ -161,7 +162,7 @@ hl_agent_config.update(AttrDict(
 
     td_schedule_params=AttrDict(p=5.),
 
-    # visualize_values = True,
+    visualize_values = True,
 ))
 # ================== joint agent ===================
 agent_config = AttrDict(

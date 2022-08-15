@@ -1,3 +1,4 @@
+import imp
 import os
 import torch
 import numpy as np
@@ -54,8 +55,11 @@ class HRLVisualizer(RLTrainer):
 
         # this is real action(steering and pedal)
         # dict_keys(['actions', 'done', 'pad_mask', 'reward', 'states'])
-        saver = RolloutSaver('./sample/hrl/sc/')
-        inputs = saver.load_rollout_to_file(0)
+
+        data_dir = './sample/builtin/'
+        # data_dir = './sample/hrl/sc_02/'
+        saver = RolloutSaver(data_dir)
+        inputs = saver.load_rollout_to_file(2)
         print('inputs', inputs.states.shape)
         # print('agent type', self.agent)
 
@@ -73,15 +77,20 @@ class HRLVisualizer(RLTrainer):
         # from obs to hl actions z 
         # hl_policy_musig = self.agent.hl_agent.policy.net(obs).detach().cpu().numpy()
 
-        obs = obs[:,0, :]
-        act = inputs['actions'][:,0, :]
-        obs_tensor = map2torch(obs, self.device)
+        if len(obs.shape) == 3:
+            obs = obs[:,0, :]
+            act = inputs['actions'][:,0, :]
+        elif len(obs.shape) == 2:
+            obs = obs
+            act = inputs['actions']
 
+        obs_tensor = map2torch(obs, self.device)
         hl_output = self.agent.hl_agent.act(obs_tensor)
         # hl_action = hl_output['action']
         # hl_action = map2torch(hl_action, self.device)
         
-        self. plot_hl_z(hl_output)
+        self.plot_obs(obs)
+        self.plot_hl_z(hl_output)
 
 
         # output = self.agent.ll_agent._policy.decode(hl_action, obs, self.agent.ll_agent._policy.n_rollout_steps)
@@ -117,6 +126,15 @@ class HRLVisualizer(RLTrainer):
         #     self.plot_action_series(ll_action, no_pop_act, prior_act, state, one_act, agent_act)
               
         
+    def plot_obs(self, obs):
+        from spirl.utils.gts_utils import DEFAULT_FEATURE_KEYS
+        for idx in range(obs.shape[1]):
+            plt.figure(figsize=(7,4))
+            plt.plot(obs[:,idx], 'b.')
+            plt.grid()
+            plt.title(DEFAULT_FEATURE_KEYS[idx])
+            plt.show()
+
 
     def plot_hl_z(self, hl_output):
         dist = hl_output.dist

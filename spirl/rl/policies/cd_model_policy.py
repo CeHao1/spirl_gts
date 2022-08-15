@@ -47,7 +47,11 @@ class CDModelPolicy(Policy):
         else:
             init_log_sigma = self._hp.initial_log_sigma * np.ones(self.action_dim, dtype=np.float32)
 
-        self._log_sigma = torch.tensor(init_log_sigma, device=self.device, requires_grad=True)     
+        self._log_sigma = torch.tensor(init_log_sigma, device=self.device, requires_grad=True)   
+
+        if 'min_log_sigma' in self._hp:
+            self._min_log_sigma = torch.tensor(self._hp.min_log_sigma,device=self.device, requires_grad=False)
+
         return net
 
     def _compute_action_dist(self, obs):
@@ -64,6 +68,10 @@ class CDModelPolicy(Policy):
         act_mean = act[..., : self.net.action_size]
         act_log_std = act[..., self.net.action_size :]
         log_sigma =  act_log_std + self._log_sigma[None].repeat(act.shape[0], 1)
+
+        if 'min_log_sigma' in self._hp:
+            min_log_sigma = self._min_log_sigma[None].repeat(act.shape[0], 1)
+            log_sigma = torch.clamp(log_sigma, min=min_log_sigma)
 
         return MultivariateGaussian(mu=act_mean, log_sigma=log_sigma)
 

@@ -312,18 +312,18 @@ class SACAgent(ACAgent):
 
         plt.figure(figsize=(14, 8))
         plt.subplot(2,2,1)
+        plt.plot(rew, 'b.')
+        plt.title('rewards')
+        plt.grid()
+        
+        plt.subplot(2,2,3)
         plt.plot(act[:, 0], 'b.')
         plt.title('action 0, steer')
         plt.grid()
 
-        plt.subplot(2,2,2)
+        plt.subplot(2,2,4)
         plt.plot(act[:, 1], 'b.')
         plt.title('action 1, pedal')
-        plt.grid()
-
-        plt.subplot(2,2,3)
-        plt.plot(rew, 'b.')
-        plt.title('rewards')
         plt.grid()
 
         plt.show()

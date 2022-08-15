@@ -257,17 +257,17 @@ class LLActionAgent(ActionPriorSACAgent):
         plt.figure(figsize=(14, 8))
 
         plt.subplot(2,2,1)
-        plt.plot(qa_target, 'b.')
+        plt.plot(map2np(qa_target), 'b.')
         plt.grid()
         plt.title('qa_target')
 
         plt.subplot(2,2,2)
-        plt.plot(alp_KLD, 'b.')
+        plt.plot(map2np(alp_KLD), 'b.')
         plt.grid()
         plt.title('LL alp_KLD')
 
         plt.subplot(2,2,4)
-        plt.plot(hl_q_target, 'b.')
+        plt.plot(map2np(hl_q_target), 'b.')
         plt.grid()
         plt.title('hl_q_target')
 
@@ -278,22 +278,22 @@ class LLActionAgent(ActionPriorSACAgent):
         plt.figure(figsize=(14, 8))
 
         plt.subplot(2,2,1)
-        plt.plot(q_next, 'b.')
+        plt.plot(map2np(q_next), 'b.')
         plt.grid()
         plt.title('q_next')
 
         plt.subplot(2,2,2)
-        plt.plot(alp_KLD, 'b.')
+        plt.plot(map2np(alp_KLD), 'b.')
         plt.grid()
         plt.title('HL alp_KLD')
 
         plt.subplot(2,2,3)
-        plt.plot(reward, 'b.')
+        plt.plot(map2np(reward), 'b.')
         plt.grid()
         plt.title('reward')
 
         plt.subplot(2,2,4)
-        plt.plot(ll_q_target, 'b.')
+        plt.plot(map2np(ll_q_target), 'b.')
         plt.grid()
         plt.title('ll_q_target')
 

@@ -41,7 +41,7 @@ class MDLVisualizer(ModelTrainer):
 
         # self.model.switch_to_prior()
         print('get model and data')
-        self.show_value_distribution()
+        # self.show_value_distribution()
         self.show_one_value()
         
         
