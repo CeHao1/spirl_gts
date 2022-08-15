@@ -77,6 +77,7 @@ class ReplayBuffer:
         if not self._hp.dump_replay: return
         os.makedirs(save_dir, exist_ok=True)
         with gzip.open(os.path.join(save_dir, "replay_buffer.zip"), 'wb') as f:
+            # print('save dir', os.path.join(save_dir, "replay_buffer.zip"))
             pickle.dump(self._replay_buffer, f)
         np.save(os.path.join(save_dir, "idx_size.npy"), np.array([self._idx, self.size]))
 

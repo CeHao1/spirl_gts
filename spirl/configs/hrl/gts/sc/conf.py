@@ -66,8 +66,8 @@ obs_norm_params = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    batch_size=64, #256,
-    # batch_size=4096, 
+    # batch_size=64, #256,
+    batch_size=4096, 
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -97,7 +97,7 @@ ll_policy_params = AttrDict(
     policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/hierarchical_cd"),
 
     
-    manual_log_sigma=[-3, -2],
+    manual_log_sigma=[0, 0],
 )
 ll_policy_params.update(ll_model_params)
 
@@ -117,7 +117,9 @@ ll_agent_config.update(AttrDict(
     policy=DecoderRegu_TimeIndexedCDMdlPolicy,
     policy_params=ll_policy_params,
     critic=MLPCritic,                
-    critic_params=ll_critic_params
+    critic_params=ll_critic_params,
+
+    # visualize_values = True,
 ))
 
 # ================= high level ====================
@@ -136,7 +138,7 @@ hl_policy_params = AttrDict(
     prior_model_params=ll_policy_params.policy_model_params,
     prior_model_checkpoint=ll_policy_params.policy_model_checkpoint,
 
-    squash_output_dist = False, # do not squash the tanh output
+    # squash_output_dist = False, # do not squash the tanh output
 )
 
 # critic
@@ -158,6 +160,8 @@ hl_agent_config.update(AttrDict(
     critic_params=hl_critic_params,
 
     td_schedule_params=AttrDict(p=5.),
+
+    # visualize_values = True,
 ))
 # ================== joint agent ===================
 agent_config = AttrDict(

@@ -47,5 +47,5 @@ model_config = AttrDict(
     kl_div_weight=model_weight[1],
     learned_prior_weight = model_weight[2],
 
-    nll_prior_train = False,
+    # nll_prior_train = False,
 )

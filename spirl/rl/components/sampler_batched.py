@@ -20,7 +20,9 @@ class SamplerBatched:
         self._episode_step, self._episode_reward = 0, 0
 
     def _default_hparams(self):
-        return ParamDict({})
+        return ParamDict({
+            'sample_complete_rollout_length' : True,
+        })
 
     def init(self, is_train):
         """Starts a new rollout. Render indicates whether output should contain image."""

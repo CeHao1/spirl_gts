@@ -204,10 +204,10 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         losses.kl_loss = KLDivLoss(self.beta)(model_output.q, model_output.p)
 
         # learned skill prior net loss
-        # losses.q_hat_loss = self._compute_learned_prior_loss(model_output, weight=self._hp.learned_prior_weight)
-        losses.q_hat_loss = MSE(self._hp.learned_prior_weight) \
-                        (model_output.prior_reconstruction, self._regression_targets(inputs), 
-                        weights=weights, separate_dim=True)
+        losses.q_hat_loss = self._compute_learned_prior_loss(model_output, weight=self._hp.learned_prior_weight)
+        # losses.q_hat_loss = MSE(self._hp.learned_prior_weight) \
+        #                 (model_output.prior_reconstruction, self._regression_targets(inputs), 
+        #                 weights=weights, separate_dim=True)
 
         # Optionally update beta
         if self.training and self._hp.target_kl is not None:
@@ -341,6 +341,7 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         """Splits batch into separate batches for prior ensemble, optionally runs first or avg prior on whole batch.
            (first_only, avg == True is only used for RL)."""
         if first_only:
+            # print('input shape', inputs.shape)
             return self._compute_learned_prior(self.p[0], inputs)
 
         assert inputs.shape[0] % self._hp.n_prior_nets == 0

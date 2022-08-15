@@ -76,6 +76,11 @@ class MDLVisualizer(ModelTrainer):
             # direct data is z~encoder(), a~decoder(z)    
             output = self.model(inputs)
 
+            print('!!inputs.states', inputs.states.shape)
+            # output.RL_prior = [self.model.compute_learned_prior(s[0], first_only=True) for s in inputs.states[:,0]]
+            output.RL_prior = self.model.compute_learned_prior( inputs.states[:,0, :], first_only=True)
+            # output.RL_prior = self.model.compute_learned_prior(inputs.states[:,0])
+
             '''
             # use prior 
             self.model.switch_to_prior()
@@ -99,14 +104,17 @@ class MDLVisualizer(ModelTrainer):
 
 
 def plot_z_mean_var(output):
-    qs = map2np(output.q)
-    q_hats = map2np(output.q_hat)
+    qs = (output.q)
+    q_hats = (output.q_hat)
     # shape (batch, guassian)
 
-    q_means = [q.mean for q in qs]
-    q_vars = [q.sigma for q in qs]
-    qhat_means = [q.mean for q in q_hats]
-    qhat_vars = [q.sigma for q in q_hats]
+    q_means = map2np([q.mean for q in qs])
+    q_vars = map2np([q.sigma for q in qs])
+    qhat_means = map2np([q.mean for q in q_hats])
+    qhat_vars = map2np([q.sigma for q in q_hats])
+
+    RL_qhat_means = map2np([q.mean for q in output.RL_prior])
+    RL_qhat_vars = map2np([q.sigma for q in output.RL_prior])
 
     plt.figure(figsize=(14,8))
     plt.subplot(2,2,1)
@@ -121,15 +129,20 @@ def plot_z_mean_var(output):
 
     plt.subplot(2,2,3)
     plt.plot(qhat_means, 'b.')
+    plt.plot(RL_qhat_means, 'r.')
+
     plt.grid()
     plt.title('qhat_means')
 
     plt.subplot(2,2,4)
     plt.plot(qhat_vars, 'b.')
+    plt.plot(RL_qhat_vars, 'r.')
     plt.grid()
     plt.title('qhat_vars')
 
     plt.show()
+
+
 
 
 def plots(input, output, out_prior):
