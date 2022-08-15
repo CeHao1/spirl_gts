@@ -56,10 +56,10 @@ class HRLVisualizer(RLTrainer):
         # this is real action(steering and pedal)
         # dict_keys(['actions', 'done', 'pad_mask', 'reward', 'states'])
 
-        data_dir = './sample/builtin/'
-        # data_dir = './sample/hrl/sc_02/'
+        # data_dir = './sample/builtin/'
+        data_dir = './sample/hrl/sc_02/'
         saver = RolloutSaver(data_dir)
-        inputs = saver.load_rollout_to_file(2)
+        inputs = saver.load_rollout_to_file(0)
         print('inputs', inputs.states.shape)
         # print('agent type', self.agent)
 
@@ -89,7 +89,7 @@ class HRLVisualizer(RLTrainer):
         # hl_action = hl_output['action']
         # hl_action = map2torch(hl_action, self.device)
         
-        self.plot_obs(obs)
+        # self.plot_obs(obs)
         self.plot_hl_z(hl_output)
 
 

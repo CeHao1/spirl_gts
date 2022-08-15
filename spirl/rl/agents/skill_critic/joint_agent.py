@@ -32,7 +32,7 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
 
     def _default_hparams(self):
         default_dict = ParamDict({
-            'initial_train_stage': skill_critic_stages.WARM_START,
+            'initial_train_stage': skill_critic_stages.HYBRID,
         })
         return super()._default_hparams().overwrite(default_dict)
 

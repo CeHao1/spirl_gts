@@ -29,7 +29,7 @@ python3 spirl/train.py \
 
 4. state-conditioned decoder(time-indexed)
 python3 spirl/train.py \
---val_data_size=160 --gpu=0 --prefix=cd_squashZ_06  \
+--val_data_size=160 --gpu=0 --prefix=cd_larger_N01_05  \
 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cd --resume=latest
 
 
@@ -58,7 +58,7 @@ python3 spirl/rl/train.py --gpu=0 --prefix=ol_newobs_01 \
 
 6. skill-critic
 --path=spirl/configs/hrl/gts/sc
-python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_testStages_01 \
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_noprior_04 \
 --mode='rollout' --save_dir='./sample/hrl/sc_02'
 
 --resume=latest

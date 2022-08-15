@@ -13,7 +13,7 @@ from spirl.rl.envs.gts_raw import GTSEnv_Raw
 from spirl.rl.components.sampler_batched import HierarchicalSamplerBached
 
 
-from spirl.rl.agents.skill_critic.joint_agent import JointAgent
+from spirl.rl.agents.skill_critic.joint_agent import JointAgent, skill_critic_stages
 from spirl.models.cond_dec_spirl_mdl import TimeIndexCDSPiRLMDL
 from spirl.rl.policies.cd_model_policy import DecoderRegu_TimeIndexedCDMdlPolicy
 from spirl.rl.policies.prior_policies import LearnedPriorAugmentedPIPolicy
@@ -97,8 +97,8 @@ ll_policy_params = AttrDict(
     policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/hierarchical_cd"),
 
     
-    # manual_log_sigma=[0, 0],
-    min_log_sigma = [-3, -1.2],
+    manual_log_sigma=[0, 0],
+    # min_log_sigma = [-3, -1.2],
 )
 ll_policy_params.update(ll_model_params)
 
@@ -140,6 +140,7 @@ hl_policy_params = AttrDict(
     prior_model_checkpoint=ll_policy_params.policy_model_checkpoint,
 
     # squash_output_dist = False, # do not squash the tanh output
+    load_weights = False, # do not load the prior
 )
 
 # critic
@@ -178,6 +179,8 @@ agent_config = AttrDict(
     update_iterations = 1280,
     # update_iterations = 32,
     discount_factor = 0.98 ,
+
+    initial_train_stage = skill_critic_stages.HYBRID
 )
 
 # Dataset - Random data
