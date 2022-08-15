@@ -87,7 +87,8 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
             'kl_div_weight': 1.,                # weight of KL divergence loss
             'target_kl': None,                  # if not None, adds automatic beta-tuning to reach target KL divergence
             'learned_prior_weight' : 1.,        # weight for train learned prior
-            'action_dim_weights': 1,
+            'action_dim_weights': 1,            # the weights for reconstruction mes loss at each dimension
+            'squash_latent_variable': False,    # if True, squash z by tanh
         })
 
         # loading pre-trained components
@@ -155,6 +156,11 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         # sample latent variable
         output.z = output.p.sample() if self._sample_prior else output.q.sample()
         output.z_q = output.z.clone() if not self._sample_prior else output.q.sample()   # for loss computation
+
+        # squash
+        if self._hp.squash_latent_variable:
+            output.z = torch.tanh(output.z)
+            output.z_q = torch.tanh(output.z_q)
 
         # decode
         assert self._regression_targets(inputs).shape[1] == self._hp.n_rollout_steps
