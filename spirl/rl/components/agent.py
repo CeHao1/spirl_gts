@@ -212,11 +212,13 @@ class BaseAgent(nn.Module):
     # ============== action determinstic related =================
     @contextmanager
     def deterministic_act_mode(self):
+        # assert False
         self._deterministic_act_mode = True
         yield
         self._deterministic_act_mode = False
 
     def switch_on_deterministic_action_mode(self):
+        # assert False
         self._deterministic_act_mode = True
 
     def switch_off_deterministic_action_mode(self):

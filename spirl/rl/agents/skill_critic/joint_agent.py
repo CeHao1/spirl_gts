@@ -4,6 +4,7 @@ from spirl.rl.components.agent import HierarchicalAgent, FixedIntervalHierarchic
 from spirl.utils.general_utils import ParamDict, get_clipped_optimizer, AttrDict, prefix_dict, map_dict
 
 from enum import Enum
+from tqdm import tqdm
 
 class skill_critic_stages(Enum):
     WARM_START = 0
@@ -108,7 +109,29 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
 
     # ====================== for update, we have some stages ====================
 
-    def update(self, experience_batches):
+    # def update(self, experience_batches):
 
-        return super().update(experience_batches)
+    #     return super().update(experience_batches)
+
+    def update(self, experience_batches):
+        """Updates high-level and low-level agents depending on which parameters are set."""
+        assert isinstance(experience_batches, AttrDict)  # update requires batches for both HL and LL
+        update_outputs = AttrDict()
+
+        # 1) add experience
+        self.hl_agent.add_experience(experience_batches.hl_batch)
+        self.ll_agent.add_experience(experience_batches.ll_batch)
+
+
+        # 2) for and update HL, LL
+        for idx in tqdm(range(self._hp.update_iterations)):
+            vis = True if idx == self._hp.update_iterations -1 else False
+            
+            hl_update_outputs = self.hl_agent.update()
+            update_outputs.update(hl_update_outputs)
+
+            ll_update_outputs = self.ll_agent.update(vis=vis)
+            update_outputs.update(ll_update_outputs)
+
+        return update_outputs
 

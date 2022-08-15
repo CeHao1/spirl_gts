@@ -89,7 +89,7 @@ class HRLVisualizer(RLTrainer):
         # hl_action = hl_output['action']
         # hl_action = map2torch(hl_action, self.device)
         
-        # self.plot_obs(obs)
+        self.plot_obs(obs)
         self.plot_hl_z(hl_output)
 
 

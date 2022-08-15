@@ -120,6 +120,7 @@ ll_agent_config.update(AttrDict(
     critic=MLPCritic,                
     critic_params=ll_critic_params,
 
+    fixed_alpha = 0.001,
     visualize_values = True,
 ))
 
@@ -161,7 +162,8 @@ hl_agent_config.update(AttrDict(
     critic=MLPCritic,
     critic_params=hl_critic_params,
 
-    td_schedule_params=AttrDict(p=5.),
+    # td_schedule_params=AttrDict(p=5.),
+    fixed_alpha = 0.001,
 
     visualize_values = True,
 ))
@@ -180,7 +182,7 @@ agent_config = AttrDict(
     # update_iterations = 32,
     discount_factor = 0.98 ,
 
-    initial_train_stage = skill_critic_stages.HYBRID
+    initial_train_stage = skill_critic_stages.WARM_START
 )
 
 # Dataset - Random data

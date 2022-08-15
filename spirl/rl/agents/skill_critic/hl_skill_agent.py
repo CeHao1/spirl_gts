@@ -24,15 +24,17 @@ class HLSKillAgent(ActionPriorSACAgent):
     def fast_assign_flags(self, flags):
         self._update_hl_policy_flag = flags[0]
 
-    def update(self, experience_batch):
+    def update(self, experience_batch=None):
 
         # we only update policy on HL
 
         # push experience batch into replay buffer
-        self.add_experience(experience_batch)
+        if experience_batch is not None:
+            self.add_experience(experience_batch)
         # obs = (s), action=(z)
 
-        for _ in range(self._hp.update_iterations):
+        # for _ in range(self._hp.update_iterations):
+        for _ in range(1):
             # sample batch and normalize
             experience_batch = self._sample_experience()
             experience_batch = self._normalize_batch(experience_batch)
@@ -55,14 +57,14 @@ class HLSKillAgent(ActionPriorSACAgent):
 
             # logging
             info = AttrDict(    # losses
-                policy_loss=policy_loss,
-                alpha_loss=alpha_loss,
+                hl_policy_loss=policy_loss,
+                hl_alpha_loss=alpha_loss,
             )
 
-            if self._update_steps % 100 == 0:
-                info.update(AttrDict(       # gradient norms
-                    policy_grad_norm=avg_grad_norm(self.policy),
-                ))
+            # if self._update_steps % 100 == 0:
+            #     info.update(AttrDict(       # gradient norms
+            #         policy_grad_norm=avg_grad_norm(self.policy),
+            #     ))
 
             info.update(AttrDict(       # misc
                 hl_alpha=self.alpha,

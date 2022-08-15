@@ -31,11 +31,14 @@ class LLActionAgent(ActionPriorSACAgent):
         self.hl_critic_targets = hl_agent.critic_targets
         self.hl_critic_opts = hl_agent.critic_opts
 
-    def update(self, experience_batch):
+    def update(self, experience_batch=None, vis=False):
         # push experience batch into replay buffer
-        self.add_experience(experience_batch)
 
-        for _ in range(self._hp.update_iterations):
+        if experience_batch is not None:
+            self.add_experience(experience_batch)
+
+        # for _ in range(self._hp.update_iterations):
+        for _ in range(1):
             # sample batch and normalize
             experience_batch = self._sample_experience()
             experience_batch = self._normalize_batch(experience_batch)
@@ -64,7 +67,7 @@ class LLActionAgent(ActionPriorSACAgent):
                     hl_critic_loss, hl_qs = self._compute_hl_critic_loss(experience_batch, hl_q_target)
 
             # (3) Qa(s,z,k,a) loss, Qa_target
-            if self._update_ll_policy_flag:
+            if self._update_ll_q_flag:
                 ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch)
                 ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)
             else:
@@ -82,7 +85,7 @@ class LLActionAgent(ActionPriorSACAgent):
                 [self._perform_update(critic_loss, critic_opt, critic)
                         for critic_loss, critic_opt, critic in zip(hl_critic_loss, self.hl_critic_opts, self.hl_critics)]
             # ll
-            if self._update_ll_policy_flag:
+            if self._update_ll_q_flag:
                 [self._perform_update(critic_loss, critic_opt, critic)
                         for critic_loss, critic_opt, critic in zip(ll_critic_loss, self.critic_opts, self.critics)]
 
@@ -91,14 +94,14 @@ class LLActionAgent(ActionPriorSACAgent):
             if self._update_hl_q_flag:
                 [self._soft_update_target_network(critic_target, critic)
                         for critic_target, critic in zip(self.hl_critic_targets, self.hl_critics)]
-            if self._update_ll_policy_flag:
+            if self._update_ll_q_flag:
                 [self._soft_update_target_network(critic_target, critic)
                         for critic_target, critic in zip(self.critic_targets, self.critics)]
 
             # logging
             info = AttrDict(    # losses
-                policy_loss=policy_loss,
-                alpha_loss=alpha_loss,
+                ll_policy_loss=policy_loss,
+                ll_alpha_loss=alpha_loss,
                 qz_critic_loss_1=hl_critic_loss[0],
                 qz_critic_loss_2=hl_critic_loss[1],
                 qa_critic_loss_1=ll_critic_loss[0],
@@ -130,7 +133,7 @@ class LLActionAgent(ActionPriorSACAgent):
 
             self._update_steps += 1
 
-        if self._hp.visualize_values:
+        if self._hp.visualize_values and vis:
             hl_q_target = self._compute_hl_q_target(experience_batch, policy_output, vis=True)
             ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch, vis=True)
 
@@ -209,7 +212,7 @@ class LLActionAgent(ActionPriorSACAgent):
         obs = split_obs.state
         act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
         q_next = torch.min(*[critic_target(obs, act).q for critic_target in self.hl_critic_targets])
-        next_val = (q_next - self.alpha * hl_policy_output_next.prior_divergence[:, None])
+        next_val = (q_next - self.hl_agent.alpha * hl_policy_output_next.prior_divergence[:, None])
         check_shape(next_val, [self._hp.batch_size, 1])
         return next_val.squeeze(-1), q_next.squeeze(-1)
 
@@ -253,7 +256,12 @@ class LLActionAgent(ActionPriorSACAgent):
 
 
     def visualize_HL_Q(self, qa_target, hl_q_target):
-        alp_KLD = hl_q_target - qa_target
+        print('visualize_HL_Q, alpha', self.alpha)
+        alp_KLD = hl_q_target - qa_target.squeeze()
+
+        # print('qa_target {}, hl_q_target {}, alp_KLD {}'.format(qa_target.shape, hl_q_target.shape, alp_KLD.shape))
+
+
         plt.figure(figsize=(14, 8))
 
         plt.subplot(2,2,1)
@@ -271,8 +279,11 @@ class LLActionAgent(ActionPriorSACAgent):
         plt.grid()
         plt.title('hl_q_target')
 
+        plt.show()
+
 
     def visualize_LL_Q(self, ll_q_target, v_next, q_next, u_next, reward):
+        print('visualize_LL_Q, alpha', self.hl_agent.alpha)
         alp_KLD = v_next - q_next
 
         plt.figure(figsize=(14, 8))
@@ -296,6 +307,8 @@ class LLActionAgent(ActionPriorSACAgent):
         plt.plot(map2np(ll_q_target), 'b.')
         plt.grid()
         plt.title('ll_q_target')
+
+        plt.show()
 
 
     # ================================== offline ================================
