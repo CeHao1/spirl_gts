@@ -42,14 +42,14 @@ configuration = AttrDict(    {
     'num_epochs': 2000,
     'max_rollout_len': 10000,
     'n_steps_per_epoch': 10000,
-    # 'n_warmup_steps': 160000,
+    'n_warmup_steps': 160000,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Raw,
     'sampler':HierarchicalSamplerBached,
 
     # 'n_steps_per_epoch': 200,
-    'n_warmup_steps': 200,
+    # 'n_warmup_steps': 200,
 } )
 
 sampler_config = AttrDict(
@@ -182,7 +182,7 @@ agent_config = AttrDict(
     # update_iterations = 32,
     discount_factor = 0.98 ,
 
-    initial_train_stage = skill_critic_stages.WARM_START
+    initial_train_stage = skill_critic_stages.HL_TRAIN
 )
 
 # Dataset - Random data

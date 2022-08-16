@@ -58,10 +58,11 @@ python3 spirl/rl/train.py --gpu=0 --prefix=ol_newobs_01 \
 
 6. skill-critic
 --path=spirl/configs/hrl/gts/sc
-python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_noprior_04 \
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_noprior_05 \
+--resume=latest
 --mode='rollout' --save_dir='./sample/hrl/sc_02'
 
---resume=latest
+
 
 ## eval
 --mode='val'

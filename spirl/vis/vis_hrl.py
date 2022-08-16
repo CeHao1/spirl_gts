@@ -84,12 +84,14 @@ class HRLVisualizer(RLTrainer):
             obs = obs
             act = inputs['actions']
 
+        obs = obs[:600]
+
         obs_tensor = map2torch(obs, self.device)
         hl_output = self.agent.hl_agent.act(obs_tensor)
         # hl_action = hl_output['action']
         # hl_action = map2torch(hl_action, self.device)
         
-        self.plot_obs(obs)
+        # self.plot_obs(obs)
         self.plot_hl_z(hl_output)
 
 
