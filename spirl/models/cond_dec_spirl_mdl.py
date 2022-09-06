@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import numpy as np
 
 from spirl.utils.general_utils import batch_apply, ParamDict
 from spirl.utils.pytorch_utils import make_one_hot
@@ -29,7 +30,7 @@ class CDSPiRLMdl(SkillPriorMdl):
         decode_inputs = torch.cat((seq_enc[:, :steps], z[:, None].repeat(1, steps, 1)), dim=-1)
 
         output = batch_apply(decode_inputs, self.decoder)
-        output = output[..., :self.action_size]
+        output = output[..., :self.action_size] # only get the mean
         return output
 
     def _build_inference_net(self):
@@ -86,9 +87,10 @@ class TimeIndexCDSPiRLMDL(CDSPiRLMdl):
         # the decode only use for training, so here we use deterministic 
         
         assert inputs is not None       # need additional state sequence input for full decode
-        seq_enc = self._get_seq_enc(inputs)
+        seq_enc = self._get_seq_enc(inputs) # states
 
-        idx = torch.tensor(torch.arange(steps), device=self.device)
+        # idx = torch.tensor(torch.arange(steps), device=self.device)
+        idx = torch.tensor(np.arange(steps), device=self.device)
         one_hot = make_one_hot(idx, steps).repeat(seq_enc.shape[0], 1, 1)
         decode_inputs = torch.cat((seq_enc[:, :steps], z[:, None].repeat(1, steps, 1), one_hot), dim=-1)
 

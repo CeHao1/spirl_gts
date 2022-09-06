@@ -6,7 +6,7 @@ from spirl.train import *
 
 import seaborn as sns
 from tqdm import tqdm
-
+from spirl.utils.pytorch_utils import map2np
 
 class MDLVisualizer(ModelTrainer):
 
@@ -41,8 +41,9 @@ class MDLVisualizer(ModelTrainer):
 
         # self.model.switch_to_prior()
         print('get model and data')
-        self.show_one_value()
         # self.show_value_distribution()
+        self.show_one_value()
+        
         
 
     def build_vizer(self, params, phase):
@@ -62,49 +63,84 @@ class MDLVisualizer(ModelTrainer):
             plots(*self.get_data())
 
     def show_value_distribution(self):
-        inpt_mean = []
-        oupt_mean = []
-        prior_mean = []
         # for idx in tqdm(range(10)):
-        inpt, oupt, prior = self.get_data(all_data=True)
-
-        # inpt_mean.append(np.mean(inpt, axis=0))
-        # oupt_mean.append(np.mean(oupt, axis=0))
-        # prior_mean.append(np.mean(prior, axis=0))
-
-        inpt_mean = np.mean(inpt, axis=1)
-        oupt_mean = np.mean(oupt, axis=1)
-        prior_mean = np.mean(prior, axis=1)
-        plots_distribution(inpt_mean, oupt_mean, prior_mean)
+        output = self.get_data(all_data=True)
+        plot_z_mean_var(output)
 
     def get_data(self, all_data=False):
         # sample_batched = self.loader.dataset[0]
         
         for batch_idx, sample_batched in enumerate(self.loader):
             inputs = AttrDict(map_dict(lambda x: x.to(self.device), sample_batched))
+ 
 
-            # self.model.switch_to_prior()            
+            # direct data is z~encoder(), a~decoder(z)    
             output = self.model(inputs)
 
+            print('!!inputs.states', inputs.states.shape)
+            # output.RL_prior = [self.model.compute_learned_prior(s[0], first_only=True) for s in inputs.states[:,0]]
+            output.RL_prior = self.model.compute_learned_prior( inputs.states[:,0, :], first_only=True)
+            # output.RL_prior = self.model.compute_learned_prior(inputs.states[:,0])
+
+            '''
+            # use prior 
             self.model.switch_to_prior()
             output_prior = self.model(inputs, use_learned_prior=True)
             self.model.switch_to_inference()
+            '''
 
             input_actions = to_numpy(inputs.actions)
             output_reconstruction = to_numpy(output.reconstruction)
-            output_prior_recon = to_numpy(output_prior.reconstruction)
 
-            # input_actions = self.loader.dataset.action_scaler.inverse_transform(input_actions)
-            # output_reconstruction = self.loader.dataset.action_scaler.inverse_transform(output_reconstruction)
-            # output_prior_recon = self.loader.dataset.action_scaler.inverse_transform(output_prior_recon)
+            # output_prior_recon = to_numpy(output_prior.reconstruction)
+            output_prior_recon = to_numpy(output.prior_reconstruction)
 
             break
         # print('finish')
         if all_data:
-            return input_actions, output_reconstruction, output_prior_recon
+            return output
         else:
             n = 0
             return input_actions[n], output_reconstruction[n], output_prior_recon[n]
+
+
+def plot_z_mean_var(output):
+    qs = (output.q)
+    q_hats = (output.q_hat)
+    # shape (batch, guassian)
+
+    q_means = np.array(map2np([q.mean for q in qs]))
+    q_vars = np.array(map2np([q.sigma for q in qs]))
+    qhat_means = np.array(map2np([q.mean for q in q_hats]))
+    qhat_vars = np.array(map2np([q.sigma for q in q_hats]))
+
+    RL_qhat_means = np.array(map2np([q.mean for q in output.RL_prior]))
+    RL_qhat_vars = np.array(map2np([q.sigma for q in output.RL_prior]))
+
+    print('q means', q_means[0].shape)
+
+    for idx in range(q_means[0].shape[0]):
+        print('dim', idx)
+        plt.figure(figsize=(14,4))
+        plt.subplot(1,2,1)
+        plt.plot(q_means[:, idx], 'b.', label='encoder')
+        plt.plot(qhat_means[:, idx], 'r.', label='prior')
+        # plt.plot(RL_qhat_means, 'r.')
+
+        plt.grid()
+        plt.title('latent variable distribution mean')
+        plt.legend()
+
+        plt.subplot(1,2,2)
+        plt.plot(q_vars[:, idx], 'b.')
+        plt.plot(qhat_vars[:, idx], 'r.')
+        # plt.plot(RL_qhat_vars, 'r.')
+        plt.grid()
+        plt.title('latent variable distribution variance')
+
+        plt.show()
+
+
 
 
 def plots(input, output, out_prior):

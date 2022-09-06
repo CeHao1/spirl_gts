@@ -80,6 +80,16 @@ def make_one_hot(index, length):
     batchwise_assign(oh, index, 1)
     return oh
 
+def parse_one_hot(oh):
+    """ Convert one-hot to the indices"""
+    if len(oh.shape) == 1:
+        oh_input = oh[None]
+    else:
+        oh_input = oh
+
+    position = torch.where(oh_input == torch.tensor(1))
+    return position[1]
+
 
 class DummyModule(nn.Module):
     def __init__(self, *args, **kwargs):

@@ -1,15 +1,18 @@
 import os
 
 from spirl.utils.general_utils import AttrDict
-from spirl.rl.policies.mlp_policies import MLPPolicy
+from spirl.rl.policies.mlp_policies import MLPPolicy, TanhLogstd_MLPPolicy
 from spirl.rl.components.critic import MLPCritic
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
-from spirl.rl.envs.gts import GTSEnv_Base
+
 from spirl.rl.envs.gts_multi import GTSEnv_Multi
+from spirl.rl.envs.gts_raw import GTSEnv_Raw
 
 from spirl.rl.agents.ac_agent import SACAgent
+from spirl.rl.components.sampler_batched import SamplerBatched
+
+from spirl.rl.envs.gts import GTSEnv_Base
 from spirl.rl.components.sampler import Sampler
-from spirl.rl.components.sampler_multi import SamplerMulti
 
 from spirl.rl.components.normalization import Normalizer
 from spirl.configs.default_data_configs.gts import data_spec
@@ -25,10 +28,15 @@ notes = 'non-hierarchical RL experiments in gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    # do_init = False,
+    do_init = False,
+    # action_standard = True,
 
-    reward_function = eval_time_trial_reward_function,
-    done_function = eval_time_trial_done_function,
+    # reward_function = eval_time_trial_reward_function,
+    # done_function = eval_time_trial_done_function,
+
+    # num_cars = 1,
+    # store_states = True,
+
 )
 
 configuration = {
@@ -37,23 +45,21 @@ configuration = {
     
     'data_dir': '.',
     'num_epochs': 2000,
-    'max_rollout_len': 20000,
-    'n_steps_per_epoch': 20000,
-    'n_warmup_steps': 80000,
+    'max_rollout_len': 10000,
+    'n_steps_per_epoch': 10000 ,
+    'n_warmup_steps': 160000 ,
     'use_update_after_sampling':True,
 
-    # 'environment': GTSEnv_Base,
-    # 'sampler' : Sampler,
-    
-    'environment': GTSEnv_Multi,
-    'sampler':SamplerMulti,
+    # 'environment': GTSEnv_Multi,
+    'environment': GTSEnv_Raw,
+    'sampler':SamplerBatched,
+
+    # 'n_steps_per_epoch': 2000 ,
+    # 'n_warmup_steps': 2000 ,
 }
 
 configuration = AttrDict(configuration)
 
-sampler_config = AttrDict(
-    number_of_agents = 20,
-)
 
 # Policy
 policy_params = AttrDict(
@@ -87,6 +93,7 @@ obs_norm_params = AttrDict(
 # Agent
 agent_config = AttrDict(
     policy=MLPPolicy,
+    # policy=TanhLogstd_MLPPolicy,
     policy_params=policy_params,
     critic=MLPCritic,
     critic_params=critic_params,
@@ -99,13 +106,11 @@ agent_config = AttrDict(
     log_videos=False,
 
     discount_factor = 0.98,
-
     fixed_alpha = 0.1,
-    update_iterations = 512,
+    update_iterations = 64 * 20,
 
-    critic_lr = 1e-3,
-    policy_lr = 1e-3,
-
+    # target_entropy = 0,
+    # visualize_values = True,
     
 )
 

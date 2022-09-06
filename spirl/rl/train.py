@@ -15,7 +15,7 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'HRL02'
+WANDB_PROJECT_NAME = 'RL_TRAIN_2022fall'
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -62,6 +62,7 @@ class RLTrainer:
         self.conf.agent.num_workers = self.conf.mpi.num_workers
         self.agent = self._hp.agent(self.conf.agent)
         self.agent.to(self.device)
+        # self.agent.post_process() # post process any change to the agent
 
         # build sampler
         self.sampler = self._hp.sampler(self.conf.sampler, self.env, self.agent, self.logger, self._hp.max_rollout_len)
@@ -72,13 +73,16 @@ class RLTrainer:
             start_epoch = self.resume(args.resume, self.conf.ckpt_path)
             self._hp.n_warmup_steps = 0     # no warmup if we reload from checkpoint!
 
+
         # start training/evaluation
         if args.mode == 'train':
             self.train(start_epoch)
         elif args.mode == 'val':
             self.val()
-        else:
+        elif args.mode == 'rollout':
             self.generate_rollouts()
+        elif args.mode == 'offline':
+            self.offline()
 
     def _default_hparams(self):
         default_dict = ParamDict({
@@ -108,7 +112,6 @@ class RLTrainer:
             self.warmup()
 
         print('after warm up, start training epochs')
-        # self._hp.num_epochs = 2
 
         for epoch in range(start_epoch, self._hp.num_epochs):
             print("Epoch {}".format(epoch))
@@ -124,7 +127,7 @@ class RLTrainer:
                     'state_dict': self.agent.state_dict(),
                 }, os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name(epoch))
                 self.agent.save_state(self._hp.exp_path)
-                # self.val()
+                # self.val() # do not eval 
 
     def train_epoch(self, epoch):
         """Run inner training loop."""
@@ -172,18 +175,13 @@ class RLTrainer:
         with timers['batch'].time():
             # collect experience
             with timers['rollout'].time(): # collect all sample for each epoch
-                print('!! start of sample batch')
                 experience_batch, env_steps = self.sampler.sample_batch(batch_size=self._hp.n_steps_per_epoch,
                                                                         global_step=self.global_step)
-                print('!! after sample batch')
-                print('self.use_multiple_workers', self.use_multiple_workers)
                 if self.use_multiple_workers:
                     experience_batch = mpi_gather_experience(experience_batch)
                 self.global_step += mpi_sum(env_steps)
 
-        print('!! global step is', self.global_step)
-
-        # update policy
+        # update policy and Q
         with timers['update'].time():
             if self.is_chef:
                 agent_outputs = self.agent.update(experience_batch)
@@ -208,7 +206,7 @@ class RLTrainer:
             with torch.no_grad():
                 with timing("Eval rollout time: "):
                     for _ in range(WandBLogger.N_LOGGED_SAMPLES):   # for efficiency instead of self.args.n_val_samples
-                        episode = self.sampler.sample_episode(is_train=False, render=True, deterministic_action=True)
+                        episode = self.sampler.sample_episode(is_train=False, render=False, deterministic_action=self.args.deterministic_action)
                         val_rollout_storage.append(episode)
         rollout_stats = val_rollout_storage.rollout_stats()
         if self.is_chef:
@@ -229,7 +227,7 @@ class RLTrainer:
                 for _ in tqdm(range(self.args.n_val_samples)):
                     while True:     # keep producing rollouts until we get a valid one
                         episode = self.sampler.sample_episode(is_train=False, render=True, 
-                                    deterministic_action=self.args.deterministic_action, return_list=True)
+                                    deterministic_action=self.args.deterministic_action)
                         valid = not hasattr(self.agent, 'rollout_valid') or self.agent.rollout_valid
                         n_total += 1
                         if valid:
@@ -349,6 +347,17 @@ class RLTrainer:
         self.agent.load_state(self._hp.exp_path)
         self.agent.to(self.device)
         return start_epoch
+
+    def offline(self):
+        # customized method
+        # load states means load replay buffer
+        self.agent.load_state(self._hp.exp_path) 
+        self.agent.to(self.device)
+
+        print('train the offline')
+        self.agent.hl_agent.offline()
+        self.agent.ll_agent.offline()
+
 
     def print_train_update(self, epoch, agent_outputs, timers):
         print('GPU {}: {}'.format(os.environ["CUDA_VISIBLE_DEVICES"] if self.use_cuda else 'none',

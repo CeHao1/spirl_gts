@@ -14,6 +14,7 @@ from spirl.rl.components.normalization import DummyNormalizer
 from spirl.rl.components.policy import Policy
 from spirl.components.checkpointer import CheckpointHandler
 from spirl.rl.utils.mpi import sync_grads
+from spirl.modules.variational_inference import MultivariateGaussian
 
 
 class BaseAgent(nn.Module):
@@ -24,6 +25,7 @@ class BaseAgent(nn.Module):
         self._is_train = True           # indicates whether agent should sample in training mode
         self._rand_act_mode = False     # indicates whether agent should act randomly (for warmup collection)
         self._rollout_mode = False      # indicates whether agent is run in rollout mode (omit certain policy outputs)
+        self._deterministic_act_mode = False # if true, use the mean value of policy distribution
         self._obs_normalizer = self._hp.obs_normalizer(self._hp.obs_normalizer_params)
 
     def _default_hparams(self):
@@ -105,6 +107,10 @@ class BaseAgent(nn.Module):
     def sync_networks(self):
         """Syncs network parameters across workers."""
         raise NotImplementedError
+
+    def post_process(self):
+        "post process the agent after convert the agent to device"
+        pass
 
     def _soft_update_target_network(self, target, source):
         """Copies weights from source to target with weight [0,1]."""
@@ -203,13 +209,36 @@ class BaseAgent(nn.Module):
     def update_iterations(self):
         return self._hp.update_iterations
 
+    # ============== action determinstic related =================
+    @contextmanager
+    def deterministic_act_mode(self):
+        # assert False
+        self._deterministic_act_mode = True
+        yield
+        self._deterministic_act_mode = False
+
+    def switch_on_deterministic_action_mode(self):
+        # assert False
+        self._deterministic_act_mode = True
+
+    def switch_off_deterministic_action_mode(self):
+        self._deterministic_act_mode = False
+
+    def _post_process_policy_output(self, policy_output):
+        if self._deterministic_act_mode:
+            # print('post !')
+            if 'dist' in policy_output and isinstance(policy_output.dist, MultivariateGaussian):
+                policy_output.ori_action = policy_output.action
+                policy_output.action = policy_output.dist.mean
+        return policy_output
+                
 
 class HierarchicalAgent(BaseAgent):
     """Implements a basic hierarchical agent with high-level and low-level policy/policies."""
     def __init__(self, config):
         super().__init__(config)
-        self.hl_agent = self._hp.hl_agent(self._hp.overwrite(self._hp.hl_agent_params))
-        self.ll_agent = self._hp.ll_agent(self._hp.overwrite(self._hp.ll_agent_params))
+        self.hl_agent = self._hp.hl_agent(self._hp.temp_overwrite(self._hp.hl_agent_params))
+        self.ll_agent = self._hp.ll_agent(self._hp.temp_overwrite(self._hp.ll_agent_params))
         self._last_hl_output = None     # stores last high-level output to feed to low-level during intermediate steps
 
     def _default_hparams(self):
@@ -246,19 +275,19 @@ class HierarchicalAgent(BaseAgent):
 
         return self._remove_batch(output) if len(obs.shape) == 1 else output
 
-    def no_pop_act(self, obs):
-        obs_input = obs[None] if len(obs.shape) == 1 else obs    # need batch input for agents
-        output = AttrDict()
-        hl_output = self.hl_agent.act(obs_input)
-        output.update(self.ll_agent.no_pop_act(self.make_ll_obs(obs_input, hl_output.action)))
+    # def no_pop_act(self, obs):
+    #     obs_input = obs[None] if len(obs.shape) == 1 else obs    # need batch input for agents
+    #     output = AttrDict()
+    #     hl_output = self.hl_agent.act(obs_input)
+    #     output.update(self.ll_agent.no_pop_act(self.make_ll_obs(obs_input, hl_output.action)))
 
-        return self._remove_batch(output) if len(obs.shape) == 1 else output
+    #     return self._remove_batch(output) if len(obs.shape) == 1 else output
 
-    def get_prior_action(self, obs):
-        obs = map2torch(obs, self._hp.device)
-        obs_input = obs[None] if len(obs.shape) == 1 else obs
+    # def get_prior_action(self, obs):
+    #     obs = map2torch(obs, self._hp.device)
+    #     obs_input = obs[None] if len(obs.shape) == 1 else obs
 
-        return self.hl_agent.policy.get_prior_actions(obs_input)
+    #     return self.hl_agent.policy.get_prior_actions(obs_input)
 
 
     def update(self, experience_batches):
@@ -273,6 +302,7 @@ class HierarchicalAgent(BaseAgent):
             print('updating ll agent', type(self.ll_agent))
             ll_update_outputs = self.ll_agent.update(experience_batches.ll_batch)
             update_outputs.update(ll_update_outputs)
+
         return update_outputs
 
     def log_outputs(self, logging_stats, rollout_storage, logger, log_images, step):

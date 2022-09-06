@@ -27,10 +27,6 @@ class ReplayBuffer:
     def append(self, experience_batch):
         """Appends the vals in the AttrDict experience_batch to the existing replay buffer."""
 
-        # print('before')
-        # print('reward', np.array(experience_batch.reward).shape)
-        # print('obs', np.array(experience_batch.observation).shape)
-
         # process batched experience 
         if len(np.array(experience_batch.observation).shape) > 2:
             # print('call the reshape!')
@@ -40,10 +36,6 @@ class ReplayBuffer:
 
         if self._replay_buffer is None:
             self._init(experience_batch)
-
-        # print('after')
-        # for key in experience_batch:
-        #     print(key, np.array(experience_batch[key]).shape) 
 
         # compute indexing range
         n_samples = self._get_n_samples(experience_batch)
@@ -85,6 +77,7 @@ class ReplayBuffer:
         if not self._hp.dump_replay: return
         os.makedirs(save_dir, exist_ok=True)
         with gzip.open(os.path.join(save_dir, "replay_buffer.zip"), 'wb') as f:
+            # print('save dir', os.path.join(save_dir, "replay_buffer.zip"))
             pickle.dump(self._replay_buffer, f)
         np.save(os.path.join(save_dir, "idx_size.npy"), np.array([self._idx, self.size]))
 

@@ -1,6 +1,5 @@
 
 
-
 import os
 import copy
 
@@ -10,40 +9,47 @@ from spirl.configs.default_data_configs.gts import data_spec
 
 
 from spirl.rl.envs.gts_multi import GTSEnv_Multi
+from spirl.rl.envs.gts_raw import GTSEnv_Raw
 from spirl.rl.components.sampler_batched import HierarchicalSamplerBached
 
-from spirl.rl.components.critic import MLPCritic
-from spirl.rl.components.agent import FixedIntervalTimeIndexedHierarchicalAgent
+
+from spirl.rl.agents.skill_critic.joint_agent import JointAgent, skill_critic_stages
 from spirl.models.cond_dec_spirl_mdl import TimeIndexCDSPiRLMDL
-from spirl.rl.policies.cd_model_policy import TimeIndexedCDMdlPolicy
-
+from spirl.rl.policies.cd_model_policy import DecoderRegu_TimeIndexedCDMdlPolicy
 from spirl.rl.policies.prior_policies import LearnedPriorAugmentedPIPolicy
-from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
-from spirl.rl.agents.ac_agent import SACAgent
+from spirl.rl.components.critic import MLPCritic
 
+from spirl.rl.agents.skill_critic.hl_skill_agent import HLSKillAgent
+from spirl.rl.agents.skill_critic.ll_action_agent import LLActionAgent
 
-# overall implementation of CD
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
     do_init = False,
-    action_standard = True,
+    # action_standard = True,
+
+    # reward_function = eval_time_trial_reward_function,
+    # done_function = eval_time_trial_done_function,
+    
 )
 
 
 configuration = AttrDict(    {
     'seed': 2,
-    'agent': FixedIntervalTimeIndexedHierarchicalAgent,
+    'agent': JointAgent,
     
     'data_dir': '.',
-    'num_epochs': 300,
+    'num_epochs': 2000,
     'max_rollout_len': 10000,
-    'n_steps_per_epoch': 200,
-    'n_warmup_steps': 100,
+    'n_steps_per_epoch': 10000,
+    'n_warmup_steps': 160000,
     'use_update_after_sampling':True,
 
-    'environment': GTSEnv_Multi,
+    'environment': GTSEnv_Raw,
     'sampler':HierarchicalSamplerBached,
+
+    # 'n_steps_per_epoch': 200,
+    # 'n_warmup_steps': 200,
 } )
 
 sampler_config = AttrDict(
@@ -52,7 +58,7 @@ sampler_config = AttrDict(
 
 # Replay Buffer
 replay_params = AttrDict(
-    dump_replay=False,
+    dump_replay=True,
 )
 
 # Observation Normalization
@@ -60,8 +66,8 @@ obs_norm_params = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    # batch_size=256, #256,
-    batch_size=64, 
+    # batch_size=64, #256,
+    batch_size=4096, 
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -91,14 +97,15 @@ ll_policy_params = AttrDict(
     policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/hierarchical_cd"),
 
     
-    manual_log_sigma=[1e-10, 1e-12],
+    manual_log_sigma=[0, 0],
+    # min_log_sigma = [-3, -1.2],
 )
 ll_policy_params.update(ll_model_params)
 
 # critic
 ll_critic_params = AttrDict(
-    action_dim=data_spec.n_actions,
     input_dim=data_spec.state_dim + ll_model_params.nz_vae + ll_model_params.n_rollout_steps,
+    action_dim=data_spec.n_actions,
     output_dim=1,
     n_layers=5,  # number of policy network layer
     nz_mid=256,
@@ -108,10 +115,13 @@ ll_critic_params = AttrDict(
 # agent
 ll_agent_config = copy.deepcopy(base_agent_params)
 ll_agent_config.update(AttrDict(
-    policy=TimeIndexedCDMdlPolicy,
+    policy=DecoderRegu_TimeIndexedCDMdlPolicy,
     policy_params=ll_policy_params,
     critic=MLPCritic,                
-    critic_params=ll_critic_params
+    critic_params=ll_critic_params,
+
+    fixed_alpha = 0.001,
+    visualize_values = True,
 ))
 
 # ================= high level ====================
@@ -129,6 +139,9 @@ hl_policy_params = AttrDict(
     prior_model=ll_policy_params.policy_model,
     prior_model_params=ll_policy_params.policy_model_params,
     prior_model_checkpoint=ll_policy_params.policy_model_checkpoint,
+
+    # squash_output_dist = False, # do not squash the tanh output
+    load_weights = False, # do not load the prior
 )
 
 # critic
@@ -149,76 +162,29 @@ hl_agent_config.update(AttrDict(
     critic=MLPCritic,
     critic_params=hl_critic_params,
 
-    td_schedule_params=AttrDict(p=5.),
+    # td_schedule_params=AttrDict(p=5.),
+    fixed_alpha = 0.001,
+
+    visualize_values = True,
 ))
 # ================== joint agent ===================
 agent_config = AttrDict(
-    hl_agent=ActionPriorSACAgent,
+    hl_agent=HLSKillAgent,
     hl_agent_params=hl_agent_config,
-    ll_agent=SACAgent,
+    ll_agent=LLActionAgent,
     ll_agent_params=ll_agent_config,
     hl_interval=ll_model_params.n_rollout_steps,
 
     update_ll=True,
     log_video_caption=False,
 
-    update_iterations = 512,
+    update_iterations = 1280,
+    # update_iterations = 32,
     discount_factor = 0.98 ,
+
+    initial_train_stage = skill_critic_stages.HL_TRAIN
 )
 
 # Dataset - Random data
 data_config = AttrDict()
 data_config.dataset_spec = data_spec
-
-
-'''
-
-configuration.agent = FixedIntervalTimeIndexedHierarchicalAgent
-
-ll_model_params.cond_decode = True
-# create LL conditioned decoder policy
-ll_policy_params = AttrDict(
-    # policy_model=CDSPiRLMdl,
-    policy_model = TimeIndexCDSPiRLMDL,
-    policy_model_params=ll_model_params,
-    policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"],
-                                         "skill_prior_learning/gts/hierarchical_cd"),
-
-    manual_log_sigma=[1e-10, 1e-12],
-)
-ll_policy_params.update(ll_model_params)
-
-ll_critic_params = AttrDict(
-    action_dim=data_spec.n_actions,
-    input_dim=data_spec.state_dim + ll_model_params.nz_vae + ll_model_params.n_rollout_steps,
-    output_dim=1,
-    n_layers=5,  # number of policy network layer
-    nz_mid=256,
-    action_input=True,
-    # unused_obs_size = ll_model_params.nz_vae + ll_model_params.n_rollout_steps, # whether remove latent variable, or add it
-)
-
-ll_agent_config = copy.deepcopy(base_agent_params)
-ll_agent_config.update(AttrDict(
-    policy=TimeIndexedCDMdlPolicy,
-    policy_params=ll_policy_params,
-    critic=MLPCritic,                   
-    critic_params=ll_critic_params
-))
-
-
-# update HL policy model params
-hl_policy_params.update(AttrDict(
-    prior_model=ll_policy_params.policy_model,
-    prior_model_params=ll_policy_params.policy_model_params,
-    prior_model_checkpoint=ll_policy_params.policy_model_checkpoint,
-))
-
-# register new LL agent in agent_config and turn off LL agent updates
-agent_config.update(AttrDict(
-    ll_agent=SACAgent,
-    ll_agent_params=ll_agent_config,
-    update_ll=True,
-))
-
-'''

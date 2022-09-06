@@ -1,7 +1,8 @@
 
 import numpy as np
-
+import os
 import gym
+import pandas as pd
 
 #  =========================== env setup utils ================================
 CAR_CODE = {'Mazda Roadster':   2148, 
@@ -28,7 +29,7 @@ BOP     =   {
 # RH, RM, RS, RSS, (racing hard)
 # IM, HW, or DIRT (wet tire)
 
-TIRE_TYPE = 'SH'
+TIRE_TYPE = 'RH'
 
 RL_OBS_1 = ['lap_count', 'current_lap_time_msec', 'speed_kmph', 'frame_count', 'is_controllable',
                 'vx', 'vy', 'vz', 'pos','rot', 'angular_velocity', 'front_g', 'side_g', 'vertical_g',
@@ -80,9 +81,10 @@ DEFAULT_FEATURE_KEYS = (
 )
 
 chosen_feature_keys = DEFAULT_FEATURE_KEYS
+# chosen_feature_keys = ego_obs
 
-
-state_dim = len(ego_obs)
+# state_dim = len(ego_obs)
+state_dim = len(chosen_feature_keys)
 
 def obs2name(obs):
     state = {}
@@ -140,21 +142,6 @@ def initialize_gts(ip, num_cars, car_codes, course_code, tire_type, bops):
             bops = bops
         )
 
-# def make_env(ip, min_frames_per_action, feature_keys, builtin_controlled, spectator_mode=False,
-#             reward_function=None, done_function=None):
-#     env = gym.make(
-#                 'gts-v0', 
-#                 ip=ip,  
-#                 min_frames_per_action=min_frames_per_action,
-#                 builtin_controlled = builtin_controlled,
-#                 feature_keys = feature_keys,
-#                 standardize_observations = False,
-#                 store_states = False,
-#                 spectator_mode = spectator_mode,
-#                 reward_function = reward_function,
-#                 done_function = done_function
-#         )
-#     return env
 
 def make_env(**kwarg):
     env = gym.make('gts-v0', **kwarg)
@@ -167,13 +154,115 @@ def WrapToPi(x):
     x -= 2*np.pi * np.heaviside((x - np.pi), 0)
     return x
 
+def add_dim(l):
+    if l.ndim == 1:
+        return l[None]
+    else:
+        return l
+
+def bool_2_int(l):
+    return np.array([1 if x else 0 for x in l]).squeeze()
+
+def convert_simple_states(gts_state):
+    state = {}
+
+    for key in gts_state:
+        if not isinstance(gts_state[key], np.ndarray): 
+            gts_state[key] = np.array(gts_state[key])
+
+        # car gts frame states 
+        if key == 'current_lap_time_msec':
+            state['t'] = gts_state[key]/1000
+        elif key == 'speed_kmph':
+            state['V'] = gts_state[key] / 3.6
+        elif key == 'steering':
+            state['delta'] = gts_state[key]
+        elif key == 'throttle':
+            state['thr'] = gts_state[key]
+        elif key == 'brake':
+            state['brk'] = gts_state[key]
+
+         # car states in frenet coordinate
+        elif key == 'centerline_diff_angle':
+            state['epsi'] = gts_state[key]
+        elif key == 'centerline_distance':
+            state['ey'] = - gts_state[key]
+        elif key == 'course_v':
+            state['s'] = gts_state['course_v']
+        elif key == 'frame_count':
+            state['frame_count'] = gts_state[key]
+        elif key == 'lap_count':
+            state['lap_count'] = gts_state['lap_count']
+
+        elif key == 'edge_l_distance':
+            state['Wl'] = gts_state['edge_l_distance']
+        elif key == 'edge_r_distance':
+            state['Wr'] = gts_state['edge_r_distance']
+
+        elif key == 'pos[0]':
+            state['X'] = gts_state[key]
+        elif key == 'pos[2]':
+            state['Y'] = gts_state[key]
+        elif key == 'pos[1]':
+            state['Z'] = gts_state[key]
+        elif key == 'rot[0]': # pitch yaw roll
+            state['Theta'] = - gts_state[key]
+        elif key == 'rot[1]': # pitch yaw roll
+            state['Psi'] = WrapToPi( np.pi/2 - gts_state[key] )
+        elif key == 'rot[2]': # pitch yaw roll
+            state['Phi'] = gts_state[key]
+        elif key == 'vx':
+            state['Vx'] = gts_state['vx']
+        elif key == 'vy':
+            state['Vy'] = gts_state['vy']
+        elif key == 'vz':
+            state['Vz'] = gts_state['vz']
+        elif key == 'angular_velocity[1]':
+            state['dpsi'] = - gts_state[key]
+        elif key == 'angular_velocity[0]':
+            state['dtheta'] = - gts_state[key]
+        elif key == 'angular_velocity[2]':
+            state['dphi'] = gts_state[key]
+        elif key == 'front_g':
+            state['ax'] = gts_state['front_g']
+        elif key == 'side_g':
+            state['ay'] = - gts_state['side_g']
+        elif key == 'vertical_g':
+            state['az'] = gts_state['vertical_g']
+
+         # hit
+        elif key == 'is_hit_wall':
+            state['hit_wall'] = bool_2_int(gts_state[key])
+        elif key == 'is_hit_cars':
+            state['hit_car'] = bool_2_int(gts_state[key])
+        elif key == 'hit_wall_time':
+            state['hit_wall_time'] = gts_state['hit_wall_time']
+        elif key == 'hit_cars_time':
+            state['hit_cars_time'] = gts_state['hit_cars_time']
+        elif key == 'shift_position':
+            state['shift'] = gts_state['shift_position']
+        elif key == 'is_controllable':
+            state['controllable'] = bool_2_int(gts_state[key])
+        elif 'curvature' in key:
+            state[key] = gts_state[key]
+        elif 'lidar' in key:
+            state[key] = gts_state[key]
+
+        else:
+            pass
+
+    return state
+
 def gts_state_2_cartesian(gts_state):
     state = {}
     # to store rotation at first
     if 'rot' in gts_state:
         state.update(gts_state_2_cartesian( [{'rot':gts_state['rot']}] ) )
-
+       
     for key in gts_state:
+        if not isinstance(gts_state[key], np.ndarray): 
+            gts_state[key] = np.array(gts_state[key])
+
         # car gts frame states 
         if key == 'current_lap_time_msec':
             state['t'] = gts_state[key]/1000
@@ -205,35 +294,27 @@ def gts_state_2_cartesian(gts_state):
 
         # car chassis state in cartesian coordinate
         elif key == 'pos':
-            state['X'] = gts_state['pos'][0]
-            state['Y'] = gts_state['pos'][2]
-            state['Z'] = gts_state['pos'][1]
+            temp_pos = add_dim(gts_state[key])
+            state['X'] = temp_pos[:, 0].squeeze()
+            state['Y'] = temp_pos[:, 2].squeeze()
+            state['Z'] = temp_pos[:, 1].squeeze()
         elif key == 'rot': # pitch yaw roll
-            state['Theta'] = - gts_state['rot'][0]
-            state['Psi'] = WrapToPi( np.pi/2 - gts_state['rot'][1] )
-            state['Phi'] = gts_state['rot'][2]
+            temp_angle = add_dim(gts_state[key])
+            state['Theta'] = - temp_angle[:, 0].squeeze()
+            state['Psi'] = WrapToPi( np.pi/2 - temp_angle[:, 1].squeeze() )
+            state['Phi'] = temp_angle[:, 2].squeeze()
         elif key == 'vx':
             state['Vx'] = gts_state['vx']
         elif key == 'vy':
             state['Vy'] = gts_state['vy']
         elif key == 'vz':
             state['Vz'] = gts_state['vz']
-
-        # elif key == 'velocity' and 'vx' not in gts_state and 'vy' not in gts_state:
-        #     if 'Psi' in state:
-        #         Psi = state['Psi']
-        #     else:
-        #         Psi = WrapToPi( np.pi/2 - gts_state['rot'][1] )
-        #     # state['velocity'] = gts_state['velocity']
-        #     v1 = velocity[0]
-        #     v2 = velocity[2]
-        #     state['Vx'] = v1*np.cos(Psi) + v2*np.sin(Psi)
-        #     state['Vy'] = -v1*np.sin(Psi) + v2*np.cos(Psi)
-
         elif key == 'angular_velocity':
-            state['dpsi'] = - gts_state['angular_velocity'][1] # roll, pitch, yaw
-            state['dtheta'] = - gts_state['angular_velocity'][0]
-            state['dphi'] = gts_state['angular_velocity'][2]
+            # roll, pitch, yaw
+            temp_angle = add_dim(gts_state[key])
+            state['dpsi'] = - temp_angle[:, 1].squeeze()
+            state['dtheta'] = - temp_angle[:, 0].squeeze()
+            state['dphi'] = temp_angle[:, 2].squeeze()
         elif key == 'front_g':
             state['ax'] = gts_state['front_g']
         elif key == 'side_g':
@@ -244,26 +325,31 @@ def gts_state_2_cartesian(gts_state):
         # car tire states
         # 0 front left, 1 front right, 2 rear left, 3 rear right
         elif key == 'wheel_load':
-            state['Fz4'] = gts_state['wheel_load']
-            state['Fzf'] = sum(gts_state['wheel_load'][0:2])
-            state['Fzr'] = sum(gts_state['wheel_load'][2:4])
-            state['Fz'] = sum(gts_state['wheel_load'])
+            value = add_dim(gts_state[key])
+            state['Fz4'] = value
+            state['Fzf'] = np.sum(value[:, 0:2], axis=0).squeeze()
+            state['Fzr'] = np.sum(value[:, 2:4], axis=0).squeeze()
+            state['Fz'] = np.sum(value, axis=0).squeeze()
         elif key == 'slip_angle':
-            state['alpha4'] = gts_state['slip_angle']
-            state['alphaf'] = np.mean(gts_state['slip_angle'][0:2])
-            state['alphar'] = np.mean(gts_state['slip_angle'][2:4])
+            value = add_dim(gts_state[key])
+            state['alpha4'] = value
+            state['alphaf'] = np.mean(value[:, 0:2], axis=0).squeeze()
+            state['alphar'] = np.mean(value[:, 2:4], axis=0).squeeze()
         elif key == 'slip_ratio':
-            state['sigma'] = gts_state['slip_ratio']
-            state['sigmaf'] = np.mean(gts_state['slip_ratio'][0:2])
-            state['sigmar'] = np.mean(gts_state['slip_ratio'][2:4])
+            value = add_dim(gts_state[key])
+            state['sigma'] = value
+            state['sigmaf'] = np.mean(value[:, 0:2], axis=0).squeeze()
+            state['sigmar'] = np.mean(value[:, 2:4], axis=0).squeeze()
         elif key == 'wheel_angle':
-            state['delta4'] = gts_state['wheel_angle']
-            state['deltaf'] = np.mean(gts_state['wheel_angle'][0:2])
-            state['deltar'] = np.mean(gts_state['wheel_angle'][2:4])
+            value = add_dim(gts_state[key])
+            state['delta4'] = value
+            state['deltaf'] = np.mean(value[:, 0:2], axis=0).squeeze()
+            state['deltar'] = np.mean(value[:, 2:4], axis=0).squeeze()
         elif key == 'wheel_omega':
-            state['omega4'] = gts_state['wheel_omega']
-            state['omegaf'] = np.mean(gts_state['wheel_omega'][0:2])
-            state['omegar'] = np.mean(gts_state['wheel_omega'][2:4])
+            value = add_dim(gts_state[key])
+            state['omega4'] = value
+            state['omegaf'] = np.mean(value[:, 0:2], axis=0).squeeze()
+            state['omegar'] = np.mean(value[:, 2:4], axis=0).squeeze()
 
         # engine states
         elif key == 'engine_torque':
@@ -271,9 +357,9 @@ def gts_state_2_cartesian(gts_state):
 
         # hit
         elif key == 'is_hit_wall':
-            state['hit_wall'] = 1 if gts_state['is_hit_wall'] else 0
+            state['hit_wall'] = bool_2_int(gts_state[key])
         elif key == 'is_hit_cars':
-            state['hit_car'] = 1 if gts_state['is_hit_cars'] else 0
+            state['hit_car'] = bool_2_int(gts_state[key])
         elif key == 'hit_wall_time':
             state['hit_wall_time'] = gts_state['hit_wall_time']
         elif key == 'hit_cars_time':
@@ -281,8 +367,7 @@ def gts_state_2_cartesian(gts_state):
         elif key == 'shift_position':
             state['shift'] = gts_state['shift_position']
         elif key == 'is_controllable':
-            state['controllable'] = 1 if gts_state['is_controllable'] else 0
-
+            state['controllable'] = bool_2_int(gts_state[key])
         elif 'curvature' in key:
             state[key] = gts_state[key]
         elif 'lidar' in key:
@@ -301,7 +386,7 @@ def raw_observation_to_true_observation(raw_obs):
 def gts_observation_2_state(observation, feature_keys):
     gts_state = {}
     for obs,key in zip(observation, feature_keys):
-        gts_state[key] = obs
+        gts_state[key] = np.array(obs)
 
     return gts_state
 
@@ -310,6 +395,73 @@ def states_2_obs(states):
     for key in ego_obs:
         observation.append(states[key])
     return observation
+
+#  ======================== offline file opeartions =========================
+def clip_dict(states, idx):
+    for name in states:
+        states[name] = states[name][idx]
+
+def clip_states(states, idx):
+    state_array = {}
+    for name in states:
+        if np.array(states[name]).ndim == 1:
+            state_array[name] = states[name][idx]
+        else:
+            temp_list = []
+            for idx_state in range(len(states[name])):
+                temp_list.append( states[name][idx_state][idx] )
+            state_array[name] = temp_list
+    return state_array
+
+
+def convert_coordinates(state):
+    # for state in states:
+    state["pos[2]"] *= -1
+    state["velocity[2]"] *= -1
+    state["rot[0]"] *= -1
+    state["rot[1]"] *= -1
+    state["angular_velocity[0]"] *= -1
+    state["angular_velocity[1]"] *= -1
+    return state
+
+def velocities_to_car_oriented(state):
+    # for state in states:
+    vx = state["velocity[0]"]
+    vy = state["velocity[2]"]
+    # transform to counter clockwise angle starting at x axis
+    theta = np.pi / 2 - (state["rot[1]"])
+
+    # apply clockwise rotation
+    state["vx"] = vx * np.cos(theta) + vy * np.sin(theta)
+    state["vy"] = -vx * np.sin(theta) + vy * np.cos(theta)
+    state["vz"] = state["velocity[1]"]
+
+    return state
+   
+
+def load_replay_2_states(file_dir, file_name, car_key='car0', chosen_lap=None, method='h5'):
+    os.path.join(file_dir, file_name)
+    data_dir = os.path.join(file_dir, file_name)
+
+    if method == 'h5':
+        data = pd.read_hdf(data_dir, key=car_key, mode="r")
+    elif method == 'csv':
+        data = pd.read_csv(data_dir)
+        data = convert_coordinates(data)
+        data = velocities_to_car_oriented(data)
+
+    data_np = {}
+    for name in data:
+        data_np[name] = data[name].to_numpy()
+
+    states = convert_simple_states(data_np)
+    # print(states.keys())
+    if chosen_lap is not None:
+        idx = np.where(states['lap_count']==chosen_lap)
+        clip_dict(states, idx)
+    return states
+
+#=================================================================================
 
 def load_standard_table():
     
@@ -350,7 +502,7 @@ def evaluation_done_function(state):
     return state["lap_count"] > 2 or state["current_lap_time_msec"]/1000.0 > max_eval_lap if state else False
 
 def eval_time_trial_done_function(state):
-    return state["lap_count"] > 2 and state["current_lap_time_msec"]/1000.0 > 5.0 if state else False
+    return state["lap_count"] > 3 and state["current_lap_time_msec"]/1000.0 > 5.0 if state else False
 
 def reward_function(state, previous_state, course_length):
     if previous_state \

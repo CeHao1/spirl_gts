@@ -20,7 +20,9 @@ class SamplerBatched:
         self._episode_step, self._episode_reward = 0, 0
 
     def _default_hparams(self):
-        return ParamDict({})
+        return ParamDict({
+            'sample_complete_rollout_length' : True,
+        })
 
     def init(self, is_train):
         """Starts a new rollout. Render indicates whether output should contain image."""
@@ -38,13 +40,15 @@ class SamplerBatched:
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
-                    while step < batch_size:
+                    while step < batch_size or (self._episode_step != 0): # must complete one episode
+                    # while step < batch_size:
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
                         if agent_output.action is None:
                             self._episode_reset(global_step)
                             continue
                         agent_output = self._postprocess_agent_output(agent_output)
+
                         obs, reward, done, info = self._env.step(agent_output.action)
                         assert len(obs.shape) == 2 # must be batched array. first dim is batch size, second dim is the obs data
                         batch_length = obs.shape[0]
@@ -61,14 +65,18 @@ class SamplerBatched:
                         # update stored observation
                         self._obs = obs
                         step += batch_length; 
-                        self._episode_step += batch_length; 
+                        self._episode_step += 1; 
                         self._episode_reward += np.mean(reward)
 
                         # reset if episode ends
                         if np.any(done) or self._episode_step >= self._max_episode_len:
+                            if np.any(done):
+                                print('restart, done one sample')
+                            if self._episode_step >= self._max_episode_len:
+                                print(f'restart, step {self._episode_step} exceed max episode len {self._max_episode_len}')
                             if not np.all(done):    # force done to be True for timeout
-                                for exp in experience_batch[-1]:
-                                    exp.done = True
+                                for exp in experience_batch[-1].done:
+                                    exp = True
                             self._episode_reset(global_step)
 
         return listdict2dictlist(experience_batch), step
@@ -80,12 +88,16 @@ class SamplerBatched:
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
-                    while not done and self._episode_step < self._max_episode_len:
+                    while not np.any(done):
+                    #  and self._episode_step < self._max_episode_len:
+
+
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
-                        # print('agent_output', agent_output)
-                        if agent_output.action is None:
-                            break
+
+                        # if agent_output.action is None:
+                        #     break
+
                         agent_output = self._postprocess_agent_output(agent_output, deterministic_action=deterministic_action)
                         if render:
                             render_obs = self._env.render()
@@ -93,7 +105,7 @@ class SamplerBatched:
                         # print(agent_output.action)
                         obs, reward, done, info = self._env.step(agent_output.action)
                         assert len(obs.shape) == 2
-                        batch_length = obs.shape[0]
+                        # batch_length = obs.shape[0]
 
                         obs = self._postprocess_obs(obs)
                         episode.append(AttrDict(
@@ -110,12 +122,11 @@ class SamplerBatched:
                         
                         # update stored observation
                         self._obs = obs
-                        self._episode_step += batch_length
+                        self._episode_step += 1
                         self._episode_reward += np.mean(reward)
 
-        # episode[-1].done = True     # make sure episode is marked as done at final time step
-        for exp in episode[-1]:
-            exp.done = True
+        for exp in episode[-1].done:# make sure episode is marked as done at final time step
+            exp = True
 
         return listdict2dictlist(episode)
 
@@ -148,7 +159,7 @@ class SamplerBatched:
         if deterministic_action:
             if isinstance(agent_output.dist, MultivariateGaussian):
                 agent_output.ori_action = agent_output.action
-                agent_output.action = agent_output.dist.mean[0]
+                agent_output.action = agent_output.dist.mean
         return agent_output
 
 
@@ -166,7 +177,8 @@ class HierarchicalSamplerBached(SamplerBatched):
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
-                    while hl_step < batch_size or len(ll_experience_batch) <= 1:
+                    while env_steps < batch_size or (self._episode_step != 0): #must complete one sampling
+                    # while env_steps < batch_size:
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
                         agent_output = self._postprocess_agent_output(agent_output)
@@ -203,9 +215,9 @@ class HierarchicalSamplerBached(SamplerBatched):
                                 ))
                                 hl_step += batch_length
                                 if np.any(done):
-                                    # hl_experience_batch[-1].reward += reward  # add terminal reward
+                                    # add terminal reward
                                     for exp, r in zip(hl_experience_batch[-1].reward, reward):
-                                        exp.reward += r
+                                        exp += r
                                 # if hl_step % 1000 == 0:
                                 #     print("Sample step {}".format(hl_step))
                             self.last_hl_obs = self._obs if self._episode_step == 0 else obs
@@ -215,19 +227,16 @@ class HierarchicalSamplerBached(SamplerBatched):
                         # update stored observation
                         self._obs = obs
                         env_steps += batch_length; 
-                        self._episode_step += batch_length; 
+                        self._episode_step += 1; 
                         self._episode_reward += np.mean(reward)
                         self.reward_since_last_hl += np.array(reward)
 
                         # reset if episode ends
                         if np.any(done) or self._episode_step >= self._max_episode_len:
-                        # if done or self._episode_step >= self._max_episode_len:
                             if not np.all(done):    # force done to be True for timeout
-                                # ll_experience_batch[-1].done = True
                                 for exp in ll_experience_batch[-1].done:
                                     exp = True
                                 if hl_experience_batch:   # can potentially be empty 
-                                    # hl_experience_batch[-1].done = True
                                     for exp in hl_experience_batch[-1].done:
                                         exp = True
                             print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))

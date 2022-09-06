@@ -1,6 +1,8 @@
 import torch
 import os
 import numpy as np
+import matplotlib.pyplot as plt
+# matplotlib.use('TkAgg')
 
 from spirl.rl.components.agent import BaseAgent
 from spirl.utils.general_utils import ParamDict, map_dict, AttrDict
@@ -26,21 +28,21 @@ class ACAgent(BaseAgent):
         return super()._default_hparams().overwrite(default_dict)
 
     def _act(self, obs):
-        # TODO implement non-sampling validation mode
         obs = map2torch(self._obs_normalizer(obs), self._hp.device)
+        
         if len(obs.shape) == 1:     # we need batched inputs for policy
             policy_output = self._remove_batch(self.policy(obs[None]))
-            # if 'dist' in policy_output:
-            #     del policy_output['dist']
-            return map2np(policy_output)
-        return map2np(self.policy(obs))
+            policy_output = map2np(policy_output)
+        policy_output= map2np(self.policy(obs))
+        policy_output = self._post_process_policy_output(policy_output)
+        return policy_output
 
     def _act_rand(self, obs):
         policy_output = self.policy.sample_rand(map2torch(obs, self.policy.device))
-        if 'dist' in policy_output:
-            del policy_output['dist']
+        # if 'dist' in policy_output:
+        #     del policy_output['dist']
         return map2np(policy_output)
-
+        
     def state_dict(self, *args, **kwargs):
         d = super().state_dict()
         if self.policy.has_trainable_params:
@@ -104,6 +106,7 @@ class SACAgent(ACAgent):
             'reward_scale': 1.0,      # SAC reward scale
             'clip_q_target': False,   # if True, clips Q target
             'target_entropy': None,   # target value for automatic entropy tuning, if None uses -action_dim
+            'visualize_values': False, # visualize action distribution and q targets
         })
         return super()._default_hparams().overwrite(default_dict)
 
@@ -179,10 +182,18 @@ class SACAgent(ACAgent):
 
             self._update_steps += 1
 
+        if self._hp.visualize_values:
+            with torch.no_grad():
+                self.visualize_Q(experience_batch, policy_output_next)
+
         return info
 
     def add_experience(self, experience_batch):
         """Adds experience to replay buffer."""
+        if self._hp.visualize_values:
+            # visualize_actions
+            self.visualize_actions(experience_batch)
+
         if not experience_batch:
             return  # pass if experience_batch is empty
         self.replay_buffer.append(experience_batch)
@@ -282,3 +293,102 @@ class SACAgent(ACAgent):
     @property
     def schedule_steps(self):
         return self._update_steps
+
+    # ================= visualize distribution =================
+
+    def visualize_actions(self, experience_batch):
+        # print('obs shape', np.array(experience_batch.observation).shape)
+        # print('act shape', np.array(experience_batch.action).shape)
+        # print('act shape', np.array(experience_batch.reward).shape)
+        
+        
+        obs = np.array(experience_batch.observation)[:,0,:]
+        act = np.array(experience_batch.action)[:,0,:]
+        rew = np.array(experience_batch.reward)[:,0]
+
+        print('visualize the action policy')
+        # plot actions
+        act_dim = act.shape[1]
+
+        plt.figure(figsize=(14, 8))
+        plt.subplot(2,2,1)
+        plt.plot(rew, 'b.')
+        plt.title('rewards')
+        plt.grid()
+        
+        plt.subplot(2,2,3)
+        plt.plot(act[:, 0], 'b.')
+        plt.title('action 0, steer')
+        plt.grid()
+
+        plt.subplot(2,2,4)
+        plt.plot(act[:, 1], 'b.')
+        plt.title('action 1, pedal')
+        plt.grid()
+
+        plt.show()
+
+
+        # plot distribution
+        policy_output = self.act(obs) # input (1000, x)
+        dist_batch = policy_output['dist'] # (1000, x)
+
+        # print('obs shape', obs.shape)
+        # print('policy_output', dist_batch[0])
+
+        mean = np.array([dist.mu for dist in dist_batch])
+        sigma = np.array([np.exp(dist.log_sigma) for dist in dist_batch])
+
+        # print('mean shape', mean.shape)
+        # print('sigma shape', sigma.shape)
+
+        plt.figure(figsize=(14, 8))
+
+        plt.subplot(2,2,1)
+        plt.plot(mean[:,0], 'b.')
+        plt.grid()
+        plt.title('steer mean')
+        plt.subplot(2,2,2)
+        plt.plot(mean[:,1], 'b.')
+        plt.grid()
+        plt.title('pedal mean')
+
+        plt.subplot(2,2,3)
+        plt.plot(sigma[:,0], 'b.')
+        plt.grid()
+        plt.title('steer sigma')
+        plt.subplot(2,2,4)
+        plt.plot(sigma[:,1], 'b.')
+        plt.grid()
+        plt.title('pedal sigma')
+
+        plt.show()
+
+
+# ===================== visualize Q =======================
+    def visualize_Q(self, experience_batch, policy_output):
+        q_next = torch.min(*[critic_target(experience_batch.observation_next, self._prep_action(policy_output.action)).q
+                             for critic_target in self.critic_targets])
+        value_next = (q_next - self.alpha * policy_output.log_prob[:, None])
+        q_target = experience_batch.reward * self._hp.reward_scale + \
+                                (1 - experience_batch.done) * self._hp.discount_factor * value_next
+
+        plt.figure(figsize=(14, 8))
+        plt.subplot(2,2,1)
+        plt.plot(map2np(q_next), 'b.')
+        plt.title('q_next')
+
+        plt.subplot(2,2,2)
+        log_p = - self.alpha * policy_output.log_prob
+        plt.plot(map2np(log_p), 'b.')
+        plt.title('-alp * log prob')
+
+        plt.subplot(2,2,3)
+        plt.plot(map2np(experience_batch.reward), 'b.')
+        plt.title('reward')
+
+        plt.subplot(2,2,4)
+        plt.plot(map2np(q_target), 'b.')
+        plt.title('q_target')
+
+        plt.show()

@@ -23,8 +23,10 @@ class Gaussian:
             mu, log_sigma = torch.chunk(mu, 2, -1)
             
         self.mu = mu
-        self.log_sigma = torch.clamp(log_sigma, min=-10, max=2) if isinstance(log_sigma, torch.Tensor) else \
-                            np.clip(log_sigma, a_min=-10, a_max=2)
+        # self.log_sigma = torch.clamp(log_sigma, min=-10, max=2) if isinstance(log_sigma, torch.Tensor) else \
+        #                     np.clip(log_sigma, a_min=-10, a_max=2)
+        self.log_sigma = torch.clamp(log_sigma, min=-10, max=10) if isinstance(log_sigma, torch.Tensor) else \
+                            np.clip(log_sigma, a_min=-10, a_max=10)
         self._sigma = None
         
     def sample(self):

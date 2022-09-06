@@ -1,3 +1,4 @@
+import imp
 import os
 import torch
 import numpy as np
@@ -40,9 +41,9 @@ class HRLVisualizer(RLTrainer):
         self.agent.to(self.device)
 
         # if self.conf.ckpt_path is not None:
-        start_epoch = self.resume(args.resume, self.conf.ckpt_path)
+        # start_epoch = self.resume(args.resume, self.conf.ckpt_path)
 
-        self.state_scaler, self.action_scaler = load_standard_table()
+        # self.state_scaler, self.action_scaler = load_standard_table()
 
         # this is real observation, and action(z)
         # dict_keys(['action', 'reward', 'done', 'observation', 'observation_next'])
@@ -54,7 +55,10 @@ class HRLVisualizer(RLTrainer):
 
         # this is real action(steering and pedal)
         # dict_keys(['actions', 'done', 'pad_mask', 'reward', 'states'])
-        saver = RolloutSaver('./sample/hrl/spirl/')
+
+        # data_dir = './sample/builtin/'
+        data_dir = './sample/hrl/sc_02/'
+        saver = RolloutSaver(data_dir)
         inputs = saver.load_rollout_to_file(0)
         print('inputs', inputs.states.shape)
         # print('agent type', self.agent)
@@ -73,20 +77,29 @@ class HRLVisualizer(RLTrainer):
         # from obs to hl actions z 
         # hl_policy_musig = self.agent.hl_agent.policy.net(obs).detach().cpu().numpy()
 
-        idx = np.random.choice(obs.shape[0], 20, False)
-        obs = obs[idx, :]
-        act = inputs['actions'][idx, :]
-        obs_tensor = torch.from_numpy(obs).to(self.device)
+        if len(obs.shape) == 3:
+            obs = obs[:,0, :]
+            act = inputs['actions'][:,0, :]
+        elif len(obs.shape) == 2:
+            obs = obs
+            act = inputs['actions']
 
+        obs = obs[:600]
+
+        obs_tensor = map2torch(obs, self.device)
         hl_output = self.agent.hl_agent.act(obs_tensor)
-        hl_action = hl_output['action']
-        # ll_actions = self.decode_hl_actions(obs_tensor, hl_action)
-        hl_action = torch.from_numpy(hl_action).to(self.device)
-        output = self.agent.ll_agent._policy.decode(hl_action, obs, self.agent.ll_agent._policy.n_rollout_steps)
-        ll_actions = map2np(output)
+        # hl_action = hl_output['action']
+        # hl_action = map2torch(hl_action, self.device)
+        
+        # self.plot_obs(obs)
+        self.plot_hl_z(hl_output)
 
-        ll_actions = self.action_scaler.inverse_transform(ll_actions)
-        act = self.action_scaler.inverse_transform(act)
+
+        # output = self.agent.ll_agent._policy.decode(hl_action, obs, self.agent.ll_agent._policy.n_rollout_steps)
+        # ll_actions = map2np(output)
+
+        # ll_actions = self.action_scaler.inverse_transform(ll_actions)
+        # act = self.action_scaler.inverse_transform(act)
 
         # inputs2 = AttrDict()
         # inputs2.states = obs
@@ -98,22 +111,55 @@ class HRLVisualizer(RLTrainer):
         # obs = map2np(obs)
         # obs = self.state_scaler.inverse_transform(obs)
 
-        for ll_action, one_obs, one_act in zip(ll_actions, obs, act):
-            no_pop_output = self.agent.no_pop_act(one_obs)
-            no_pop_act = self.action_scaler.inverse_transform(no_pop_output.action)
+        # for ll_action, one_obs, one_act in zip(ll_actions, obs, act):
+        #     no_pop_output = self.agent.no_pop_act(one_obs)
+        #     no_pop_act = self.action_scaler.inverse_transform(no_pop_output.action)
 
-            self.agent._steps_since_hl = 0
-            self.agent.ll_agent.reset()
-            agent_output = self.agent.act(one_obs)
-            agent_act = self.action_scaler.inverse_transform([agent_output.action])[0]
+        #     self.agent._steps_since_hl = 0
+        #     self.agent.ll_agent.reset()
+        #     agent_output = self.agent.act(one_obs)
+        #     agent_act = self.action_scaler.inverse_transform([agent_output.action])[0]
 
-            prior_act = self.agent.get_prior_action(one_obs)
-            prior_act = self.action_scaler.inverse_transform([prior_act])[0]
+        #     prior_act = self.agent.get_prior_action(one_obs)
+        #     prior_act = self.action_scaler.inverse_transform([prior_act])[0]
 
-            obs_for_state = self.state_scaler.inverse_transform([one_obs])[0]
-            state = obs2name(obs_for_state)
-            self.plot_action_series(ll_action, no_pop_act, prior_act, state, one_act, agent_act)
+        #     obs_for_state = self.state_scaler.inverse_transform([one_obs])[0]
+        #     state = obs2name(obs_for_state)
+        #     self.plot_action_series(ll_action, no_pop_act, prior_act, state, one_act, agent_act)
               
+        
+    def plot_obs(self, obs):
+        from spirl.utils.gts_utils import DEFAULT_FEATURE_KEYS
+        for idx in range(obs.shape[1]):
+            plt.figure(figsize=(7,4))
+            plt.plot(obs[:,idx], 'b.')
+            plt.grid()
+            plt.title(DEFAULT_FEATURE_KEYS[idx])
+            plt.show()
+
+
+    def plot_hl_z(self, hl_output):
+        dist = hl_output.dist
+
+        q_means = np.array(map2np([q.mean for q in dist]))
+        q_vars = np.array(map2np([np.exp(q.log_sigma) for q in dist]))
+
+        for idx in range(q_means.shape[1]):
+            print('dim', idx)
+            plt.figure(figsize=(14,4))
+            plt.subplot(1,2,1)
+            plt.plot(q_means[:, idx], 'b.')
+            plt.grid()
+            plt.title('policy latent variable mean')
+
+            plt.subplot(1,2,2)
+            plt.plot(q_vars[:, idx], 'b.')
+            plt.grid()
+            plt.title('policy latent variance variance')
+
+            plt.show()
+
+
 
     def plot_action_series(self, action, no_pop_act, prior_act, state, act, agent_act):
         rad2deg = 180.0 / np.pi

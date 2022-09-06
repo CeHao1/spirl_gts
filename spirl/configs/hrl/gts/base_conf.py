@@ -26,8 +26,8 @@ notes = 'hierarchical RL on the gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    do_init = False,
-    action_standard = True,
+    # do_init = False,
+    # action_standard = True,
 
     # reward_function = eval_time_trial_reward_function,
     # done_function = eval_time_trial_done_function,
@@ -39,23 +39,21 @@ configuration = {
     'agent': FixedIntervalHierarchicalAgent,
     
     'data_dir': '.',
-    'num_epochs': 300,
+    'num_epochs': 2000,
     'max_rollout_len': 10000,
-    # 'n_steps_per_epoch': 10000,
-    # 'n_warmup_steps': 2000,
-    # 'n_warmup_steps': 8000,
+    'n_steps_per_epoch': 10000,
+    'n_warmup_steps': 160000,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Multi,
-    # 'sampler':HierarchicalSamplerMulti,
 
     # 'environment':GTSEnv_Base,
     # 'sampler':HierarchicalSampler,
     'sampler':HierarchicalSamplerBached,
 
 
-    'n_steps_per_epoch': 200,
-    'n_warmup_steps': 200,
+    # 'n_steps_per_epoch': 200,
+    # 'n_warmup_steps': 200,
 
 }
 configuration = AttrDict(configuration)
@@ -145,7 +143,7 @@ agent_config = AttrDict(
     hl_interval=ll_model_params.n_rollout_steps,
     log_video_caption=False,
 
-    update_iterations = 512,
+    update_iterations = 1280,
     discount_factor = 0.98 ,
 )
 

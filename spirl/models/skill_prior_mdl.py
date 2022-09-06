@@ -87,7 +87,8 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
             'kl_div_weight': 1.,                # weight of KL divergence loss
             'target_kl': None,                  # if not None, adds automatic beta-tuning to reach target KL divergence
             'learned_prior_weight' : 1.,        # weight for train learned prior
-            'action_dim_weights': 1,
+            'action_dim_weights': 1,            # the weights for reconstruction mes loss at each dimension
+            'squash_latent_variable': False,    # if True, squash z by tanh
         })
 
         # loading pre-trained components
@@ -118,6 +119,16 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         :arg use_learned_prior: if True, decodes samples from learned prior instead of posterior, used for RL
         """
 
+        '''
+        Summary the meaning of each variable
+        self.q = encoder, self.decoder, self.p = prior
+
+        output.q = z~encoder()
+        output.p = N(0,I)
+        output.q_hat = z~prior()
+        if use_learned_prior(argument): make p = q_hat, why???
+        '''
+
         output = AttrDict()
         inputs.observations = inputs.actions    # for seamless evaluation
 
@@ -132,9 +143,25 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         if use_learned_prior:
             output.p = output.q_hat     # use output of learned skill prior for sampling
 
+        '''
+        if self._sample_prior:
+            1) z =   p.sample(), sample from N(0,I) or prior 
+            2) z_q = q.sample(). sample from encoder
+        else: ordinary condition
+            1) z =   q.sample(), sample from encoder
+            2) z_q = z as well.
+        '''
+
+
         # sample latent variable
         output.z = output.p.sample() if self._sample_prior else output.q.sample()
         output.z_q = output.z.clone() if not self._sample_prior else output.q.sample()   # for loss computation
+
+        # squash
+        if self._hp.squash_latent_variable:
+            # print('squash!!')
+            output.z = torch.tanh(output.z)
+            output.z_q = torch.tanh(output.z_q)
 
         # decode
         assert self._regression_targets(inputs).shape[1] == self._hp.n_rollout_steps
@@ -143,10 +170,11 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
                                             steps=self._hp.n_rollout_steps,
                                             inputs=inputs)
 
-        # print('='*10)
-        # print('actions', inputs.actions.shape, 'states', inputs.states.shape)
-        # print('input actions\n', inputs.actions[0])
-        # print('output recon\n', output.reconstruction[0])
+        # prior reconstruction
+        output.prior_reconstruction = self.decode(output.q_hat.sample(),
+                                            cond_inputs=self._learned_prior_input(inputs),
+                                            steps=self._hp.n_rollout_steps,
+                                            inputs=inputs)
 
         return output
 
@@ -178,6 +206,9 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
 
         # learned skill prior net loss
         losses.q_hat_loss = self._compute_learned_prior_loss(model_output, weight=self._hp.learned_prior_weight)
+        # losses.q_hat_loss = MSE(self._hp.learned_prior_weight) \
+        #                 (model_output.prior_reconstruction, self._regression_targets(inputs), 
+        #                 weights=weights, separate_dim=True)
 
         # Optionally update beta
         if self.training and self._hp.target_kl is not None:
@@ -311,6 +342,7 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         """Splits batch into separate batches for prior ensemble, optionally runs first or avg prior on whole batch.
            (first_only, avg == True is only used for RL)."""
         if first_only:
+            # print('input shape', inputs.shape)
             return self._compute_learned_prior(self.p[0], inputs)
 
         assert inputs.shape[0] % self._hp.n_prior_nets == 0
@@ -330,8 +362,10 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
 
     def _compute_learned_prior_loss(self, model_output, weight=1.0):
         if self._hp.nll_prior_train:
+            # q_hat = prior, z_q = z = encoder.sample
             loss = NLL(weight=weight, breakdown=0)(model_output.q_hat, model_output.z_q.detach())
         else:
+            # q = encoder, q_hat = prior
             loss = KLDivLoss(weight=weight, breakdown=0)(model_output.q.detach(), model_output.q_hat)
         # aggregate loss breakdown for each of the priors in the ensemble
         loss.breakdown = torch.stack([chunk.mean() for chunk in torch.chunk(loss.breakdown, self._hp.n_prior_nets)])
