@@ -21,7 +21,7 @@ python3 spirl/train.py \
 
 2. open-loop
 python3 spirl/train.py \
---val_data_size=160 --gpu=0 --prefix=ol_TestDist_largerN01_02 \
+--val_data_size=160 --gpu=0 --prefix=ol_newdesk_01 \
 --path=spirl/configs/skill_prior_learning/gts/hierarchical --resume=latest
 
 3. close-loop
@@ -29,7 +29,7 @@ python3 spirl/train.py \
 
 4. state-conditioned decoder(time-indexed)
 python3 spirl/train.py \
---val_data_size=160 --gpu=0 --prefix=cd_larger_N01_05  \
+--val_data_size=160 --gpu=0 --prefix=cd_newdesk_01  \
 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cd --resume=latest
 
 
@@ -40,8 +40,11 @@ python3 spirl/rl/train.py \
 
 1. SAC (sac_autoalp_01, sac_targetE1_01)
  --path=spirl/configs/rl/gts/SAC 
-python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --gpu=0  --prefix=sac_newtire_05_2 --resume=latest \
+python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --gpu=0  --prefix=sac_newdesk_01 --resume=latest \
 --mode='val' --deterministic_action
+
+
+python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --prefix=sac_newdesk_01 
 
 2. SAC + BC
 --path=spirl/configs/rl/gts/prior_initialized/bc_finetune/ 

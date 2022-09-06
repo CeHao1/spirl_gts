@@ -32,7 +32,7 @@ class GTSEnv_Base(GymEnv):
     
     def _default_hparams(self):
         default_dict = ParamDict({
-            'ip_address' : '192.168.1.5',
+            'ip_address' : '192.168.1.100',
             'car_name' : 'Audi TTCup',
             'course_name' : 'Tokyo Central Outer' ,
             'num_cars' : 1,

@@ -26,10 +26,11 @@ class GTSEnv_Raw(GymEnv):
 
     def _default_hparams(self):
         default_dict = ParamDict({
-            'ip_address' : '192.168.1.5',
+            'ip_address' : '192.168.1.100',
             'car_name' : 'Audi TTCup',
             'course_name' : 'Tokyo Central Outer' ,
             'num_cars' : 20,
+            'disable_env_checker': True,
         })
         return super()._default_hparams().overwrite(default_dict)
 
@@ -68,6 +69,8 @@ class GTSEnv_Raw(GymEnv):
             builtin_controlled = self._hp.builtin_controlled,
             store_states = self._hp.store_states,
             standardize_observations=self._hp.standardize_observations,
+            
+            disable_env_checker =  self._hp.disable_env_checker,
         )
 
         self.course_length = self._get_course_length()
