@@ -30,7 +30,7 @@ env_config = AttrDict(
 
     # reward_function = eval_time_trial_reward_function,
     # done_function = eval_time_trial_done_function,
-    
+    standardize_observations = False,
 )
 
 
