@@ -4,12 +4,14 @@ __pycache__
 
 *.pickle
 
-./experiments/
-./data/
+experiments/
+data/
+sample/
+
 ./wandb/
 
 viz/ipy/
-./sample/
+
 
 *.ipynb
 .vscode/
