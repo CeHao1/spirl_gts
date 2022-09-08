@@ -81,6 +81,7 @@ DEFAULT_FEATURE_KEYS = (
 )
 
 chosen_feature_keys = DEFAULT_FEATURE_KEYS
+action_keys = ['steering', 'throttle-brake']
 # chosen_feature_keys = ego_obs
 
 # state_dim = len(ego_obs)

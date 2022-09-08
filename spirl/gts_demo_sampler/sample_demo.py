@@ -33,14 +33,15 @@ class SampleDemo:
         if self._hp.do_init:
             self.init.init_gts()
         for epoch_index in range(self._hp.num_epochs):
-            self.sample_one_epoch()
+            self.sample_raw_data(epoch_index)
 
-    def sample_raw_data(self):
+    def sample_raw_data(self, epoch_index):
         start_conditions = self.start.start_conditions
         done_function = self.done.done_function
 
         raw_data = self.sample.sample_raw_data(start_conditions, done_function)
-        self.file.save_raw_data(raw_data)
+        file_name = 'raw_data_' + str(epoch_index)
+        self.file.save_raw_data(raw_data, file_name)
         self.file.convert_to_rollout()
 
 

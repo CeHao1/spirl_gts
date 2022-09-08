@@ -1,8 +1,10 @@
 
+import imp
 import os
 from turtle import done
 
 from spirl.utils.general_utils import AttrDict
+from spirl.utils.gts_utils import chosen_feature_keys, action_keys
 
 from spirl.gts_demo_sampler.init.base_init import BaseInit
 from spirl.gts_demo_sampler.start.base_start import BaseStart
@@ -42,7 +44,6 @@ sample_config = AttrDict(
 
 # configs to save and convert the 
 file_config = AttrDict(
-
 )
 
 
