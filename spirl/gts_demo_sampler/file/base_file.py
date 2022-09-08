@@ -19,6 +19,7 @@ class BaseFile:
         return default_dict 
 
     def save_raw_data(self, raw_data_list):
+        print('got it!')
         pass
 
         # name of file
@@ -29,6 +30,7 @@ class BaseFile:
 
 
     def convert_to_rollout(self):
+        print('nothing!')
         pass
 
         # get all file names in the dir

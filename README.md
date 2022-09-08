@@ -74,6 +74,11 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_n
 python3 spirl/rl/train.py --path=xx --prefix=xx --gpu=0 --resume='latest' --mode=rollout --deterministic_action=1 --save_dir='./sample/rl/sac/maf' --n_val_samples=50 --counter=0
 
 =====================================================================================
+# Demonstration sampler
+python3 spirl/gts_demo_sampler/sample_demo.py --path=spirl/configs/data_collect/gts/time_trial --prefix=demo_test
+
+
+=====================================================================================
 # visualization
 --gpu=0 --path=spirl/configs/skill_prior_learning/gts/hierarchical --resume=latest
 

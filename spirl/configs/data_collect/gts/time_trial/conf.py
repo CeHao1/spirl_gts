@@ -1,14 +1,18 @@
 
 import os
+from turtle import done
 
 from spirl.utils.general_utils import AttrDict
 
 from spirl.gts_demo_sampler.init.base_init import BaseInit
 from spirl.gts_demo_sampler.start.base_start import BaseStart
-
+from spirl.gts_demo_sampler.done.base_done import BaseDone
+from spirl.gts_demo_sampler.sample.base_sample import BaseSample
+from spirl.gts_demo_sampler.file.base_file import BaseFile
 
 ip_address = '192.169.1.100',
-
+do_init = False
+do_init = True
 
 # configs to initialize the gts
 init_config = AttrDict(
@@ -26,11 +30,13 @@ start_config = AttrDict(
 done_config = AttrDict(
     max_course_v = 2000,
     max_time = 100,
+    max_lap_count = 2,
 )
 
 # config for the sampler
 sample_config = AttrDict(
-
+    ip_address = ip_address,
+    min_frames_per_action = 6,
 
 )
 
@@ -44,5 +50,9 @@ file_config = AttrDict(
 configuration = AttrDict(
     init = BaseInit,
     start = BaseStart,
+    done = BaseDone,
+    sample = BaseSample,
+    file = BaseFile,
 
+    do_init = do_init,
 )
