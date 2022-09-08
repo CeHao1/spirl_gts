@@ -10,7 +10,7 @@ from spirl.utils.gts_utils import DEFAULT_FEATURE_KEYS
 class BaseSample:
     def __init__(self, config):
         self._hp = self._default_hparams().overwrite(config)
-        self._make_env()
+        # self._make_env()
 
     def _default_hparams(self):
         default_dict = ParamDict({
@@ -35,7 +35,8 @@ class BaseSample:
             standardize_observations=self._hp.standardize_observations,
             )
 
-    def sample(self, start_conditions, done_function):
+    def sample_raw_data(self, start_conditions, done_function):
+        self._make_env()
         self.env.reset_spectator(start_conditions = start_conditions)
 
         raw_state_list = []
@@ -64,7 +65,7 @@ class BaseSample:
         # now the data is like data = [t0, t1, ...], t0=[car0, car1, ...], car0 = dict('state0, state1, ...')
         # we need to make data = [c0, c1, ,,,], c0=[t0, t1, ...], to = dict(state0, state1, ...)
         # this is a transpose process
-        raw_state_list = np.array(raw_state_list).transpose(1,0,2)
+        raw_state_list = np.array(raw_state_list).transpose()
 
         return raw_state_list
 

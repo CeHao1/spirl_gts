@@ -4,6 +4,7 @@ import imp
 from spirl.utils.general_utils import AttrDict, ParamDict
 from spirl.train import set_seeds, make_path, datetime_str, save_config, get_exp_dir
 from spirl.components.checkpointer import CheckpointHandler, save_cmd, save_git, get_config_path
+from spirl.gts_demo_sampler.param import get_args
 
 class SampleDemo:
     def __init__(self, args):
@@ -16,9 +17,10 @@ class SampleDemo:
 
         self.init = self._hp.init(self.conf.init)
         self.start = self._hp.start(self.conf.start)
-        self.done = self._hp.init(self.conf.done)
+        self.done = self._hp.done(self.conf.done)
         self.sample = self._hp.sample(self.conf.sample)
         self.file = self._hp.file(self.conf.file)
+
 
     def _default_hparams(self):
         default_dict = ParamDict({
@@ -34,8 +36,8 @@ class SampleDemo:
             self.sample_one_epoch()
 
     def sample_raw_data(self):
-        start_conditions = self.start.generate_start_conditions()
-        done_function = self.done.generate_done_function()
+        start_conditions = self.start.start_conditions
+        done_function = self.done.done_function
 
         raw_data = self.sample.sample_raw_data(start_conditions, done_function)
         self.file.save_raw_data(raw_data)
@@ -53,7 +55,7 @@ class SampleDemo:
         conf_module = imp.load_source('conf', conf.conf_path)
 
         conf.general = conf_module.configuration
-        conf.init_config = conf_module.init_config
+        conf.init = conf_module.init_config
         conf.start = conf_module.start_config
         conf.done = conf_module.done_config
         conf.sample = conf_module.sample_config
@@ -71,3 +73,8 @@ for json args
 
 
 '''
+
+if __name__ == '__main__':
+    sampler = SampleDemo(args=get_args())
+    # sampler.init.init_gts()
+    raw_data = sampler.sample_raw_data()

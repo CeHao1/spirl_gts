@@ -19,9 +19,6 @@ class BaseDone:
         })
         return default_dict 
 
-    def generate_done_function(self):
-        return self._generate_combined_done_function()
-
     def _generate_combined_done_function(self):
         done_functions = self._generate_separate_done_functions()
         done_function = self._combined_done_functions(done_functions)

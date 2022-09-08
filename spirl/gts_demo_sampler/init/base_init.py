@@ -2,6 +2,7 @@
 from spirl.utils.general_utils import ParamDict
 
 from spirl.utils.gts_utils import CAR_CODE, COURSE_CODE, TIRE_TYPE, BOP
+from spirl.utils.gts_utils import make_env, initialize_gts
 
 import copy
 
@@ -36,16 +37,25 @@ class BaseInit:
                 self.bops.append(bop)
 
     def init_gts(self):
-        from gym_gts import GTSApi
-        with GTSApi(ip= self._hp.ip_address) as gts_api:
-            gts_api.set_race(
-                num_cars = self._hp.num_cars,
-                car_codes = CAR_CODE[self._hp.car_name],
-                course_code = COURSE_CODE[self._hp.course_name],
-                front_tires = self._hp.tire_type,
-                rear_tires = self._hp.tire_type,
-                bops = self.bops
-            )
+        # from gym_gts import GTSApi
+        # with GTSApi(ip= self._hp.ip_address) as gts_api:
+        #     gts_api.set_race(
+        #         num_cars = self._hp.num_cars,
+        #         car_codes = CAR_CODE[self._hp.car_name],
+        #         course_code = COURSE_CODE[self._hp.course_name],
+        #         front_tires = self._hp.tire_type,
+        #         rear_tires = self._hp.tire_type,
+        #         bops = self.bops
+        #     )
+
+        initialize_gts(
+            ip =self._hp.ip_address, 
+            num_cars = self._hp.num_cars, 
+            car_codes = CAR_CODE[self._hp.car_name], 
+            course_code = COURSE_CODE[self._hp.course_name], 
+            tire_type = self._hp.tire_type, 
+            bops = self.bops
+        )
 
 
 

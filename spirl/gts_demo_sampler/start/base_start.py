@@ -45,6 +45,7 @@ class BaseStart:
 
     @property
     def start_conditions(self):
+        self.generate_start_conditions()
         return self._start_conditions
 
 def convert_pos_rot(course_v, epsi, ey):
