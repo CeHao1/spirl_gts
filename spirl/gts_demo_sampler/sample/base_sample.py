@@ -33,6 +33,7 @@ class BaseSample:
             builtin_controlled = self._hp.builtin_controlled,
             store_states = self._hp.store_states,
             standardize_observations=self._hp.standardize_observations,
+            spectator_mode = self._hp.spectator_mode,
             )
 
     def sample_raw_data(self, start_conditions, done_function):
