@@ -7,7 +7,7 @@ from spirl.utils.general_utils import AttrDict
 from spirl.utils.gts_utils import chosen_feature_keys, action_keys
 
 from spirl.gts_demo_sampler.init.base_init import BaseInit
-from spirl.gts_demo_sampler.start.base_start import BaseStart
+from spirl.gts_demo_sampler.start.pos_start import PosStart
 from spirl.gts_demo_sampler.done.base_done import BaseDone
 from spirl.gts_demo_sampler.sample.base_sample import BaseSample
 from spirl.gts_demo_sampler.file.base_file import BaseFile
@@ -56,7 +56,7 @@ file_config = AttrDict(
 # configuration of each module
 configuration = AttrDict(
     init = BaseInit,
-    start = BaseStart,
+    start = PosStart,
     done = BaseDone,
     sample = BaseSample,
     file = BaseFile,
