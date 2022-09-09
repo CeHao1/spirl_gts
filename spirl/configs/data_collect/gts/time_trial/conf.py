@@ -30,9 +30,9 @@ start_config = AttrDict(
 
 # config for the done function
 done_config = AttrDict(
-    max_course_v = 2000,
-    max_time = 2,
-    max_lap_count = 2,
+    max_course_v = 100,
+    # max_time = 2,
+    # max_lap_count = 2,
 )
 
 # config for the sampler

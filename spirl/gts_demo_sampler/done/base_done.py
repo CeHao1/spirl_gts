@@ -25,10 +25,10 @@ class BaseDone:
         return done_function
         
     def _generate_separate_done_functions(self):
-        always_true_fun = lambda x : True
-        max_time_fun = always_true_fun
-        max_lap_count_fun = always_true_fun
-        max_course_v_fun = always_true_fun
+        always_false_fun = lambda x : False
+        max_time_fun = always_false_fun
+        max_lap_count_fun = always_false_fun
+        max_course_v_fun = always_false_fun
 
         if self._hp.max_time is not None:
             max_time_fun = max_time_generator(self._hp.max_time)
@@ -55,16 +55,19 @@ class BaseDone:
 # ================== done function generator ====================
 def max_time_generator(max_time):
     def max_time_fun(time : np.ndarray):
+        # print('time, max', np.array(time) , np.array(max_time))
         return np.any(np.array(time) > np.array(max_time))
     return max_time_fun
 
 def max_lap_count_generator(max_lap_count):
     def max_lap_count_fun(lap_count):
+        # print('count, max', np.array(lap_count), np.array(max_lap_count))
         return np.any(np.array(lap_count) > np.array(max_lap_count))
     return max_lap_count_fun
 
 def max_course_v_generator(max_course_v):
     def max_course_v_fun(course_v):
+        # print('course v, max', np.array(course_v), np.array(max_course_v))
         return np.any(np.array(course_v) > np.array(max_course_v))
     return max_course_v_fun
 
