@@ -35,16 +35,18 @@ class SampleDemo:
             self.init.init_gts()
         for epoch_index in range(self._hp.start_num_epoch, self._hp.start_num_epoch + self._hp.num_epochs):
             self.sample_raw_data(epoch_index)
-
+        
     def sample_raw_data(self, epoch_index):
         start_conditions = self.start.start_conditions
         done_function = self.done.done_function
 
+        print('sample epoch {}'.format(epoch_index))
         raw_data = self.sample.sample_raw_data(start_conditions, done_function)
         file_name = 'raw_data_' + str(epoch_index)
         self.file.save_raw_data(raw_data, file_name)
-        self.file.convert_to_rollout()
 
+    def convert_rollout(self):
+        self.file.convert_to_rollout()
 
     def get_config(self):
         conf = AttrDict()
@@ -78,5 +80,8 @@ for json args
 
 if __name__ == '__main__':
     sampler = SampleDemo(args=get_args())
+    sampler.sample_rollout()
+    sampler.convert_rollout()
+
     # sampler.init.init_gts()
-    raw_data = sampler.sample_raw_data()
+    # raw_data = sampler.sample_raw_data()

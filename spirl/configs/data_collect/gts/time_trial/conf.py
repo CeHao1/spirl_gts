@@ -14,7 +14,7 @@ from spirl.gts_demo_sampler.file.base_file import BaseFile
 
 # ip_address = '192.168.1.5',
 do_init = False
-do_init = True
+# do_init = True
 
 # configs to initialize the gts
 init_config = AttrDict(
@@ -31,7 +31,7 @@ start_config = AttrDict(
 # config for the done function
 done_config = AttrDict(
     max_course_v = 2000,
-    max_time = 5,
+    max_time = 2,
     max_lap_count = 2,
 )
 

@@ -1,5 +1,5 @@
 
-from spirl.utils.general_utils import ParamDict, AttrDict
+from spirl.utils.general_utils import ParamDict, AttrDict, listdict2dictlist
 from spirl.utils.gts_utils import chosen_feature_keys, action_keys
 from spirl.gts_demo_sampler.file.file_operation import *
 
@@ -28,15 +28,18 @@ class BaseFile:
         for idx in range(len(raw_data_list)):
             if idx not in self._hp.save_car_id: # skip
                 continue
-            file_dir = os.join(self._hp.raw_data_dir, file_name + '_car' + str(idx))
+            file_dir = os.path.join(self._hp.raw_data_dir, file_name + '_car' + str(idx))
             save_file(file_dir, raw_data_list[idx])
 
 
     def convert_to_rollout(self):
+        make_dir(self._hp.rollout_dir)
+
         file_names = os.listdir(self._hp.raw_data_dir)
         for idx in tqdm(range(len(file_names))):
-            file_dir = os.join(self._hp.raw_data_dir, file_names[idx])
+            file_dir = os.path.join(self._hp.raw_data_dir, file_names[idx])
             state_one_car = load_file(file_dir)
+            state_one_car = listdict2dictlist(state_one_car)
             ep = self.formulate_episode(state_one_car)
             save_rollout(str(idx), ep, self._hp.rollout_dir)
         
