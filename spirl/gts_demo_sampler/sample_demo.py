@@ -25,6 +25,7 @@ class SampleDemo:
     def _default_hparams(self):
         default_dict = ParamDict({
             'do_init': True,
+            'start_num_epoch': 0,
             'num_epochs':   200,
         })
         return default_dict
@@ -32,7 +33,7 @@ class SampleDemo:
     def sample_rollout(self):
         if self._hp.do_init:
             self.init.init_gts()
-        for epoch_index in range(self._hp.num_epochs):
+        for epoch_index in range(self._hp.start_num_epoch, self._hp.start_num_epoch + self._hp.num_epochs):
             self.sample_raw_data(epoch_index)
 
     def sample_raw_data(self, epoch_index):

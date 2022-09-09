@@ -56,4 +56,6 @@ configuration = AttrDict(
     file = BaseFile,
 
     do_init = do_init,
+    start_num_epoch = 0,
+    num_epochs = 2,
 )
