@@ -4,6 +4,7 @@ from spirl.gts_demo_sampler.start.base_start import BaseStart
 from spirl.gts_demo_sampler.file.file_operation import load_file
 
 import numpy as np
+import pandas as pd
 
 '''
 1. Track centerline and save centerline path info
@@ -45,6 +46,7 @@ class PosStart(BaseStart):
 class PosStart_by_course_v(PosStart):
     def __init__(self, config):
         super().__init__(config)
+        self._load_track()
 
     def _default_hparams(self):
         default_dict = ParamDict({
@@ -58,7 +60,8 @@ class PosStart_by_course_v(PosStart):
 
     def _generate_condition(self, idx):
         states = self._sample_states()
-        state = self._convert_to_Cartesian(states)
+        print('start states', states)
+        state = self._inverse_gym_gts(states)
         condition = {
             'id': idx,
             'pos': state["pos"],
@@ -68,7 +71,12 @@ class PosStart_by_course_v(PosStart):
         return condition
 
     def _load_track(self):
-        self.track = load_file(self._hp.track_dir)
+        # self.track = load_file(self._hp.track_dir)
+        data = pd.read_csv(self._hp.track_dir)
+        data2 = {}
+        for d in data:
+            data2[d] = data[d].values
+        self.track = AttrDict(data2)
 
     def _sample_states(self):
         course_v = np.random.random() * (self._hp.course_v_range[1] - self._hp.course_v_range[0]) + self._hp.course_v_range[0]
@@ -80,8 +88,8 @@ class PosStart_by_course_v(PosStart):
         Psi_cent = np.interp(course_v, self.track.s, self.track.Psi)
         Theta = np.interp(course_v, self.track.s, self.track.Theta)
 
-        ey_percent = np.random.random() * (self._hp.ey_range_percent[1] - self._hp.ey_range_percent[0]) + self._hp.ey_range_percent[0],
-        epsi_percent = np.random.random() * (self._hp.epsi_range_pi_percent[1] - self._hp.epsi_range_pi_percent[0]) + self._hp.epsi_range_pi_percent[0],
+        ey_percent = np.random.random() * (self._hp.ey_range_percent[1] - self._hp.ey_range_percent[0]) + self._hp.ey_range_percent[0]
+        epsi_percent = np.random.random() * (self._hp.epsi_range_pi_percent[1] - self._hp.epsi_range_pi_percent[0]) + self._hp.epsi_range_pi_percent[0]
 
         if ey_percent > 0:
             ey = ey_percent * Wl
@@ -99,15 +107,18 @@ class PosStart_by_course_v(PosStart):
             ey = ey,
             epsi = epsi,
         )
-        return self._convert_to_Cartesian(Frenet_states)
+        self._convert_to_Cartesian(Frenet_states)
+        return Frenet_states
 
     def _convert_to_Cartesian(self, states):
-        states.X, states.Y = bias(states.X_cent , states.Y_cent , states.Psi , states.ey )    
+        states.X, states.Y = bias(states.X_cent , states.Y_cent , states.Psi_cent , states.ey )    
         
     def _inverse_gym_gts(self, states):
+        Psi = states.Psi_cent + states.epsi
+        rot1 = WrapToPi(np.pi/2 - Psi)
         state = {
             "pos" : [states.X, 0, -states.Y], # X, Z, Y
-            "rot" : [-states.Theta, -(states.Psi_cent + states.epsi), 0], # Theta, Psi, Phi 
+            "rot" : [-states.Theta, -rot1, 0], # Theta, Psi, Phi 
         }
         return state
 
@@ -120,3 +131,8 @@ def bias(X,Y,psi,W):  # prject to normal direction
     X2 = X - W * np.sin(psi)
     Y2 = Y + W * np.cos(psi)
     return X2,Y2
+
+def WrapToPi(x):
+    x = np.mod(x, 2*np.pi)
+    x -= 2*np.pi * np.heaviside((x - np.pi), 0)
+    return x

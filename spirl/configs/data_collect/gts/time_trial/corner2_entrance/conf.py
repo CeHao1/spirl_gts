@@ -35,11 +35,11 @@ init_config = AttrDict(
 #     speed_kmph = [144],
 # )
 start_config = AttrDict(
-    track_dir = '',
-    course_v_range = [1200, 170],
+    track_dir = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/track.csv"),
+    course_v_range = [1200, 1200],
     speed_kmph_range = [0, 144],
-    ey_range_percent = [-0.5, 0.5], # half width
-    epsi_range_pi_percent = [-0.5, 0.5] # +- pi/2, positive direction
+    ey_range_percent = [-0.0, 0.0], # half width
+    epsi_range_pi_percent = [0.1, 0.1] # +- pi/2, positive direction
 
 )
 
