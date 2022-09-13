@@ -60,7 +60,7 @@ class PosStart_by_course_v(PosStart):
 
     def _generate_condition(self, idx):
         states = self._sample_states()
-        print('start states', states)
+        # print('start states', states)
         state = self._inverse_gym_gts(states)
         condition = {
             'id': idx,

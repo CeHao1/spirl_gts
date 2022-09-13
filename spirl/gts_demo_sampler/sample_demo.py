@@ -34,6 +34,7 @@ class SampleDemo:
         if self._hp.do_init:
             self.init.init_gts()
         for epoch_index in range(self._hp.start_num_epoch, self._hp.start_num_epoch + self._hp.num_epochs):
+            print("index {}/{}".format(epoch_index, self._hp.num_epochs))
             self.sample_raw_data(epoch_index)
         
     def sample_raw_data(self, epoch_index):
@@ -80,8 +81,8 @@ for json args
 
 if __name__ == '__main__':
     sampler = SampleDemo(args=get_args())
-    sampler.sample_rollout()
-    # sampler.convert_rollout()
+    # sampler.sample_rollout()
+    sampler.convert_rollout()
 
     # sampler.init.init_gts()
     # raw_data = sampler.sample_raw_data()
