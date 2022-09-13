@@ -12,6 +12,8 @@ from spirl.gts_demo_sampler.done.base_done import BaseDone
 from spirl.gts_demo_sampler.sample.base_sample import BaseSample
 from spirl.gts_demo_sampler.file.base_file import BaseFile
 
+from spirl.gts_demo_sampler.start.pos_start import PosStart_by_course_v
+
 # ip_address = '192.168.1.5',
 do_init = False
 # do_init = True
@@ -26,12 +28,21 @@ init_config = AttrDict(
 
 # configs to formulate start_condition
 # we need a new start formulator
+# start_config = AttrDict(
+#     num_cars = init_config.num_cars,
+#     pos = [[0,0,0]],
+#     rot= [[0,0,0]],
+#     speed_kmph = [144],
+# )
 start_config = AttrDict(
-    num_cars = init_config.num_cars,
-    pos = [[0,0,0]],
-    rot= [[0,0,0]],
-    speed_kmph = [144],
+    track_dir = '',
+    course_v_range = [1200, 170],
+    speed_kmph_range = [0, 144],
+    ey_range_percent = [-0.5, 0.5], # half width
+    epsi_range_pi_percent = [-0.5, 0.5] # +- pi/2, positive direction
+
 )
+
 
 # config for the done function
 done_config = AttrDict(
@@ -56,7 +67,7 @@ file_config = AttrDict(
 # configuration of each module
 configuration = AttrDict(
     init = BaseInit,
-    start = BaseStart,
+    start = PosStart_by_course_v,
     done = BaseDone,
     sample = BaseSample,
     file = BaseFile,
