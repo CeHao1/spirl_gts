@@ -27,9 +27,10 @@ init_config = AttrDict(
 # configs to formulate start_condition
 start_config = AttrDict(
     num_cars = init_config.num_cars,
-    course_v = [1200, 1240],
+    course_v = [1600, 1800],
     speed_kmph = [144, 144],
 )
+# 1200 is initial, 1700 is before corner 2. 2400 is before corner 3.
 
 # config for the done function
 done_config = AttrDict(
