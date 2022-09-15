@@ -26,28 +26,19 @@ init_config = AttrDict(
 )
 
 
-# configs to formulate start_condition
-# we need a new start formulator
-# start_config = AttrDict(
-#     num_cars = init_config.num_cars,
-#     pos = [[0,0,0]],
-#     rot= [[0,0,0]],
-#     speed_kmph = [144],
-# )
 start_config = AttrDict(
     track_dir = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/track.csv"),
-    course_v_range = [1200, 2400],
+    course_v_range = [1200, 1700],
     speed_kmph_range = [0, 144],
     ey_range_percent = [-0.6, 0.6], # half width
-    epsi_range_pi_percent = [-0.3, 0.3] # +- pi/2, positive direction
+    epsi_range_pi_percent = [-0.1, 0.1] # +- pi/2, positive direction
 
 )
-
 
 # config for the done function
 done_config = AttrDict(
     max_course_v = 2400,
-    max_time = 5,
+    max_time = 20,
     # max_lap_count = 2,
 )
 
@@ -74,7 +65,7 @@ configuration = AttrDict(
 
     do_init = do_init,
     start_num_epoch = 0,
-    num_epochs = 100,
+    num_epochs = 3000,
 )
 
 

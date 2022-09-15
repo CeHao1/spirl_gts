@@ -19,6 +19,7 @@ class BaseFile:
             'action_keys'       : action_keys,
             'save_car_id'       : [0],  # which car to save
             'skip_hit_wall'     : True,
+            'least_length'      : 10,
         })
         return default_dict 
 
@@ -42,9 +43,14 @@ class BaseFile:
             file_dir = os.path.join(self._hp.raw_data_dir, file)
             state_one_car = load_file(file_dir)
             state_one_car = listdict2dictlist(state_one_car)
+
             if self._hp.skip_hit_wall:
                 if np.any(state_one_car['is_hit_wall']):
                     continue
+
+            if len(state_one_car['course_v']) < self._hp.least_length:
+                continue
+            
             ep = self.formulate_episode(state_one_car)
             save_rollout(str(idx), ep, self._hp.rollout_dir)
 
