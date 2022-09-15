@@ -26,7 +26,7 @@ class GTSEnv_Raw(GymEnv):
 
     def _default_hparams(self):
         default_dict = ParamDict({
-            'ip_address' : '192.168.1.5',
+            'ip_address' : '192.168.1.100',
             'car_name' : 'Audi TTCup',
             'course_name' : 'Tokyo Central Outer' ,
             'num_cars' : 20,
@@ -38,7 +38,7 @@ class GTSEnv_Raw(GymEnv):
             'do_init' : True,
             'reward_function' : reward_function,
             'done_function' : sampling_done_function,
-            'standardize_observations' : True,
+            'standardize_observations' : False,
             'store_states' : False,
             'builtin_controlled': [],
             'min_frames_per_action': 6,

@@ -74,7 +74,12 @@ DEFAULT_FEATURE_KEYS = (
             )
         )
     ]
-    + [
+    # + [
+    #     "curvature_in_%.1f_seconds" % seconds
+    #     for seconds in np.arange(start=1, stop=3.0, step=0.2)
+    # ]
+
+    +[
         "curvature_in_%.1f_seconds" % seconds
         for seconds in np.arange(start=0.2, stop=3.0, step=0.2)
     ]

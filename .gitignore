@@ -9,6 +9,7 @@ data/
 wandb/
 
 viz/ipy/
+./vis/
 sample/
 
 *.ipynb

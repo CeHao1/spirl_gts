@@ -232,7 +232,7 @@ class LLActionAgent(ActionPriorSACAgent):
             z=obs[:, self.state_dim:-self.onehot_dim],
             time_index=obs[:, -self.onehot_dim:],
         )
-
+        
     # ====================================== property =======================================
     @property
     def state_dim(self):
