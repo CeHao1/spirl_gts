@@ -115,6 +115,16 @@ class HLSKillAgent(ActionPriorSACAgent):
 
         print('visualize HL latent variances')
 
+
+        # show the distributions of policy(latent variable)
+        policy_output = self.act(obs) # input (1000, x)
+        dist_batch = policy_output['dist'] # (1000, x)
+
+        mean = np.array([dist.mu for dist in dist_batch])
+        sigma = np.array([np.exp(dist.log_sigma) for dist in dist_batch])
+        act = policy_output.action
+        
+        '''
         # show latent variables
         plt.figure(figsize=(14, 4 *plt_rows))
         for idx in range(act_dim):
@@ -123,15 +133,11 @@ class HLSKillAgent(ActionPriorSACAgent):
             plt.title('HL z value: dim {}'.format(idx))
             plt.grid()
         plt.show()
+        '''
 
-        # show the distributions of policy(latent variable)
-        policy_output = self.act(obs) # input (1000, x)
-        dist_batch = policy_output['dist'] # (1000, x)
-
-        mean = np.array([dist.mu for dist in dist_batch])
-        sigma = np.array([np.exp(dist.log_sigma) for dist in dist_batch])
+        print('mean of all dims, abs value \n', np.mean(np.abs(act), axis=0), np.abs(act).shape)
         
-        
+        '''
         plt.figure(figsize=(14, 4 *act_dim))
         for idx in range(act_dim):
             plt.subplot(act_dim, 2, 2*idx + 1)
@@ -144,7 +150,19 @@ class HLSKillAgent(ActionPriorSACAgent):
             plt.grid()
             plt.title('HL z sigma, dim {} '.format(idx))
 
-        plt.show()        
+        plt.show()    
+        '''    
+        
+        import seaborn as sns
+        fs = 16
+        plt.figure(figsize=(14, 6))
+        for idx in range(act_dim):
+            sns.kdeplot(act[:, idx], fill=True, label='dim_' + str(idx), cut=0)
+        plt.legend(loc='upper left', fontsize=fs)
+        plt.ylabel('Density', fontsize=fs)
+        plt.title('distribution of latent variables', fontsize=fs)
+        plt.grid()
+        plt.show()
 
     # =================== offline ===================
     def offline(self):

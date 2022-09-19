@@ -341,6 +341,7 @@ class LLActionAgent(ActionPriorSACAgent):
         state_grad = np.mean( np.abs(grads[:, :self.state_dim]), axis=1)
         latent_grad = np.mean( np.abs(grads[:, self.state_dim: self.state_dim + self.latent_dim]), axis=1)
 
+        
         plt.figure(figsize=(10, 4))
         plt.plot(state_grad, 'b.', label='abs grad of states')
         plt.plot(latent_grad, 'r.', label='abs grad of latent z')
@@ -349,21 +350,45 @@ class LLActionAgent(ActionPriorSACAgent):
         plt.grid()
         plt.show()
         
+        
         state_grad_mean = np.mean(state_grad)
         latent_grad_mean = np.mean(latent_grad)
         print('state_grad', state_grad_mean, 'latent_grad', latent_grad_mean, 'ratio', state_grad_mean/latent_grad_mean)
 
         # 2. plot grad for latent variable z, just plot them all
         latent_grad_raw = grads[:, self.state_dim: self.state_dim + self.latent_dim]
+        # latent_grad_raw = np.abs(latent_grad_raw)
         latent_dim = self.latent_dim
         plt_rows = int(latent_dim/2)
 
+        
         plt.figure(figsize=(14, 2 * latent_dim))
         for idx in range(latent_dim):
             plt.subplot(plt_rows, 2, idx+1)
             plt.plot(latent_grad_raw[:, idx], 'b.')
             plt.title('HL z gradient: dim {}'.format(idx))
             plt.grid()
+        plt.show()
+        
+        
+        # 3. plot distribution, a better way
+        skip_dim = []
+        
+        import seaborn as sns
+        fs = 16
+        plt.figure(figsize=(14, 6))
+        sns.kdeplot(state_grad, fill=True, label='mean of all states', cut=0)
+        for idx in range(latent_dim):
+            if idx in skip_dim:
+                continue
+            sns.kdeplot(latent_grad_raw[:, idx], fill=True, label='dim_' + str(idx), cut=0)
+        plt.legend(fontsize=fs)
+        plt.ylabel('Density', fontsize=fs)
+        plt.xlabel('Gradient', fontsize=fs)
+        plt.title('gradient of states and latent variables', fontsize=fs)
+        plt.grid()
+        plt.ylim([0, 1e5])
+        plt.xlim([-1e-4, 2e-4])
         plt.show()
         
 

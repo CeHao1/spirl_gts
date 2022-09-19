@@ -158,8 +158,10 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
         hl_experience_batch = self.hl_agent._sample_experience()
         ll_experience_batch = self.ll_agent._sample_experience()
         
-        self.hl_agent.visualize_actions(hl_experience_batch)
-        self.ll_agent.visualize_actions(ll_experience_batch)
+        # self.hl_agent.visualize_actions(hl_experience_batch)
+        # self.ll_agent.visualize_actions(ll_experience_batch)
+        # self.ll_agent.visualize_gradients(ll_experience_batch)
         
-        hl_update_outputs = self.hl_agent.update()
+        
+        # hl_update_outputs = self.hl_agent.update()
         ll_update_outputs = self.ll_agent.update(vis=vis)
