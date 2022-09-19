@@ -354,7 +354,17 @@ class LLActionAgent(ActionPriorSACAgent):
         print('state_grad', state_grad_mean, 'latent_grad', latent_grad_mean, 'ratio', state_grad_mean/latent_grad_mean)
 
         # 2. plot grad for latent variable z, just plot them all
+        latent_grad_raw = grads[:, self.state_dim: self.state_dim + self.latent_dim]
+        latent_dim = self.latent_dim
+        plt_rows = int(latent_dim/2)
 
+        plt.figure(figsize=(14, 2 * latent_dim))
+        for idx in range(latent_dim):
+            plt.subplot(plt_rows, 2, idx+1)
+            plt.plot(latent_grad_raw[:, idx], 'b.')
+            plt.title('HL z gradient: dim {}'.format(idx))
+            plt.grid()
+        plt.show()
         
 
 

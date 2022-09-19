@@ -111,6 +111,12 @@ class RLTrainer:
 
         # self._hp.n_warmup_steps = 0
         if self._hp.n_warmup_steps > 0:
+            # save inital weights of agents
+            save_checkpoint({
+                    'epoch': epoch,
+                    'global_step': self.global_step,
+                    'state_dict': self.agent.state_dict(),
+                }, os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name('Initial'))
             self.warmup()
 
         print('after warm up, start training epochs')
