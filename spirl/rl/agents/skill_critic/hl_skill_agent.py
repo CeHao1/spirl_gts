@@ -120,7 +120,7 @@ class HLSKillAgent(ActionPriorSACAgent):
             plt.grid()
         plt.show()
 
-        # show the distributions
+        # show the distributions of policy(latent variable)
         policy_output = self.act(obs) # input (1000, x)
         dist_batch = policy_output['dist'] # (1000, x)
 
@@ -140,12 +140,12 @@ class HLSKillAgent(ActionPriorSACAgent):
             plt.grid()
             plt.title('HL z sigma, dim {} '.format(idx))
 
-        plt.show()
-        
+        plt.show()        
 
     # =================== offline ===================
     def offline(self):
-
+        self.update()
+        '''
         for _ in range(self._hp.update_iterations):
             # sample batch and normalize
             experience_batch = self._sample_experience()
@@ -163,7 +163,7 @@ class HLSKillAgent(ActionPriorSACAgent):
         
             self._perform_update(policy_loss, self.policy_opt, self.policy)
 
-
+        '''
 
     @property
     def n_rollout_steps(self):

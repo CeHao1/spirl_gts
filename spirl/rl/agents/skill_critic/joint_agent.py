@@ -151,3 +151,9 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
 
         return update_outputs
 
+
+    def offline(self):
+
+        vis = True
+        hl_update_outputs = self.hl_agent.update()
+        ll_update_outputs = self.ll_agent.update(vis=vis)

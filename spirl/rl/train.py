@@ -354,9 +354,10 @@ class RLTrainer:
         self.agent.load_state(self._hp.exp_path) 
         self.agent.to(self.device)
 
-        print('train the offline')
-        self.agent.hl_agent.offline()
-        self.agent.ll_agent.offline()
+        self.agent.offline()
+        # print('train the offline')
+        # self.agent.hl_agent.offline()
+        # self.agent.ll_agent.offline()
 
 
     def print_train_update(self, epoch, agent_outputs, timers):

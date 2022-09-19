@@ -114,6 +114,7 @@ class SACAgent(ACAgent):
         """Updates actor and critics."""
         # push experience batch into replay buffer
         self.add_experience(experience_batch)
+        # self.visualize_actions(experience_batch)
 
         for _ in range(self._hp.update_iterations):
             # sample batch and normalize
@@ -363,6 +364,7 @@ class SACAgent(ACAgent):
         plt.title('pedal sigma')
 
         plt.show()
+
 
 
 # ===================== visualize Q =======================

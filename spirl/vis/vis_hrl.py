@@ -77,7 +77,8 @@ class HRLVisualizer(RLTrainer):
         # from obs to hl actions z 
         # hl_policy_musig = self.agent.hl_agent.policy.net(obs).detach().cpu().numpy()
 
-        if len(obs.shape) == 3:
+        if len(obs.shape) == 3: 
+            # in the rollout, there are 20 cars in the second dimension, we only use the first one
             obs = obs[:,0, :]
             act = inputs['actions'][:,0, :]
         elif len(obs.shape) == 2:

@@ -1,14 +1,16 @@
+from email import policy
 from posixpath import split
 from spirl.utils.general_utils import ParamDict, map_dict, AttrDict
 from spirl.utils.pytorch_utils import ten2ar, avg_grad_norm, TensorModule, check_shape, map2torch, map2np, parse_one_hot
-
-import torch
 
 # this agent should be similar to the state-conditioned close-loop agent
 from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
 
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
+import copy
 
 class LLActionAgent(ActionPriorSACAgent):
     def __init__(self, config):
@@ -36,6 +38,8 @@ class LLActionAgent(ActionPriorSACAgent):
 
         if experience_batch is not None:
             self.add_experience(experience_batch)
+            if vis:
+                self.visualize_actions(experience_batch)
 
         # for _ in range(self._hp.update_iterations):
         for _ in range(1):
@@ -136,6 +140,7 @@ class LLActionAgent(ActionPriorSACAgent):
         if self._hp.visualize_values and vis:
             hl_q_target = self._compute_hl_q_target(experience_batch, policy_output, vis=True)
             ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch, vis=True)
+            self.visualize_gradients(experience_batch)
 
         return info
 
@@ -167,6 +172,16 @@ class LLActionAgent(ActionPriorSACAgent):
         check_shape(hl_qs[0], [self._hp.batch_size])
         hl_critic_losses = [0.5 * (q - hl_q_target).pow(2).mean() for q in hl_qs] # mse loss
         return hl_critic_losses, hl_qs
+
+    #  =============================== ll policy ================================
+    '''
+    def _compute_policy_loss(self, experience_batch, policy_output):
+        q_est = torch.min(*[critic(experience_batch.observation, self._prep_action(policy_output.action)).q
+                                      for critic in self.critics])
+        policy_loss = -1 * q_est + self.alpha * policy_output.log_prob[:, None]
+        check_shape(policy_loss, [self._hp.batch_size, 1])
+        return policy_loss.mean()
+    '''
 
     # ================================ ll critic ================================
     def _compute_ll_q_target(self, experience_batch, vis=False):
@@ -252,9 +267,6 @@ class LLActionAgent(ActionPriorSACAgent):
 
 
     # ================================== visualize =============================
-    # def visualize_actions(self, experience_batch): use the one from sac
-
-
     def visualize_HL_Q(self, qa_target, hl_q_target):
         print('visualize_HL_Q, alpha', self.alpha)
         alp_KLD = hl_q_target - qa_target.squeeze()
@@ -311,8 +323,42 @@ class LLActionAgent(ActionPriorSACAgent):
         plt.show()
 
 
+    def visualize_gradients(self, experience_batch):
+        obs = copy.deepcopy(experience_batch.observation)
+        assert obs.shape[1] == self.state_dim + self.latent_dim + self.onehot_dim
+        obs.requires_grad = True
+        policy_output = self._run_policy(obs) # output a MultiVarient Gaussian in pytorch
+
+        mean = policy_output.dist.mean
+        sigma = policy_output.dist.sigma
+
+        chosen_dist_target = mean.mean() # we can change this
+        chosen_dist_target.backward()
+        grads = chosen_dist_target.grad.numpy()
+
+        # 1. plot grad for states and all z
+        # however, the dim of s is too high, so we only show the mean and its std for all dim
+        state_grad = np.mean( np.abs(grads[:, :self.state_dim]), axis=1)
+        latent_grad = np.mean( np.abs(grads[:, self.state_dim:self.latent_dim]), axis=1)
+
+        plt.figure(figsize=(14, 8))
+        plt.plot(state_grad, 'b.', label='abs grad of states')
+        plt.plot(latent_grad, 'r.', label='abs grad of latent z')
+        plt.legend()
+        plt.title('gradient of input w.r.t output mean')
+        plt.grid()
+        plt.show()
+
+        # 2. plot grad for latent variable z, just plot them all
+
+        
+
+
     # ================================== offline ================================
     def offline(self):
+        self.update(self, experience_batch=None, vis=True)
+
+        '''
         from tqdm import tqdm
         q_target_store = []
         update_time = self._hp.update_iterations
@@ -368,3 +414,4 @@ class LLActionAgent(ActionPriorSACAgent):
         plt.plot(q_target_store, 'b.')
         plt.show()
 
+    '''
