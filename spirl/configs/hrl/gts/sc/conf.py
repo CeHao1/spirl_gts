@@ -141,7 +141,7 @@ hl_policy_params = AttrDict(
     prior_model_checkpoint=ll_policy_params.policy_model_checkpoint,
 
     # squash_output_dist = False, # do not squash the tanh output
-    load_weights = False, # do not load the prior
+    # load_weights = False, # do not load the prior
 )
 
 # critic
@@ -185,8 +185,8 @@ agent_config = AttrDict(
     # initial_train_stage = skill_critic_stages.HL_TRAIN
     # initial_train_stage = skill_critic_stages.LL_TRAIN_PI
     
-    # initial_train_stage = skill_critic_stages.HYBRID
-    initial_train_stage = skill_critic_stages.SC_WO_LLVAR
+    initial_train_stage = skill_critic_stages.HYBRID
+    # initial_train_stage = skill_critic_stages.SC_WO_LLVAR
     
 )
 

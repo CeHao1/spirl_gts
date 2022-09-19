@@ -102,9 +102,13 @@ class HLSKillAgent(ActionPriorSACAgent):
     # =================== visualize =================
     def visualize_actions(self, experience_batch):
         # visualize the latent variables
-        obs = np.array(experience_batch.observation)[:,0,:]
-        act = np.array(experience_batch.action)[:,0,:]
-        rew = np.array(experience_batch.reward)[:,0]
+        obs = np.array(experience_batch.observation)
+        act = np.array(experience_batch.action)
+        rew = np.array(experience_batch.reward)
+        if len(obs.shape) == 3: # if the dim is (batch_size, 20cars, s and z )
+            obs = obs[:,0,:]
+            act = act[:,0,:]
+            rew = rew[:,0]
 
         act_dim = act.shape[1] # dimension of the latent variable
         plt_rows = int(act_dim/2)

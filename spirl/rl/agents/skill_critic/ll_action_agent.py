@@ -334,20 +334,24 @@ class LLActionAgent(ActionPriorSACAgent):
 
         chosen_dist_target = mean.mean() # we can change this
         chosen_dist_target.backward()
-        grads = chosen_dist_target.grad.numpy()
+        grads = map2np(obs.grad)
 
         # 1. plot grad for states and all z
         # however, the dim of s is too high, so we only show the mean and its std for all dim
         state_grad = np.mean( np.abs(grads[:, :self.state_dim]), axis=1)
-        latent_grad = np.mean( np.abs(grads[:, self.state_dim:self.latent_dim]), axis=1)
+        latent_grad = np.mean( np.abs(grads[:, self.state_dim: self.state_dim + self.latent_dim]), axis=1)
 
-        plt.figure(figsize=(14, 8))
+        plt.figure(figsize=(10, 4))
         plt.plot(state_grad, 'b.', label='abs grad of states')
         plt.plot(latent_grad, 'r.', label='abs grad of latent z')
         plt.legend()
         plt.title('gradient of input w.r.t output mean')
         plt.grid()
         plt.show()
+        
+        state_grad_mean = np.mean(state_grad)
+        latent_grad_mean = np.mean(latent_grad)
+        print('state_grad', state_grad_mean, 'latent_grad', latent_grad_mean, 'ratio', state_grad_mean/latent_grad_mean)
 
         # 2. plot grad for latent variable z, just plot them all
 

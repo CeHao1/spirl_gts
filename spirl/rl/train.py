@@ -53,8 +53,9 @@ class RLTrainer:
         self.conf.env.seed = self._hp.seed
         if 'task_params' in self.conf.env: self.conf.env.task_params.seed=self._hp.seed
         if 'general' in self.conf: self.conf.general.seed=self._hp.seed
-        self.env = self._hp.environment(self.conf.env)
-        self.conf.agent.env_params = self.env.agent_params      # (optional) set params from env for agent
+        if args.mode != 'offline': # offline has no env
+            self.env = self._hp.environment(self.conf.env)
+            self.conf.agent.env_params = self.env.agent_params      # (optional) set params from env for agent
         if self.is_chef:
             pretty_print(self.conf)
 
@@ -65,7 +66,8 @@ class RLTrainer:
         # self.agent.post_process() # post process any change to the agent
 
         # build sampler
-        self.sampler = self._hp.sampler(self.conf.sampler, self.env, self.agent, self.logger, self._hp.max_rollout_len)
+        if args.mode != 'offline': # offline has no sampler
+            self.sampler = self._hp.sampler(self.conf.sampler, self.env, self.agent, self.logger, self._hp.max_rollout_len)
 
         # load from checkpoint
         self.global_step, self.n_update_steps, start_epoch = 0, 0, 0
@@ -351,8 +353,8 @@ class RLTrainer:
     def offline(self):
         # customized method
         # load states means load replay buffer
-        self.agent.load_state(self._hp.exp_path) 
-        self.agent.to(self.device)
+        # self.agent.load_state(self._hp.exp_path) 
+        # self.agent.to(self.device)
 
         self.agent.offline()
         # print('train the offline')
