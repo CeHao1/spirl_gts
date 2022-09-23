@@ -4,6 +4,7 @@ import os
 import copy
 
 from spirl.utils.general_utils import AttrDict
+from spirl.utils.general_utils import ConstantSchedule, LinearSchedule, DelayedLinearSchedule
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.configs.default_data_configs.gts import data_spec
 
@@ -163,7 +164,14 @@ hl_agent_config.update(AttrDict(
     critic_params=hl_critic_params,
 
     # td_schedule_params=AttrDict(p=5.),
-    fixed_alpha = 0.001,
+
+    td_schedule = DelayedLinearSchedule,
+    td_schedule_params = AttrDict(initial_p=20.,
+                                final_p=10.,
+                                schedule_timesteps=1280 * 400,
+                                delay = 1280 * 100),
+
+    # fixed_alpha = 0.001,
 
     visualize_values = True,
 ))
