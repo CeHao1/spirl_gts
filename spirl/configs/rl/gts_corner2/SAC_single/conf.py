@@ -5,20 +5,14 @@ from spirl.rl.policies.mlp_policies import MLPPolicy, TanhLogstd_MLPPolicy
 from spirl.rl.components.critic import MLPCritic
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 
-from spirl.rl.envs.gts_multi import GTSEnv_Multi
-from spirl.rl.envs.gts_raw import GTSEnv_Raw
+from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
 
 from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.components.sampler_batched import SamplerBatched
 
-from spirl.rl.envs.gts import GTSEnv_Base
-from spirl.rl.components.sampler import Sampler
 
 from spirl.rl.components.normalization import Normalizer
 from spirl.configs.default_data_configs.gts import data_spec
-
-from spirl.utils.gts_utils import reward_function, sampling_done_function
-from spirl.utils.gts_utils import eval_time_trial_done_function, eval_time_trial_reward_function
 
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -29,8 +23,8 @@ notes = 'non-hierarchical RL experiments in gts env'
 env_config = AttrDict(
     reward_norm=1.,
     # do_init = False,
-    standardize_observations = True,
     # action_standard = True,
+
     # reward_function = eval_time_trial_reward_function,
     # done_function = eval_time_trial_done_function,
 
@@ -47,11 +41,10 @@ configuration = {
     'num_epochs': 2000,
     'max_rollout_len': 10000,
     'n_steps_per_epoch': 10000 ,
-    'n_warmup_steps': 160000 ,
+    'n_warmup_steps': 10000 ,
     'use_update_after_sampling':True,
 
-    # 'environment': GTSEnv_Multi,
-    'environment': GTSEnv_Raw,
+    'environment': GTSEnv_Corner2_Single,
     'sampler':SamplerBatched,
 
     # 'n_steps_per_epoch': 2000 ,
@@ -110,7 +103,7 @@ agent_config = AttrDict(
     update_iterations = 64 * 20,
 
     # target_entropy = 0,
-    visualize_values = True,
+    # visualize_values = True,
     
 )
 

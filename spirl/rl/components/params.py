@@ -17,6 +17,8 @@ def get_args():
     parser.add_argument('--mode', default='train', type=str,
                         choices=['train', 'val', 'rollout', 'offline'],
                         help='mode of the program (training, validation, or generate rollout)')
+    parser.add_argument('--ip_address', default='192.168.1.100', type=str,
+                        help='ip adress of ps4')
 
     # Misc
     parser.add_argument('--seed', default=-1, type=int,
