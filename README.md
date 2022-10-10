@@ -92,6 +92,16 @@ python3 spirl/gts_demo_sampler/sample_demo.py --path=spirl/configs/data_collect/
 %run spirl/vis/vis_hrl.py 
 
 
+=====================================================================================
+# corner2 
+
+## SAC single
+python3 spirl/rl/train.py --path=spirl/configs/rl/gts_corner2/SAC_single --gpu=0  --prefix=sac_test_01 --resume=latest
+
+## SAC multi
+
+
+
 
 =====================================================================================
 ## maze
