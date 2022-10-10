@@ -29,8 +29,8 @@ notes = 'non-hierarchical RL experiments in gts env'
 env_config = AttrDict(
     reward_norm=1.,
     # do_init = False,
+    standardize_observations = True,
     # action_standard = True,
-
     # reward_function = eval_time_trial_reward_function,
     # done_function = eval_time_trial_done_function,
 
@@ -110,7 +110,7 @@ agent_config = AttrDict(
     update_iterations = 64 * 20,
 
     # target_entropy = 0,
-    # visualize_values = True,
+    visualize_values = True,
     
 )
 

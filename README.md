@@ -29,7 +29,7 @@ python3 spirl/train.py \
 
 4. state-conditioned decoder(time-indexed)
 python3 spirl/train.py \
---val_data_size=160 --gpu=0 --prefix=cd_newexp_test  \
+--val_data_size=160 --gpu=0 --prefix=cd_newexp_test02 \
 --path=spirl/configs/skill_prior_learning/gts/hierarchical_cd --resume=latest
 
 
@@ -40,7 +40,7 @@ python3 spirl/rl/train.py \
 
 1. SAC (sac_autoalp_01, sac_targetE1_01)
  --path=spirl/configs/rl/gts/SAC 
-python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --gpu=0  --prefix=sac_newdesk_01 --resume=latest \
+python3 spirl/rl/train.py --path=spirl/configs/rl/gts/SAC --gpu=0  --prefix=sac_newldesk01 --resume=latest \
 --mode='val' --deterministic_action
 
 
@@ -61,7 +61,7 @@ python3 spirl/rl/train.py --gpu=0 --prefix=ol_newobs_01 \
 
 6. skill-critic
 --path=spirl/configs/hrl/gts/sc
-python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_noprior_05 \
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts/sc --gpu=0  --prefix=sc_newdesk_01 \
 --resume=latest
 --mode='rollout' --save_dir='./sample/hrl/sc_02'
 

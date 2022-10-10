@@ -77,14 +77,15 @@ class HRLVisualizer(RLTrainer):
         # from obs to hl actions z 
         # hl_policy_musig = self.agent.hl_agent.policy.net(obs).detach().cpu().numpy()
 
-        if len(obs.shape) == 3:
+        if len(obs.shape) == 3: 
+            # in the rollout, there are 20 cars in the second dimension, we only use the first one
             obs = obs[:,0, :]
             act = inputs['actions'][:,0, :]
         elif len(obs.shape) == 2:
             obs = obs
             act = inputs['actions']
 
-        obs = obs[:600]
+        obs = obs[:4096]
 
         obs_tensor = map2torch(obs, self.device)
         hl_output = self.agent.hl_agent.act(obs_tensor)

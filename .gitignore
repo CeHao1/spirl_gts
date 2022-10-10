@@ -11,7 +11,8 @@ sample/
 ./wandb/
 
 viz/ipy/
-
+./vis/
+sample/
 
 *.ipynb
 .vscode/

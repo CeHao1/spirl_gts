@@ -4,6 +4,7 @@ import os
 import copy
 
 from spirl.utils.general_utils import AttrDict
+from spirl.utils.general_utils import ConstantSchedule, LinearSchedule, DelayedLinearSchedule
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.configs.default_data_configs.gts import data_spec
 
@@ -30,7 +31,7 @@ env_config = AttrDict(
 
     # reward_function = eval_time_trial_reward_function,
     # done_function = eval_time_trial_done_function,
-    
+    standardize_observations = False,
 )
 
 
@@ -141,7 +142,7 @@ hl_policy_params = AttrDict(
     prior_model_checkpoint=ll_policy_params.policy_model_checkpoint,
 
     # squash_output_dist = False, # do not squash the tanh output
-    load_weights = False, # do not load the prior
+    # load_weights = False, # do not load the prior
 )
 
 # critic
@@ -163,7 +164,14 @@ hl_agent_config.update(AttrDict(
     critic_params=hl_critic_params,
 
     # td_schedule_params=AttrDict(p=5.),
-    fixed_alpha = 0.001,
+
+    td_schedule = DelayedLinearSchedule,
+    td_schedule_params = AttrDict(initial_p=20.,
+                                final_p=10.,
+                                schedule_timesteps=1280 * 400,
+                                delay = 1280 * 100),
+
+    # fixed_alpha = 0.001,
 
     visualize_values = True,
 ))
@@ -182,7 +190,12 @@ agent_config = AttrDict(
     # update_iterations = 32,
     discount_factor = 0.98 ,
 
-    initial_train_stage = skill_critic_stages.HL_TRAIN
+    # initial_train_stage = skill_critic_stages.HL_TRAIN
+    # initial_train_stage = skill_critic_stages.LL_TRAIN_PI
+    
+    initial_train_stage = skill_critic_stages.HYBRID
+    # initial_train_stage = skill_critic_stages.SC_WO_LLVAR
+    
 )
 
 # Dataset - Random data
