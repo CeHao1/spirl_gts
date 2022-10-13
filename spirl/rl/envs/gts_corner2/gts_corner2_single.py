@@ -26,7 +26,7 @@ class GTSEnv_Corner2_Single(GymEnv):
 
     def _default_hparams(self):
         default_dict = ParamDict({
-            'ip_address' : '192.168.1.5',
+            'ip_address' : '192.168.1.100',
             'car_name' : 'Audi TTCup',
             'course_name' : 'Tokyo Central Outer' ,
             'num_cars' : 1,
@@ -43,7 +43,7 @@ class GTSEnv_Corner2_Single(GymEnv):
             'store_states' : False,
             'builtin_controlled': [],
             'min_frames_per_action': 6,
-            'initial_velocity': 144,
+            'initial_velocity': 200,
         })
         return game_hp
 

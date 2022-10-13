@@ -22,7 +22,7 @@ notes = 'non-hierarchical RL experiments in gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    # do_init = False,
+    do_init = False,
     # action_standard = True,
 
     # reward_function = eval_time_trial_reward_function,
@@ -39,9 +39,9 @@ configuration = {
     
     'data_dir': '.',
     'num_epochs': 2000,
-    'max_rollout_len': 10000,
-    'n_steps_per_epoch': 10000 ,
-    'n_warmup_steps': 10000 ,
+    'max_rollout_len': 1000,
+    'n_steps_per_epoch': 1000 ,
+    'n_warmup_steps': 5000 ,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Corner2_Single,
@@ -99,11 +99,11 @@ agent_config = AttrDict(
     log_videos=False,
 
     discount_factor = 0.98,
-    fixed_alpha = 0.1,
+    fixed_alpha = 0.01,
     update_iterations = 64 * 20,
 
     # target_entropy = 0,
-    # visualize_values = True,
+    visualize_values = True,
     
 )
 
