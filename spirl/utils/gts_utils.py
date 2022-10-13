@@ -188,7 +188,7 @@ def convert_simple_states(gts_state):
             state['delta'] = gts_state[key]
         elif key == 'throttle':
             state['thr'] = gts_state[key]
-            state['thr-brk'] = gts_state['throttle'] - gts_state['brk']
+            state['thr-brk'] = gts_state['throttle'] - gts_state['brake']
         elif key == 'brake':
             state['brk'] = gts_state[key]
 
