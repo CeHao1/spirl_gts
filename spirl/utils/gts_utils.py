@@ -3,6 +3,7 @@ import numpy as np
 import os
 import gym
 import pandas as pd
+from spirl.utils.general_utils import ParamDict, AttrDict
 
 #  =========================== env setup utils ================================
 CAR_CODE = {'Mazda Roadster':   2148, 
@@ -187,6 +188,7 @@ def convert_simple_states(gts_state):
             state['delta'] = gts_state[key]
         elif key == 'throttle':
             state['thr'] = gts_state[key]
+            state['thr-brk'] = gts_state['throttle'] - gts_state['brk']
         elif key == 'brake':
             state['brk'] = gts_state[key]
 
@@ -468,6 +470,14 @@ def load_replay_2_states(file_dir, file_name, car_key='car0', chosen_lap=None, m
         idx = np.where(states['lap_count']==chosen_lap)
         clip_dict(states, idx)
     return states
+
+def load_track(track_dir):
+    data = pd.read_csv(track_dir)
+    data2 = {}
+    for d in data:
+        data2[d] = data[d].values
+    track = AttrDict(data2)
+    return track
 
 #=================================================================================
 
