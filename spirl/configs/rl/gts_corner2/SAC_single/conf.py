@@ -22,7 +22,7 @@ notes = 'non-hierarchical RL experiments in gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    do_init = False,
+    # do_init = False,
     # action_standard = True,
 
     # reward_function = eval_time_trial_reward_function,
@@ -30,6 +30,7 @@ env_config = AttrDict(
 
     # num_cars = 1,
     # store_states = True,
+    initial_velocity = 65*3.6, 
 
 )
 

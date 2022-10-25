@@ -155,7 +155,7 @@ if __name__ == "__main__":
             'figure_path':          os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/figures/"),
             'human_file_name':      'human.csv',
             'builtin_file_name':    '',
-            'sac_file_name':        '',
+            'sac_file_name':        'sac.h5',
             'sc_file_name':         '',
         })
     vis = VisStates(config)

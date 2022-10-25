@@ -114,7 +114,7 @@ class RLTrainer:
         # self._hp.n_warmup_steps = 0
         if self._hp.n_warmup_steps > 0:
             # save inital weights of agents
-            if self.h_hp.save_initial_weight:
+            if self._hp.save_initial_weight:
                 save_checkpoint({
                         'epoch': 9999,
                         'global_step': self.global_step,
