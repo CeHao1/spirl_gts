@@ -13,7 +13,7 @@ from spirl.rl.components.sampler_batched import SamplerBatched
 
 from spirl.rl.components.normalization import Normalizer
 from spirl.configs.default_data_configs.gts import data_spec
-from spirl.utils.gts_utils import double_reward_function, corner2_done_function
+from spirl.utils.gts_utils import double_reward_function, corner2_done_function, single_reward_function
 
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -24,16 +24,33 @@ notes = 'non-hierarchical RL experiments in gts env'
 env_config = AttrDict(
     reward_norm=1.,
     # do_init = False,
-    # action_standard = True,
+    action_standard = False,
 
     reward_function = double_reward_function,
     done_function = corner2_done_function,
 
+    # num_cars = 3,
+    # builtin_controlled = [0, 2],
+    # store_states = False,
+    # initial_velocity = [55*3.6, 65*3.6, 200],
+    # initial_course_v = [1400, 1200, 1000],
+    # bop = [[0.8, 1.2], [1, 1], [1,1]],
+    
     # num_cars = 1,
+    # builtin_controlled = [],
+    # store_states = False,
+    # initial_velocity = [55*3.6],
+    # initial_course_v = [1400],
+    # bop = [[1, 1]],
+    
+    
+    num_cars = 2,
+    builtin_controlled = [1],
     store_states = False,
-    initial_velocity = 65*3.6, 
-
-)
+    initial_velocity = [65*3.6, 55*3.6],
+    initial_course_v = [1200, 1250],
+    bop = [[1, 1], [0.8, 1.2]],
+)   
 
 configuration = {
     'seed': 2,
@@ -83,6 +100,10 @@ replay_params = AttrDict(
 
 # Observation Normalization
 obs_norm_params = AttrDict(
+)
+
+sampler_config = AttrDict(
+    select_agent_id = [0]
 )
 
 # Agent

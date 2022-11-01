@@ -42,7 +42,7 @@ class GTSEnv_Corner2_Double(GTSEnv_Corner2_Single):
             'done_function' : corner2_done_function,
             'standardize_observations' : False,
             'store_states' : False,
-            'builtin_controlled': [1],
+            'builtin_controlled': [0],
             'min_frames_per_action': 6,
             'initial_velocity': [200, 144],
             'initial_course_v': [1200, 1400], 
@@ -66,7 +66,6 @@ class GTSEnv_Corner2_Double(GTSEnv_Corner2_Single):
                 self.bops.append(bop)
 
     def _initialize(self):
-
         self._generate_bop()   
 
         initialize_gts(ip = self._hp.ip_address,

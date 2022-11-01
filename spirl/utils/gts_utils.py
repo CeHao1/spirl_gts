@@ -522,7 +522,7 @@ def evaluation_done_function(state):
 def eval_time_trial_done_function(state):
     return state["lap_count"] > 3 and state["current_lap_time_msec"]/1000.0 > 5.0 if state else False
 
-def reward_function(state, previous_state, course_length):
+def reward_function(state, previous_state, course_length, **kwargs):
     if previous_state \
             and isinstance(previous_state["course_v"], float) \
             and isinstance(previous_state["lap_count"], int):
@@ -538,7 +538,7 @@ def reward_function(state, previous_state, course_length):
 
         return reward
 
-def eval_time_trial_reward_function(state, previous_state, course_length):
+def eval_time_trial_reward_function(state, previous_state, course_length, **kwargs):
     if previous_state \
             and isinstance(previous_state["course_v"], float) \
             and isinstance(previous_state["lap_count"], int):
@@ -560,7 +560,11 @@ def corner2_done_function(state):
     # course > 2400 or time > 60 seconds
     return state['course_v'] >= 2400 or state['frame_count'] > 60 * 60
 
-def single_reward_function(state, previous_state, course_length):
+def single_reward_function(state, previous_state, course_length, **kwargs):
+    # print('state,', state.keys())
+    # print('previous_state', previous_state.keys())
+    
+    
     if previous_state \
             and isinstance(previous_state["course_v"], float) \
             and isinstance(previous_state["lap_count"], int):
@@ -578,11 +582,140 @@ def single_reward_function(state, previous_state, course_length):
 
 DONE_FOLD = 50.0
 
-def singe_reward_fun_modify_done(state, previous_state, course_length):
-    reward = single_reward_function(state, previous_state, course_length)
+def singe_reward_fun_modify_done(state, previous_state, course_length, **kwargs):
+    reward = single_reward_function(state, previous_state, course_length, **kwargs)
     if corner2_done_function(state):
         reward = reward * DONE_FOLD
     return reward
 
-def double_reward_function():
-    return None
+# for versus
+
+def double_reward_function(state, previous_state, course_length, **kwargs):
+    # print(kwargs.keys())
+    # dict_keys(['states', 'previous_states', 'idx'])
+    
+    # idx=0 is ego, idx=1 is leader(builtin AI)
+    
+    # state = kwargs['states'][0]
+    # previous_state = kwargs['previous_states'][0]
+    
+    # print('state,', state.keys())
+    # print('previous_state', previous_state.keys())
+    
+    params = {}
+    params['maf'] = 6.
+    params['overtaking_range'] = 250.
+    params['c_wall_hit'] = 1./(2000*10/9.3)
+    params['c_cars_hit'] = 10./(2000*10/9.3)
+    params['c_overtaking'] = 1.
+    
+    if previous_state \
+            and isinstance(previous_state["course_v"], float) \
+            and isinstance(previous_state["lap_count"], int):
+    
+        curr_v_diff = kwargs['states'][1]['course_v'] - kwargs['states'][0]['course_v']
+        prev_v_diff = kwargs['previous_states'][1]['course_v'] - kwargs['previous_states'][0]['course_v']
+        
+        r_overtaking = params['c_overtaking']*-(curr_v_diff - prev_v_diff)
+        # overtake-bonus
+        if prev_v_diff >= 0.0 and curr_v_diff < 0.0:
+            r_overtaking = r_overtaking + 1000.
+        # be overtaken-cost
+        if prev_v_diff > 0.0 and curr_v_diff <= 0.0:
+            r_overtaking = r_overtaking - 1000.
+        
+        # version robust to step length through scaling and always detecting wall contact (other than is_hit_wall)
+        if state["speed_kmph"] > 0.:
+            r_overtaking = r_overtaking * 0.1 * abs(state["speed_kmph"])
+        else:
+            r_overtaking = 0.0
+        
+        r_hit_wall = params['c_wall_hit'] * (state["hit_wall_time"] - previous_state["hit_wall_time"]) * 10 * state["speed_kmph"]**2
+        r_hit_cars = params['c_cars_hit'] * (state["hit_cars_time"] - previous_state["hit_cars_time"]) * 10 * state["speed_kmph"]**2
+        r_curr_v = state["course_v"] + state["lap_count"] * course_length
+        r_prev_v = previous_state["course_v"] + previous_state["lap_count"] * course_length
+        r_step_correction = params['maf']/(state["frame_count"] - previous_state["frame_count"])
+        
+        reward = (r_overtaking -r_hit_wall -r_hit_cars +r_curr_v -r_prev_v) * r_step_correction
+        
+        return reward
+
+def old_reward_function(**kwargs):
+    # required inputs
+    states = kwargs['states']
+    previous_states = kwargs['previous_states']
+    car_id = kwargs['car_id']
+    course_length = kwargs['course_length']
+    counter = kwargs['counter']
+    # optional params
+    params = {}
+    params['maf'] = 6.
+    params['overtaking_range'] = 250.
+    params['c_wall_hit'] = 1./(2000*10/9.3)
+    params['c_cars_hit'] = 10./(2000*10/9.3)
+    params['c_overtaking'] = 1.
+    for key, value in params.items():
+        if key in kwargs:
+            params[keys] = kwargs[key]
+
+    state = states[car_id]
+    previous_state = previous_states[car_id]
+
+    if previous_state \
+            and isinstance(previous_state["course_v"], float) \
+            and isinstance(previous_state["lap_count"], int):
+
+        # compute the overtaking rewards
+        competed_ids = [i for i in range(len(states))]
+        competed_ids.remove(car_id)
+        r_overtaking = 0.0
+
+        if car_id == 0 and counter % 100 == 0: 
+            print('Car[{}], course_v:{}, pre_course_v:{}'.format(car_id, state["course_v"], previous_state["course_v"]))
+
+        for idx in competed_ids:
+
+            if car_id == 0 and counter % 100 == 0: 
+                print('Car[{}], course_v:{}, pre_course_v:{}'.format(idx, states[idx]["course_v"], previous_states[idx]["course_v"]))
+            
+            curr_v_diff = states[idx]["course_v"] - state["course_v"]
+            if abs(curr_v_diff) >= (course_length/2.0):
+                if curr_v_diff > 0.0:
+                    curr_v_diff = -(course_length - curr_v_diff)
+                else: # < 0.0
+                    curr_v_diff = course_length + curr_v_diff
+
+            prev_v_diff = previous_states[idx]["course_v"] - previous_state["course_v"]
+            if abs(prev_v_diff) >= (course_length/2.0):
+                if prev_v_diff > 0.0:
+                    prev_v_diff = -(course_length - prev_v_diff)
+                else: # < 0.0
+                    prev_v_diff = course_length + prev_v_diff
+
+            if abs(curr_v_diff) <= params['overtaking_range']:
+                r_overtaking = r_overtaking + params['c_overtaking']*-(curr_v_diff-prev_v_diff)
+
+            # overtake-bonus
+            if prev_v_diff >= 0.0 and curr_v_diff < 0.0:
+                r_overtaking = r_overtaking + 1000.
+            # be overtaken-cost
+            if prev_v_diff > 0.0 and curr_v_diff <= 0.0:
+                r_overtaking = r_overtaking - 1000.
+
+        # version robust to step length through scaling and always detecting wall contact (other than is_hit_wall)
+        if state["speed_kmph"] > 0.:
+            r_overtaking = r_overtaking * 0.1 * abs(state["speed_kmph"])
+        else:
+            r_overtaking = 0.0
+        r_hit_wall = params['c_wall_hit'] * (state["hit_wall_time"] - previous_state["hit_wall_time"]) * 10 * state["speed_kmph"]**2
+        r_hit_cars = params['c_cars_hit'] * (state["hit_cars_time"] - previous_state["hit_cars_time"]) * 10 * state["speed_kmph"]**2
+        r_curr_v = state["course_v"] + state["lap_count"] * course_length
+        r_prev_v = previous_state["course_v"] + previous_state["lap_count"] * course_length
+        r_step_correction = params['maf']/(state["frame_count"] - previous_state["frame_count"])
+
+        reward = (r_overtaking -r_hit_wall -r_hit_cars +r_curr_v -r_prev_v) * r_step_correction
+        if car_id == 0 and counter % 100 == 0: 
+            print('Car[{}], reward:{}, r_overtaking:{}, r_hit_wall:{}, r_hit_cars:{}, r_curr_v:{}, r_prev_v:{}'.format(
+                car_id, reward, r_overtaking, r_hit_wall, r_hit_cars, r_curr_v, r_prev_v))
+
+        return reward
