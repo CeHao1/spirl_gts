@@ -584,3 +584,5 @@ def singe_reward_fun_modify_done(state, previous_state, course_length):
         reward = reward * DONE_FOLD
     return reward
 
+def double_reward_function():
+    return None
