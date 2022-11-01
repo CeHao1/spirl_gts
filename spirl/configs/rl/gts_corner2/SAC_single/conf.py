@@ -30,7 +30,7 @@ env_config = AttrDict(
     done_function = corner2_done_function,
 
     # num_cars = 1,
-    # store_states = True,
+    store_states = True,
     initial_velocity = 65*3.6, 
 
 )

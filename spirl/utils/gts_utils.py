@@ -583,3 +583,4 @@ def singe_reward_fun_modify_done(state, previous_state, course_length):
     if corner2_done_function(state):
         reward = reward * DONE_FOLD
     return reward
+

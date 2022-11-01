@@ -83,6 +83,8 @@ class VisStates:
         self.show_states(state_name='thr-brk', slim=self._hp.slim)
         self.show_states(state_name='delta', slim=self._hp.slim)
         
+        # to show collision 
+        self.show_states(state_name='hit_wall', slim=self._hp.slim)
 
     def show_map(self, slim):
 
@@ -155,7 +157,7 @@ if __name__ == "__main__":
             'figure_path':          os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/figures/"),
             'human_file_name':      'human.csv',
             'builtin_file_name':    '',
-            'sac_file_name':        'sac.h5',
+            'sac_file_name':        'sac_done.h5',
             'sc_file_name':         '',
         })
     vis = VisStates(config)
