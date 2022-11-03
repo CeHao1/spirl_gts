@@ -719,3 +719,8 @@ def old_reward_function(**kwargs):
                 car_id, reward, r_overtaking, r_hit_wall, r_hit_cars, r_curr_v, r_prev_v))
 
         return reward
+
+
+def judge_overtake_success_info(info):
+    # info = [info0, info1], info = {'state', 'previous_state'}
+    return info[0]['state']['course_v'] > info[1]['state']['course_v']

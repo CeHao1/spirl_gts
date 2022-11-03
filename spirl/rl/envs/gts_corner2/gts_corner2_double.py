@@ -9,11 +9,13 @@ from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
 from spirl.utils.general_utils import ParamDict, AttrDict
 
 from spirl.utils.gts_utils import make_env, initialize_gts
-from spirl.utils.gts_utils import double_reward_function, corner2_done_function
+from spirl.utils.gts_utils import double_reward_function, corner2_done_function, judge_overtake_success_info
 
 from spirl.utils.gts_utils import CAR_CODE, COURSE_CODE, TIRE_TYPE, BOP, DEFAULT_FEATURE_KEYS
 from spirl.utils.gts_utils import start_condition_formulator
 
+
+# consider a special value of successful overtake
 
 class GTSEnv_Corner2_Double(GTSEnv_Corner2_Single):
     def __init__(self, config):
@@ -93,6 +95,8 @@ class GTSEnv_Corner2_Double(GTSEnv_Corner2_Single):
         self.course_length = self._get_course_length()
 
     def reset(self, start_conditions=None):
+        # reset the overtaking info
+        self._success = 0
     
         # two cars
         if not start_conditions:
@@ -104,6 +108,10 @@ class GTSEnv_Corner2_Double(GTSEnv_Corner2_Single):
 
     def step(self, actions):
         obs, rew, done, info = self._env.step(actions)
+        if not self._success and judge_overtake_success_info(info):
+            self._success = 1
+            print('successful overtake')
+
         return obs, rew, done, info
 
     def _get_course_length(self):
@@ -112,3 +120,7 @@ class GTSEnv_Corner2_Double(GTSEnv_Corner2_Single):
 
     def render(self, mode='rgb_array'):
         return [[[[0,0,0]]] for _ in range(self._hp.num_cars)]
+
+
+    def get_episode_info(self):
+        return AttrDict(success = self._success)
