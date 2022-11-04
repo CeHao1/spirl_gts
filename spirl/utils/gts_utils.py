@@ -139,7 +139,7 @@ DEFAULT_FEATURE_KEYS_OVERTAKE_OLD = (
 
 
 
-chosen_feature_keys = DEFAULT_FEATURE_KEYS
+chosen_feature_keys = DEFAULT_FEATURE_KEYS_OVERTAKE
 action_keys = ['steering', 'throttle-brake']
 # chosen_feature_keys = ego_obs
 
@@ -611,7 +611,7 @@ def eval_time_trial_reward_function(state, previous_state, course_length, **kwar
 
 def corner2_done_function(state):
     # course > 2400 or time > 60 seconds
-    return state['course_v'] >= 2400 or state['frame_count'] > 60 * 60
+    return state['course_v'] >= 2400 or state['frame_count'] > 30 * 60
 
 def single_reward_function(state, previous_state, course_length, **kwargs):
     # print('state,', state.keys())

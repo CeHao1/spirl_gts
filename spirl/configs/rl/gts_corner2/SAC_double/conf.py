@@ -24,7 +24,6 @@ notes = 'non-hierarchical RL experiments in gts env'
 env_config = AttrDict(
     reward_norm=1.,
     do_init = False,
-    action_standard = False,
 
     reward_function = double_reward_function,
     done_function = corner2_done_function,
@@ -60,14 +59,14 @@ configuration = {
     'num_epochs': 2000,
     'max_rollout_len': 1000,
     'n_steps_per_epoch': 1000 ,
-    'n_warmup_steps': 5000 ,
+    # 'n_warmup_steps': 5000 ,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Corner2_Double,
     'sampler':SamplerBatched,
 
     # 'n_steps_per_epoch': 2000 ,
-    # 'n_warmup_steps': 2000 ,
+    'n_warmup_steps': 100 ,
 }
 
 configuration = AttrDict(configuration)

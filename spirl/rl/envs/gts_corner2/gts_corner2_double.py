@@ -104,6 +104,8 @@ class GTSEnv_Corner2_Double(GTSEnv_Corner2_Single):
             print('successful overtake')
 
     def get_episode_info(self):
-        return super().get_episode_info().update(
-            AttrDict(success = self._success,
+        episode_info = super().get_episode_info()
+        episode_info.update(
+                    AttrDict(success = self._success,
                     success_course = self._success_course))
+        return episode_info
