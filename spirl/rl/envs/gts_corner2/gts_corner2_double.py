@@ -53,30 +53,6 @@ class GTSEnv_Corner2_Double(GTSEnv_Corner2_Single):
         })
         return game_hp
 
-    def _generate_bop(self):
-        if self._hp.bop is None:
-            self.bops = [BOP[self._hp.car_name]] * self._hp.num_cars
-        else:
-            assert len(self._hp.bop) == self._hp.num_cars
-            bop_template = BOP[self._hp.car_name]
-            self.bops = []
-
-            for idx in range(self._hp.num_cars):
-                bop = copy.deepcopy(bop_template)
-                bop['power'] = round(bop['power'] * self._hp.bop[idx][0])
-                bop['weight'] = round(bop['weight'] * self._hp.bop[idx][1])
-                self.bops.append(bop)
-
-    def _initialize(self):
-        self._generate_bop()   
-
-        initialize_gts(ip = self._hp.ip_address,
-                      num_cars=self._hp.num_cars, 
-                      car_codes = CAR_CODE[self._hp.car_name], 
-                      course_code = COURSE_CODE[self._hp.course_name], 
-                      tire_type = TIRE_TYPE, 
-                      bops = self.bops,
-                      )
     
     def _make_env(self):
         self._env = make_env(
@@ -94,33 +70,38 @@ class GTSEnv_Corner2_Double(GTSEnv_Corner2_Single):
 
         self.course_length = self._get_course_length()
 
-    def reset(self, start_conditions=None):
-        # reset the overtaking info
-        self._success = 0
-    
-        # two cars
-        if not start_conditions:
-            course_v = self._hp.initial_course_v
-            speed = self._hp.initial_velocity
-            start_conditions = start_condition_formulator(num_cars=self._hp.num_cars, course_v=course_v, speed=speed)
-        obs = self._env.reset(start_conditions=start_conditions)
-        return obs
+    def _generate_bop(self):
+        if self._hp.bop is None:
+            self.bops = [BOP[self._hp.car_name]] * self._hp.num_cars
+        else:
+            assert len(self._hp.bop) == self._hp.num_cars
+            bop_template = BOP[self._hp.car_name]
+            self.bops = []
 
-    def step(self, actions):
-        obs, rew, done, info = self._env.step(actions)
+            for idx in range(self._hp.num_cars):
+                bop = copy.deepcopy(bop_template)
+                bop['power'] = round(bop['power'] * self._hp.bop[idx][0])
+                bop['weight'] = round(bop['weight'] * self._hp.bop[idx][1])
+                self.bops.append(bop)
+
+    def _formulate_start_conditions(self):
+        course_v = self._hp.initial_course_v
+        speed = self._hp.initial_velocity
+        start_conditions = start_condition_formulator(num_cars=self._hp.num_cars, course_v=course_v, speed=speed)
+        return start_conditions
+
+    def _reset_storage(self):
+        super()._reset_storage()
+        self._success = 0
+        self._success_course = 0
+
+    def _post_step_by_info(self, info):
         if not self._success and judge_overtake_success_info(info):
             self._success = 1
+            self._success_course = info[0]['state']['course_v']
             print('successful overtake')
 
-        return obs, rew, done, info
-
-    def _get_course_length(self):
-        course_length, course_code, course_name = self._env.get_course_meta()
-        return course_length
-
-    def render(self, mode='rgb_array'):
-        return [[[[0,0,0]]] for _ in range(self._hp.num_cars)]
-
-
     def get_episode_info(self):
-        return AttrDict(success = self._success)
+        return super().get_episode_info().update(
+            AttrDict(success = self._success,
+                    success_course = self._success_course))

@@ -49,7 +49,7 @@ class GTSEnv_Corner2_Single(GymEnv):
 
 
     def _initialize(self):
-        bops = [BOP[self._hp.car_name]] * self._hp.num_cars
+        bops = self._generate_bop()
 
         initialize_gts(ip = self._hp.ip_address,
                       num_cars=self._hp.num_cars, 
@@ -76,16 +76,16 @@ class GTSEnv_Corner2_Single(GymEnv):
         self.course_length = self._get_course_length()
 
     def reset(self, start_conditions=None):
+        self._reset_storage()
     
         if not start_conditions:
-            course_v = [1200]
-            speed = [self._hp.initial_velocity] * self._hp.num_cars
-            start_conditions = start_condition_formulator(num_cars=self._hp.num_cars, course_v=course_v, speed=speed)
+            start_conditions = self._formulate_start_conditions()
         obs = self._env.reset(start_conditions=start_conditions)
         return obs
 
     def step(self, actions):
         obs, rew, done, info = self._env.step(actions)
+        self._post_step_by_info(info)
         return obs, rew, done, info
 
     def _get_course_length(self):
@@ -94,3 +94,30 @@ class GTSEnv_Corner2_Single(GymEnv):
 
     def render(self, mode='rgb_array'):
         return [[[[0,0,0]]] for _ in range(self._hp.num_cars)]
+
+#  ========================= class methods ========================
+    def _generate_bop(self):
+        bops = [BOP[self._hp.car_name]] * self._hp.num_cars
+        return bops
+
+    def _formulate_start_conditions(self):
+        course_v = [1200]
+        speed = [self._hp.initial_velocity] * self._hp.num_cars
+        start_conditions = start_condition_formulator(num_cars=self._hp.num_cars, course_v=course_v, speed=speed)
+        return start_conditions
+
+    def _reset_storage(self):
+        self._lap_time = 0
+        self._hit_wall_time = 0
+        self._hit_car_time = 0
+
+    def _post_step_by_info(self, info):
+        self._lap_time = info[0]['state']['current_lap_time_msec'] / 1000
+        self._hit_wall_time = info[0]['state']['hit_wall_time']
+        self._hit_car_time = info[0]['state']['hit_car_time']
+
+    def get_episode_info(self):
+        return AttrDict(lap_time = self._lap_time,
+                        hit_wall_time = self._hit_wall_time,
+                        hit_car_time = self._hit_car_time)
+
