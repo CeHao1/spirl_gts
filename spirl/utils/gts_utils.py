@@ -86,6 +86,59 @@ DEFAULT_FEATURE_KEYS = (
     ]
 )
 
+DEFAULT_FEATURE_KEYS_OVERTAKE = (
+    [
+        "front_g",
+        "side_g",
+        "vertical_g",
+        "vx",
+        "vy",
+        "vz",
+        "centerline_diff_angle",
+        "edge_l_distance",
+        "edge_r_distance",
+        "is_hit_wall",
+        "is_hit_cars",
+        "steering",
+    ]
+    + [
+        "lidar_distance_%i_deg" % deg for deg in range(0, 360, 360//36)
+    ]
+    + [
+        "curvature_in_%.1f_seconds" % seconds
+        for seconds in np.arange(start=0.2, stop=3.0, step=0.2)
+    ]
+)
+
+DEFAULT_FEATURE_KEYS_OVERTAKE_OLD = (
+    [
+        "front_g",
+        "side_g",
+        "vertical_g",
+        "vx",
+        "vy",
+        "vz",
+        "centerline_diff_angle",
+        "edge_l_distance",
+        "edge_r_distance",
+        "is_hit_wall",
+        "is_hit_cars",
+        "steering",
+    ]
+    + [
+        "lidar_distance_%i_deg" % deg for deg in range(0, 360, 360//36)
+    ]
+    + [
+        "lidar_label_%i_deg" % deg for deg in range(0, 360, 360//36)
+    ]
+    + [
+        "curvature_in_%.1f_seconds" % seconds
+        for seconds in np.arange(start=0.2, stop=3.0, step=0.2)
+    ]
+)
+
+
+
 chosen_feature_keys = DEFAULT_FEATURE_KEYS
 action_keys = ['steering', 'throttle-brake']
 # chosen_feature_keys = ego_obs

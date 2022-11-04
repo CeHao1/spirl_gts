@@ -11,7 +11,7 @@ from spirl.utils.general_utils import ParamDict, AttrDict
 from spirl.utils.gts_utils import make_env, initialize_gts
 from spirl.utils.gts_utils import double_reward_function, corner2_done_function, judge_overtake_success_info
 
-from spirl.utils.gts_utils import CAR_CODE, COURSE_CODE, TIRE_TYPE, BOP, DEFAULT_FEATURE_KEYS
+from spirl.utils.gts_utils import CAR_CODE, COURSE_CODE, TIRE_TYPE, BOP, DEFAULT_FEATURE_KEYS, DEFAULT_FEATURE_KEYS_OVERTAKE
 from spirl.utils.gts_utils import start_condition_formulator
 
 
@@ -42,13 +42,14 @@ class GTSEnv_Corner2_Double(GTSEnv_Corner2_Single):
             'do_init' : True,
             'reward_function' : double_reward_function,
             'done_function' : corner2_done_function,
-            'standardize_observations' : False,
+            'standardize_observations' : True,
             'store_states' : False,
             'builtin_controlled': [0],
             'min_frames_per_action': 6,
+            'num_lidar_rays': 36,
             'initial_velocity': [200, 144],
             'initial_course_v': [1200, 1400], 
-            'feature_keys': DEFAULT_FEATURE_KEYS,
+            'feature_keys': DEFAULT_FEATURE_KEYS_OVERTAKE,
             'bop': [[1, 1], [0.8, 1.2]],
         })
         return game_hp
@@ -62,6 +63,7 @@ class GTSEnv_Corner2_Double(GTSEnv_Corner2_Single):
             reward_function = self._hp.reward_function,
             done_function = self._hp.done_function,
             builtin_controlled = self._hp.builtin_controlled,
+            num_lidar_rays = self._hp.num_lidar_rays,
             store_states = self._hp.store_states,
             standardize_observations=self._hp.standardize_observations,
             

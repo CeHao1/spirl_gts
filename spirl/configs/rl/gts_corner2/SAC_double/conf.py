@@ -23,7 +23,7 @@ notes = 'non-hierarchical RL experiments in gts env'
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    # do_init = False,
+    do_init = False,
     action_standard = False,
 
     reward_function = double_reward_function,
