@@ -49,7 +49,7 @@ env_config = AttrDict(
     store_states = False,
     initial_velocity = [65*3.6, 55*3.6],
     initial_course_v = [1200, 1250],
-    bop = [[1, 1], [0.8, 1.2]],
+    bop = [[1.0, 1.0], [1.0, 1.0]],
 )   
 
 configuration = {
