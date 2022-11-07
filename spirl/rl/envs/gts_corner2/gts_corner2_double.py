@@ -98,6 +98,8 @@ class GTSEnv_Corner2_Double(GTSEnv_Corner2_Single):
         self._success_course = 0
 
     def _post_step_by_info(self, info):
+        super()._post_step_by_info(info)
+        
         if not self._success and judge_overtake_success_info(info):
             self._success = 1
             self._success_course = info[0]['state']['course_v']

@@ -114,7 +114,13 @@ class GTSEnv_Corner2_Single(GymEnv):
     def _post_step_by_info(self, info):
         self._lap_time = info[0]['state']['current_lap_time_msec'] / 1000
         self._hit_wall_time = info[0]['state']['hit_wall_time']
-        self._hit_car_time = info[0]['state']['hit_car_time']
+        self._hit_car_time = info[0]['state']['hit_cars_time']
+        
+        if info[0]['state']['is_hit_wall']:
+            print('hit wall at ', self._lap_time)
+            
+        if info[0]['state']['is_hit_cars']:
+            print('hit car at ', self._lap_time)
 
     def get_episode_info(self):
         return AttrDict(lap_time = self._lap_time,

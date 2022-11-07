@@ -46,8 +46,8 @@ env_config = AttrDict(
     num_cars = 2,
     builtin_controlled = [1],
     store_states = False,
-    initial_velocity = [65*3.6, 55*3.6],
-    initial_course_v = [1200, 1250],
+    initial_velocity = [65*3.6, 60*3.6],
+    initial_course_v = [1200, 1240],
     bop = [[1.0, 1.0], [1.0, 1.0]],
 )   
 
@@ -59,14 +59,14 @@ configuration = {
     'num_epochs': 2000,
     'max_rollout_len': 1000,
     'n_steps_per_epoch': 1000 ,
-    # 'n_warmup_steps': 5000 ,
+    'n_warmup_steps': 5000 ,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Corner2_Double,
     'sampler':SamplerBatched,
 
     # 'n_steps_per_epoch': 2000 ,
-    'n_warmup_steps': 100 ,
+    # 'n_warmup_steps': 100 ,
 }
 
 configuration = AttrDict(configuration)
