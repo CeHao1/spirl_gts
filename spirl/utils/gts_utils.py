@@ -139,7 +139,8 @@ DEFAULT_FEATURE_KEYS_OVERTAKE_OLD = (
 
 
 
-chosen_feature_keys = DEFAULT_FEATURE_KEYS_OVERTAKE
+# chosen_feature_keys = DEFAULT_FEATURE_KEYS_OVERTAKE
+chosen_feature_keys = DEFAULT_FEATURE_KEYS
 action_keys = ['steering', 'throttle-brake']
 # chosen_feature_keys = ego_obs
 

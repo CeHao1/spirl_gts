@@ -23,7 +23,7 @@ from spirl.components.trainer_base import BaseTrainer
 from spirl.utils.wandb import WandBLogger
 from spirl.components.params import get_args
 
-WANDB_PROJECT_NAME = 'MODEL_TRAIN_2022fall'
+WANDB_PROJECT_NAME = 'MODEL_TRAIN_single'
 WANDB_ENTITY_NAME = 'cehao'
 
 
