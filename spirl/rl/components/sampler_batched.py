@@ -203,6 +203,7 @@ class HierarchicalSamplerBached(SamplerBatched):
                         agent_output = self.sample_action(self._obs)
                         agent_output = self._postprocess_agent_output(agent_output)
                         obs, reward, done, info = self._env.step(agent_output.action)
+                        obs, reward, done, info = self._select_agent_id(obs, reward, done, info)
                         assert len(obs.shape) == 2
                         batch_length = obs.shape[0]
 
