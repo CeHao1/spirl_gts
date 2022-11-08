@@ -15,7 +15,7 @@ course from 12000 to 2400. time about 21-23s
 
 '''
 colors = {'human': 'k',
-          'builtin': 'g--',
+          'builtin': 'r',
           'sac': 'b',
           'skill-critic': 'r',
           }
@@ -51,11 +51,11 @@ class VisStates:
             print('load human')
         
         if self._hp.builtin_file_name:
-            self.states['builtin'] = load_replay_2_states(self._hp.file_dir, self._hp.builtin_file_name)
+            self.states['builtin'] = load_replay_2_states(self._hp.file_dir, self._hp.builtin_file_name, car_key='car1')
             print('load builtin')
 
         if self._hp.sac_file_name:
-            self.states['sac'] = load_replay_2_states(self._hp.file_dir, self._hp.sac_file_name)
+            self.states['sac'] = load_replay_2_states(self._hp.file_dir, self._hp.sac_file_name, car_key='car0')
             print('load sac')
 
         if self._hp.sc_file_name:
@@ -110,6 +110,11 @@ class VisStates:
         for name in self.states:
             plt.plot(self.states[name]['X'], self.states[name]['Y'], color=colors[name], label=name)
 
+        # sac hit wall
+        idx_sac_hit_wall = np.where(self.states['sac']['hit_wall'])[0]
+        plt.plot(self.states['sac']['X'][idx_sac_hit_wall], self.states['sac']['Y'][idx_sac_hit_wall], 'm*', label='sac hit wall',
+                 markersize = 20)
+
         # config
         plt.axis('equal')
 
@@ -152,12 +157,13 @@ class VisStates:
         
 if __name__ == "__main__":
     config = ParamDict({
+            'slim':                 [1700, 2000],
             'file_dir':             os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts"),
             'track_dir':            os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/track.csv"),
             'figure_path':          os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/figures/"),
-            'human_file_name':      'human.csv',
-            'builtin_file_name':    '',
-            'sac_file_name':        'sac_done.h5',
+            # 'human_file_name':      'human.csv',
+            'builtin_file_name':    'sac_overtake.h5',
+            'sac_file_name':        'sac_overtake.h5',
             'sc_file_name':         '',
         })
     vis = VisStates(config)

@@ -45,7 +45,7 @@ env_config = AttrDict(
     
     num_cars = 2,
     builtin_controlled = [1],
-    store_states = False,
+    store_states = True,
     initial_velocity = [65*3.6, 60*3.6],
     initial_course_v = [1200, 1240],
     bop = [[1.0, 1.0], [1.0, 1.0]],
