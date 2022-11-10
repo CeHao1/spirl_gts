@@ -24,7 +24,7 @@ from spirl.utils.gts_utils import singe_reward_fun_modify_done, corner2_done_fun
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    do_init = False,
+    # do_init = False,
     # action_standard = True,
 
     reward_function = singe_reward_fun_modify_done,
@@ -93,7 +93,7 @@ ll_model_params = AttrDict(
 ll_policy_params = AttrDict(
     policy_model = TimeIndexCDSPiRLMDL,
     policy_model_params=ll_model_params,
-    policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/gts_corner2_single"),
+    policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts_corner2/sc_single"),
 
     
     manual_log_sigma=[0, 0],

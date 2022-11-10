@@ -13,7 +13,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 configuration = {
     'model': TimeIndexCDSPiRLMDL,
     'logger': Logger,
-    'data_dir': os.path.join(os.environ['DATA_DIR'], 'gts_corner2_single'),
+    'data_dir': os.path.join(os.environ['DATA_DIR'], 'gts_corner2/sc_single'),
     'epoch_cycles_train': 10,
     'evaluator': TopOfNSequenceEvaluator,
     'top_of_n_eval': 100,
