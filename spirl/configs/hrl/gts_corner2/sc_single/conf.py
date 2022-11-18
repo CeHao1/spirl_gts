@@ -44,7 +44,7 @@ configuration = AttrDict(    {
     'num_epochs': 2000,
     'max_rollout_len': 1000,
     'n_steps_per_epoch': 1000,
-    'n_warmup_steps': 5000,
+    'n_warmup_steps': 5000 * 4,
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Corner2_Single,
