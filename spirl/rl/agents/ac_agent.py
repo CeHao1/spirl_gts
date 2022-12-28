@@ -33,7 +33,8 @@ class ACAgent(BaseAgent):
         if len(obs.shape) == 1:     # we need batched inputs for policy
             policy_output = self._remove_batch(self.policy(obs[None]))
             policy_output = map2np(policy_output)
-        policy_output= map2np(self.policy(obs))
+        else:
+            policy_output= map2np(self.policy(obs))
         policy_output = self._post_process_policy_output(policy_output)
         return policy_output
 

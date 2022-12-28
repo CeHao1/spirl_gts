@@ -16,7 +16,7 @@ from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
 # WANDB_PROJECT_NAME = 'RL_TRAIN_2022fall'
-WANDB_PROJECT_NAME = 'RL_TRAIN_corner2'
+WANDB_PROJECT_NAME = 'maze'
 WANDB_ENTITY_NAME = 'cehao'
 
 
