@@ -15,7 +15,8 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'RL_TRAIN_2022fall'
+# WANDB_PROJECT_NAME = 'RL_TRAIN_2022fall'
+WANDB_PROJECT_NAME = 'RL_TRAIN_corner2'
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -53,8 +54,9 @@ class RLTrainer:
         self.conf.env.seed = self._hp.seed
         if 'task_params' in self.conf.env: self.conf.env.task_params.seed=self._hp.seed
         if 'general' in self.conf: self.conf.general.seed=self._hp.seed
-        self.env = self._hp.environment(self.conf.env)
-        self.conf.agent.env_params = self.env.agent_params      # (optional) set params from env for agent
+        if args.mode != 'offline': # offline has no env
+            self.env = self._hp.environment(self.conf.env)
+            self.conf.agent.env_params = self.env.agent_params      # (optional) set params from env for agent
         if self.is_chef:
             pretty_print(self.conf)
 
@@ -65,7 +67,8 @@ class RLTrainer:
         # self.agent.post_process() # post process any change to the agent
 
         # build sampler
-        self.sampler = self._hp.sampler(self.conf.sampler, self.env, self.agent, self.logger, self._hp.max_rollout_len)
+        if args.mode != 'offline': # offline has no sampler
+            self.sampler = self._hp.sampler(self.conf.sampler, self.env, self.agent, self.logger, self._hp.max_rollout_len)
 
         # load from checkpoint
         self.global_step, self.n_update_steps, start_epoch = 0, 0, 0
@@ -109,6 +112,12 @@ class RLTrainer:
 
         # self._hp.n_warmup_steps = 0
         if self._hp.n_warmup_steps > 0:
+            # save inital weights of agents
+            save_checkpoint({
+                    'epoch': 9999,
+                    'global_step': self.global_step,
+                    'state_dict': self.agent.state_dict(),
+                }, os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name(9999))
             self.warmup()
 
         print('after warm up, start training epochs')
@@ -351,12 +360,13 @@ class RLTrainer:
     def offline(self):
         # customized method
         # load states means load replay buffer
-        self.agent.load_state(self._hp.exp_path) 
-        self.agent.to(self.device)
+        # self.agent.load_state(self._hp.exp_path) 
+        # self.agent.to(self.device)
 
-        print('train the offline')
-        self.agent.hl_agent.offline()
-        self.agent.ll_agent.offline()
+        self.agent.offline()
+        # print('train the offline')
+        # self.agent.hl_agent.offline()
+        # self.agent.ll_agent.offline()
 
 
     def print_train_update(self, epoch, agent_outputs, timers):

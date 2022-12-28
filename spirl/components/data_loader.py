@@ -171,6 +171,7 @@ class VideoDataset(Dataset):
                 else:
                     data.images = np.zeros((data.states.shape[0], 2, 2, 3), dtype=np.uint8)
 
+            # print('data action', data.actions.shape, 'states', data.states.shape)
         except:
             raise ValueError("Could not load from file {}".format(path))
         return data

@@ -12,6 +12,8 @@ class skill_critic_stages(Enum):
     LL_TRAIN = 2
     HYBRID = 3
 
+    LL_TRAIN_PI = 4
+    SC_WO_LLVAR = 5
 
 class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
     def __init__(self, config):
@@ -76,6 +78,20 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             self.hl_agent.fast_assign_flags([True])
             self.ll_agent.fast_assign_flags([True, True, True])
 
+        elif stage == skill_critic_stages.LL_TRAIN_PI:
+        # 5) only train LL policy, without LL variance
+            self.hl_agent.switch_off_deterministic_action_mode()
+            self.ll_agent.switch_on_deterministic_action_mode()
+            self.hl_agent.fast_assign_flags([False])
+            self.ll_agent.fast_assign_flags([True, True, True])
+            
+        elif stage == skill_critic_stages.SC_WO_LLVAR:
+        # 6) only train LL policy, without LL variance
+            self.hl_agent.switch_off_deterministic_action_mode()
+            self.ll_agent.switch_on_deterministic_action_mode()
+            self.hl_agent.fast_assign_flags([True])
+            self.ll_agent.fast_assign_flags([True, True, True])
+
         else:
             self.hl_agent.switch_off_deterministic_action_mode()
             self.ll_agent.switch_off_deterministic_action_mode()
@@ -135,3 +151,17 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
 
         return update_outputs
 
+
+    def offline(self):
+
+        vis = True
+        hl_experience_batch = self.hl_agent._sample_experience()
+        ll_experience_batch = self.ll_agent._sample_experience()
+        
+        # self.hl_agent.visualize_actions(hl_experience_batch)
+        # self.ll_agent.visualize_actions(ll_experience_batch)
+        # self.ll_agent.visualize_gradients(ll_experience_batch)
+        
+        
+        # hl_update_outputs = self.hl_agent.update()
+        ll_update_outputs = self.ll_agent.update(vis=vis)

@@ -74,13 +74,19 @@ DEFAULT_FEATURE_KEYS = (
             )
         )
     ]
-    + [
+    # + [
+    #     "curvature_in_%.1f_seconds" % seconds
+    #     for seconds in np.arange(start=1, stop=3.0, step=0.2)
+    # ]
+
+    +[
         "curvature_in_%.1f_seconds" % seconds
         for seconds in np.arange(start=0.2, stop=3.0, step=0.2)
     ]
 )
 
 chosen_feature_keys = DEFAULT_FEATURE_KEYS
+action_keys = ['steering', 'throttle-brake']
 # chosen_feature_keys = ego_obs
 
 # state_dim = len(ego_obs)
@@ -131,6 +137,8 @@ def BoP_formulator(num_cars, car_name, weight_percentage, power_percentage):
     return bops
 
 def initialize_gts(ip, num_cars, car_codes, course_code, tire_type, bops):
+    # print(ip, num_cars, car_codes, course_code, tire_type, bops)
+
     from gym_gts import GTSApi
     with GTSApi(ip=ip) as gts_api:
         gts_api.set_race(
@@ -534,3 +542,27 @@ def eval_time_trial_reward_function(state, previous_state, course_length):
                 return max(last_t, now_t)
             else:
                 return 0
+
+# =========================== for corner 2 and versus ========================
+
+
+def corner2_done_function(state):
+    # course > 2400 or time > 60 seconds
+    return state['course_v'] >= 2400 or state['frame_count'] > 60 * 60
+
+def single_reward_function(state, previous_state, course_length):
+    if previous_state \
+            and isinstance(previous_state["course_v"], float) \
+            and isinstance(previous_state["lap_count"], int):
+
+        # version robust to step length through scaling and always detecting wall contact (other than is_hit_wall)
+        reward = (
+                         - (
+                                 (state["hit_wall_time"] - previous_state["hit_wall_time"])
+                                 * 10 * state["speed_kmph"]**2 * c_wall_hit)
+                         + (state["course_v"] + state["lap_count"] * course_length)
+                         - (previous_state["course_v"] + previous_state["lap_count"] * course_length)
+                 ) * (maf/(state["frame_count"] - previous_state["frame_count"]))  # correcting too long steps
+
+        return reward
+

@@ -8,13 +8,13 @@ from spirl.rl.components.environment import GymEnv
 from spirl.utils.general_utils import ParamDict, AttrDict
 
 from spirl.utils.gts_utils import make_env, initialize_gts
-from spirl.utils.gts_utils import reward_function, sampling_done_function
+from spirl.utils.gts_utils import single_reward_function, corner2_done_function
 
 from spirl.utils.gts_utils import CAR_CODE, COURSE_CODE, TIRE_TYPE, BOP, DEFAULT_FEATURE_KEYS
 from spirl.utils.gts_utils import start_condition_formulator
 
 
-class GTSEnv_Raw(GymEnv):
+class GTSEnv_Corner2_Single(GymEnv):
     def __init__(self, config):
         self._hp = self._default_hparams()
         self._hp.overwrite(self._game_hp())
@@ -26,10 +26,10 @@ class GTSEnv_Raw(GymEnv):
 
     def _default_hparams(self):
         default_dict = ParamDict({
-            'ip_address' : '192.168.1.100',
+            'ip_address' : '192.168.1.5',
             'car_name' : 'Audi TTCup',
             'course_name' : 'Tokyo Central Outer' ,
-            'num_cars' : 20,
+            'num_cars' : 1,
             'disable_env_checker': True,
         })
         return super()._default_hparams().overwrite(default_dict)
@@ -37,9 +37,9 @@ class GTSEnv_Raw(GymEnv):
     def _game_hp(self):
         game_hp = ParamDict({
             'do_init' : True,
-            'reward_function' : reward_function,
-            'done_function' : sampling_done_function,
-            'standardize_observations' : False,
+            'reward_function' : single_reward_function,
+            'done_function' : corner2_done_function,
+            'standardize_observations' : True,
             'store_states' : False,
             'builtin_controlled': [],
             'min_frames_per_action': 6,
@@ -78,9 +78,7 @@ class GTSEnv_Raw(GymEnv):
     def reset(self, start_conditions=None):
     
         if not start_conditions:
-            course_gap = math.floor(self.course_length / self._hp.num_cars)
-            course_init = np.random.rand() * self.course_length
-            course_v = [(course_init + course_gap*i)% self.course_length  for i in range(self._hp.num_cars)]
+            course_v = [1200]
             speed = [self._hp.initial_velocity] * self._hp.num_cars
             start_conditions = start_condition_formulator(num_cars=self._hp.num_cars, course_v=course_v, speed=speed)
         obs = self._env.reset(start_conditions=start_conditions)
