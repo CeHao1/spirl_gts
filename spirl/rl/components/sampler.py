@@ -138,12 +138,8 @@ class Sampler:
         """Optionally post-process / store agent output."""
         if deterministic_action:
             if isinstance(agent_output.dist, MultivariateGaussian):
-                # print('change the action to determin')
                 agent_output.ori_action = agent_output.action
                 agent_output.action = agent_output.dist.mean[0]
-
-                # print('ori action',agent_output.ori_action )
-                # print('new action', agent_output.action)
         return agent_output
 
 
