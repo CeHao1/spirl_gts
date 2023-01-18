@@ -3,7 +3,6 @@ from posixpath import split
 from spirl.utils.general_utils import ParamDict, map_dict, AttrDict
 from spirl.utils.pytorch_utils import ten2ar, avg_grad_norm, TensorModule, check_shape, map2torch, map2np, parse_one_hot
 
-# this agent should be similar to the state-conditioned close-loop agent
 from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
 
@@ -11,6 +10,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import copy
+
+# this is the low-level action agent of skill-critic
 
 class LLActionAgent(ActionPriorSACAgent):
     def __init__(self, config):
@@ -175,6 +176,7 @@ class LLActionAgent(ActionPriorSACAgent):
 
     #  =============================== ll policy ================================
     '''
+    # same as the father class
     def _compute_policy_loss(self, experience_batch, policy_output):
         q_est = torch.min(*[critic(experience_batch.observation, self._prep_action(policy_output.action)).q
                                       for critic in self.critics])
@@ -398,6 +400,7 @@ class LLActionAgent(ActionPriorSACAgent):
         self.update(self, experience_batch=None, vis=True)
 
         '''
+        # archived update
         from tqdm import tqdm
         q_target_store = []
         update_time = self._hp.update_iterations
