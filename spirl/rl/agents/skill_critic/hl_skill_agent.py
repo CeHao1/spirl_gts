@@ -9,7 +9,7 @@ from spirl.utils.general_utils import ParamDict, map_dict, AttrDict
 from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
 
-## this should be a skill prior agent + special critic update
+## this is the high-level skill agent in the skill-critic
 
 class HLSKillAgent(ActionPriorSACAgent):
     def __init__(self, config):
@@ -115,7 +115,6 @@ class HLSKillAgent(ActionPriorSACAgent):
 
         print('visualize HL latent variances')
 
-
         # show the distributions of policy(latent variable)
         policy_output = self.act(obs) # input (1000, x)
         dist_batch = policy_output['dist'] # (1000, x)
@@ -124,7 +123,7 @@ class HLSKillAgent(ActionPriorSACAgent):
         sigma = np.array([np.exp(dist.log_sigma) for dist in dist_batch])
         act = policy_output.action
         
-        '''
+        
         # show latent variables
         plt.figure(figsize=(14, 4 *plt_rows))
         for idx in range(act_dim):
@@ -133,11 +132,11 @@ class HLSKillAgent(ActionPriorSACAgent):
             plt.title('HL z value: dim {}'.format(idx))
             plt.grid()
         plt.show()
-        '''
+        
 
         print('mean of all dims, abs value \n', np.mean(np.abs(act), axis=0), np.abs(act).shape)
         
-        '''
+        
         plt.figure(figsize=(14, 4 *act_dim))
         for idx in range(act_dim):
             plt.subplot(act_dim, 2, 2*idx + 1)
@@ -151,7 +150,7 @@ class HLSKillAgent(ActionPriorSACAgent):
             plt.title('HL z sigma, dim {} '.format(idx))
 
         plt.show()    
-        '''    
+        
         
         import seaborn as sns
         fs = 16
@@ -168,6 +167,7 @@ class HLSKillAgent(ActionPriorSACAgent):
     def offline(self):
         self.update()
         '''
+        archived update
         for _ in range(self._hp.update_iterations):
             # sample batch and normalize
             experience_batch = self._sample_experience()
@@ -184,8 +184,8 @@ class HLSKillAgent(ActionPriorSACAgent):
             policy_loss = self._compute_policy_loss(experience_batch, policy_output)
         
             self._perform_update(policy_loss, self.policy_opt, self.policy)
-
         '''
+        
 
     @property
     def n_rollout_steps(self):

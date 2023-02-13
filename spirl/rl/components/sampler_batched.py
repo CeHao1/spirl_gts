@@ -22,6 +22,7 @@ class SamplerBatched:
     def _default_hparams(self):
         return ParamDict({
             'sample_complete_rollout_length' : True,
+            'select_agent_id': [],
         })
 
     def init(self, is_train):
@@ -50,10 +51,12 @@ class SamplerBatched:
                         agent_output = self._postprocess_agent_output(agent_output)
 
                         obs, reward, done, info = self._env.step(agent_output.action)
+                        obs, reward, done, info = self._select_agent_id(obs, reward, done, info)
+                        
+                        obs = self._postprocess_obs(obs)
                         assert len(obs.shape) == 2 # must be batched array. first dim is batch size, second dim is the obs data
                         batch_length = obs.shape[0]
-
-                        obs = self._postprocess_obs(obs)
+                                        
                         experience_batch.append(AttrDict(
                             observation=self._obs,
                             reward=reward,
@@ -104,6 +107,7 @@ class SamplerBatched:
 
                         # print(agent_output.action)
                         obs, reward, done, info = self._env.step(agent_output.action)
+                        obs, reward, done, info = self._select_agent_id(obs, reward, done, info)
                         assert len(obs.shape) == 2
                         # batch_length = obs.shape[0]
 
@@ -144,15 +148,31 @@ class SamplerBatched:
                                          prefix='train' if self._agent._is_train else 'val',
                                          step=global_step)
         self._episode_step, self._episode_reward = 0, 0.
-        self._obs = self._postprocess_obs(self._reset_env())
+        self._obs = self._postprocess_obs(self._select_one_agent_id(self._reset_env()))
         self._agent.reset()
 
     def _reset_env(self):
         return self._env.reset()
 
+    def _select_one_agent_id(self, obs):
+        if self._hp.select_agent_id:
+            obs = obs[self._hp.select_agent_id]
+        return obs
+
+    def _select_agent_id(self, obs, reward, done, info):
+        # print('before ', obs.shape, reward.shape, done.shape, info.shape)
+        if self._hp.select_agent_id:
+            obs = obs[self._hp.select_agent_id]
+            reward = reward[self._hp.select_agent_id]
+            done = done[self._hp.select_agent_id]
+            info = info[self._hp.select_agent_id]
+        # print('after ', obs.shape, reward.shape, done.shape, info.shape)
+        return obs, reward, done, info
+
     def _postprocess_obs(self, obs):
         """Optionally post-process observation."""
         return obs
+        # return obs[0][None]
 
     def _postprocess_agent_output(self, agent_output, deterministic_action=False):
         """Optionally post-process / store agent output."""
@@ -183,6 +203,7 @@ class HierarchicalSamplerBached(SamplerBatched):
                         agent_output = self.sample_action(self._obs)
                         agent_output = self._postprocess_agent_output(agent_output)
                         obs, reward, done, info = self._env.step(agent_output.action)
+                        obs, reward, done, info = self._select_agent_id(obs, reward, done, info)
                         assert len(obs.shape) == 2
                         batch_length = obs.shape[0]
 

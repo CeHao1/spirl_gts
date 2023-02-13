@@ -20,13 +20,7 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
         super().__init__(config)
         self.ll_agent.update_by_hl_agent(self.hl_agent)
         self._train_stage = None
-        '''
-        We should define some different modes, such as \
-        1) Full training,
-        2) Only train Q, for something
-        3) Use deterministic policy
 
-        '''
         # update the trianing stage
         if self._train_stage is None:
             self._train_stage = self._hp.initial_train_stage
@@ -40,7 +34,7 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
         return super()._default_hparams().overwrite(default_dict)
 
     def train_stages_control(self, stage=None):
-        print('!! Change SC stage to ', stage)
+        print('!! Change Skill-critic stage to ', stage)
 
         if stage == skill_critic_stages.WARM_START:
         # 1) warm-start stage
@@ -99,7 +93,7 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             self.ll_agent.fast_assign_flags([True, True, True])
 
     '''
-    # 
+    # same as the father class
     def act(self, obs): # obs is numpy array
         """Output dict contains is_hl_step in case high-level action was performed during this action."""
         obs_input = obs[None] if len(obs.shape) == 1 else obs    # need batch input for agents
@@ -124,11 +118,6 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
 
 
     # ====================== for update, we have some stages ====================
-
-    # def update(self, experience_batches):
-
-    #     return super().update(experience_batches)
-
     def update(self, experience_batches):
         """Updates high-level and low-level agents depending on which parameters are set."""
         assert isinstance(experience_batches, AttrDict)  # update requires batches for both HL and LL
@@ -153,15 +142,13 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
 
 
     def offline(self):
-
         vis = True
         hl_experience_batch = self.hl_agent._sample_experience()
         ll_experience_batch = self.ll_agent._sample_experience()
         
-        # self.hl_agent.visualize_actions(hl_experience_batch)
-        # self.ll_agent.visualize_actions(ll_experience_batch)
-        # self.ll_agent.visualize_gradients(ll_experience_batch)
+        self.hl_agent.visualize_actions(hl_experience_batch)
+        self.ll_agent.visualize_actions(ll_experience_batch)
+        self.ll_agent.visualize_gradients(ll_experience_batch)
         
-        
-        # hl_update_outputs = self.hl_agent.update()
+        hl_update_outputs = self.hl_agent.update()
         ll_update_outputs = self.ll_agent.update(vis=vis)

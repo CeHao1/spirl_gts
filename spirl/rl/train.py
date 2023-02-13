@@ -104,6 +104,7 @@ class RLTrainer:
             'logging_target': 'wandb',    # where to log results to
             'n_warmup_steps': 0,    # steps of warmup experience collection before training
             'use_update_after_sampling': False, # call another function
+            'save_initial_weight': False, # to save a weight with 9999. of offline usage
         })
         return default_dict
 
@@ -113,11 +114,12 @@ class RLTrainer:
         # self._hp.n_warmup_steps = 0
         if self._hp.n_warmup_steps > 0:
             # save inital weights of agents
-            save_checkpoint({
-                    'epoch': 9999,
-                    'global_step': self.global_step,
-                    'state_dict': self.agent.state_dict(),
-                }, os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name(9999))
+            if self._hp.save_initial_weight:
+                save_checkpoint({
+                        'epoch': 9999,
+                        'global_step': self.global_step,
+                        'state_dict': self.agent.state_dict(),
+                    }, os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name(9999))
             self.warmup()
 
         print('after warm up, start training epochs')

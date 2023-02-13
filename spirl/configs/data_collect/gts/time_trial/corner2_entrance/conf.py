@@ -47,6 +47,7 @@ sample_config = AttrDict(
     ip_address = init_config.ip_address,
     min_frames_per_action = 6,
     builtin_controlled = [0],
+    store_states = True,
 )
 
 # configs to save and convert the 
