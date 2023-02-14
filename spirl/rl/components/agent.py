@@ -396,8 +396,12 @@ class FixedIntervalTimeIndexedHierarchicalAgent(FixedIntervalHierarchicalAgent):
     def make_ll_obs(self, obs, hl_action):
         """Creates low-level agent's observation from env observation,  HL action and time index."""
         idx = torch.tensor([self._steps_since_hl % self._hp.hl_interval])
-        one_hot_torch = make_one_hot(idx, self._hp.hl_interval).repeat(obs.shape[0], 1)
+        dim_of_obs = 1 if len(obs.shape) == 1 else obs.shape[0]
+        one_hot_torch = make_one_hot(idx, self._hp.hl_interval).repeat(dim_of_obs, 1)
         one_hot_np = map2np(one_hot_torch)
+
+        if len(obs.shape) == 1:
+            one_hot_np = one_hot_np.squeeze()
 
         # print("="*20)
         # print('obs',obs.shape, type(obs))

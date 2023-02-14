@@ -19,8 +19,7 @@ class ReplayBuffer:
 
     def _default_hparams(self):
         default_dict = ParamDict({
-            # 'capacity': 1e6,        # max number of experience samples
-            'capacity': 1e3, # for debug only
+            'capacity': 1e6,        # max number of experience samples
             'dump_replay': True,    # whether replay buffer gets dump upon checkpointing
         })
         return default_dict

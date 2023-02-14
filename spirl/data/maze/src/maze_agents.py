@@ -3,6 +3,7 @@ import numpy as np
 
 from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
+from spirl.rl.agents.skill_critic.hl_skill_agent import HLSKillAgent
 from spirl.rl.agents.skill_space_agent import SkillSpaceAgent, ACSkillSpaceAgent
 
 
@@ -86,6 +87,37 @@ class MazeACActionPriorSACAgent(ActionPriorSACAgent, MazeAgent):
     def visualize(self, logger, rollout_storage, step):
         self._vis_replay_buffer(logger, step)
         ActionPriorSACAgent.visualize(self, logger, rollout_storage, step)
+
+    def _vis_replay_buffer(self, logger, step):
+        """Visualizes maze trajectories from replay buffer (if step < replay capacity)."""
+        if step > self.replay_buffer.capacity:
+            return   # visualization does not work if earlier samples were overridden
+
+        # get data
+        size = self.vis_replay_buffer.size
+        states = self.vis_replay_buffer.get().observation[:size, :2]
+
+        fig = plt.figure()
+        plt.scatter(states[:, 0], states[:, 1], s=5, c=np.arange(size), cmap='Blues')
+        plt.axis("equal")
+        logger.log_plot(fig, "replay_vis", step)
+        plt.close(fig)
+
+
+class MazeHLSkillAgent(HLSKillAgent, MazeAgent):
+    def __init__(self, *args, **kwargs):
+        HLSKillAgent.__init__(self, *args, **kwargs)
+        from spirl.rl.components.replay_buffer import SplitObsUniformReplayBuffer
+        # TODO: don't hardcode this for res 32x32
+        self.vis_replay_buffer = SplitObsUniformReplayBuffer({'capacity': 1e7, 'unused_obs_size': 6144,})
+
+    def update(self, experience_batch):
+        self.vis_replay_buffer.append(experience_batch)
+        return HLSKillAgent.update(self, experience_batch)
+
+    def visualize(self, logger, rollout_storage, step):
+        self._vis_replay_buffer(logger, step)
+        HLSKillAgent.visualize(self, logger, rollout_storage, step)
 
     def _vis_replay_buffer(self, logger, step):
         """Visualizes maze trajectories from replay buffer (if step < replay capacity)."""

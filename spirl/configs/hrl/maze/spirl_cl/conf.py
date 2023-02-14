@@ -138,8 +138,7 @@ agent_config = AttrDict(
     hl_interval=ll_model_params.n_rollout_steps,
     log_videos=False,
     update_hl=True,
-    # update_ll=False,
-    update_ll=True,
+    update_ll=False,
 )
 
 # Dataset - Random data

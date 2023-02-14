@@ -9,8 +9,8 @@ from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.rl.policies.prior_policies import ACLearnedPriorAugmentedPIPolicy
 from spirl.rl.envs.maze import ACRandMaze0S40Env
 from spirl.rl.agents.skill_critic.ll_action_agent import LLActionAgent
-from spirl.rl.policies.cl_model_policies import ACClModelPolicy
-from spirl.data.maze.src.maze_agents import MazeACActionPriorSACAgent
+from spirl.rl.policies.cd_model_policy import DecoderRegu_TimeIndexedCDMdlPolicy
+from spirl.data.maze.src.maze_agents import MazeHLSkillAgent
 from spirl.models.cond_dec_spirl_mdl import ImageTimeIndexCDSPiRLMDL
 from spirl.configs.default_data_configs.maze import data_spec
 
@@ -88,7 +88,7 @@ ll_critic_params = AttrDict(
 # LL Agent
 ll_agent_config = copy.deepcopy(base_agent_params)
 ll_agent_config.update(AttrDict(
-    policy=ACClModelPolicy, # TODO DecoderRegu_TimeIndexedCDMdlPolicy
+    policy=DecoderRegu_TimeIndexedCDMdlPolicy, 
     policy_params=ll_policy_params,
     critic=SplitObsMLPCritic,
     critic_params=ll_critic_params,
@@ -132,7 +132,7 @@ hl_agent_config.update(AttrDict(
 
 #####========== Joint Agent =======#######
 agent_config = AttrDict(
-    hl_agent=MazeACActionPriorSACAgent, # HLSKillAgent
+    hl_agent=MazeHLSkillAgent, 
     hl_agent_params=hl_agent_config,
     ll_agent=LLActionAgent,  
     ll_agent_params=ll_agent_config,

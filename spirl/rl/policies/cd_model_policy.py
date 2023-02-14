@@ -59,7 +59,7 @@ class CDModelPolicy(Policy):
         split_obs = self._split_obs(obs)
         concatenate_obs = self._get_concatenate_obs(split_obs)
 
-        concatenate_obs = obs
+        # concatenate_obs = obs
         act = self.net.decoder(concatenate_obs)
 
         return self._get_constrainted_distribution(act)
@@ -151,12 +151,25 @@ class DecoderRegu_TimeIndexedCDMdlPolicy(TimeIndexedCDMdlPolicy):
     def _mc_divergence(self, policy_output, decoder_dist):
         return mc_kl_divergence(policy_output.dist, decoder_dist, n_samples=self._hp.num_mc_samples)
 
-    def sample_rand(self, obs):
-        with torch.no_grad():
-            with no_batchnorm_update(self.decoder_net):
-                act = self.decoder_net.decoder(obs).detach()
-                decoder_dist = self._get_constrainted_distribution(act)
-        action = decoder_dist.sample()
-        action, log_prob = self._tanh_squash_output(action, 0)
-        return AttrDict(action=action, log_prob=log_prob)
+    def _split_obs(self, obs):
+        # the obs = state + image (32x32 x 3 color x 2 time)
+        dim_image = self.net.resolution**2 * 3 * 2 
+        obs_dim = self.net.state_dim + dim_image
+        assert obs.shape[1] == obs_dim + self.net.latent_dim + self.net.n_rollout_steps
+
+        unflattened_obs = self.net.unflatten_obs(obs[:, :obs_dim])
+        return AttrDict(
+            cond_input=self.net.enc_obs(unflattened_obs.prior_obs),   # condition decoding on image
+            z=obs[:, obs_dim : obs_dim + self.net.latent_dim],
+            time_index = obs[:, obs_dim + self.net.latent_dim:] # or [:, -self.net.n_rollout_steps:]
+        )
+
+    # def sample_rand(self, obs):
+    #     with torch.no_grad():
+    #         with no_batchnorm_update(self.decoder_net):
+    #             act = self.decoder_net.decoder(obs).detach()
+    #             decoder_dist = self._get_constrainted_distribution(act)
+    #     action = decoder_dist.sample()
+    #     action, log_prob = self._tanh_squash_output(action, 0)
+    #     return AttrDict(action=action, log_prob=log_prob)
 
