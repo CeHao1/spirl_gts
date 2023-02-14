@@ -11,7 +11,7 @@ from spirl.rl.envs.maze import ACRandMaze0S40Env
 from spirl.rl.agents.skill_critic.ll_action_agent import LLActionAgent
 from spirl.rl.policies.cl_model_policies import ACClModelPolicy
 from spirl.data.maze.src.maze_agents import MazeACActionPriorSACAgent
-from spirl.models.closed_loop_spirl_mdl import ImageClSPiRLMdl
+from spirl.models.cond_dec_spirl_mdl import ImageTimeIndexCDSPiRLMDL
 from spirl.configs.default_data_configs.maze import data_spec
 
 
@@ -69,9 +69,9 @@ ll_model_params = AttrDict(
 
 # LL Policy
 ll_policy_params = AttrDict(
-    policy_model=ImageClSPiRLMdl, # TODO TimeIndexCDSPiRLMDL
+    policy_model=ImageTimeIndexCDSPiRLMDL, 
     policy_model_params=ll_model_params,
-    policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/maze/hierarchical_cl"),
+    policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/maze/hierarchical_cd"),
     initial_log_sigma=-50.,
 )
 ll_policy_params.update(ll_model_params)
