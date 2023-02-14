@@ -16,8 +16,8 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=0 --pref
 
 
 ## open loop
-python3 spirl/train.py  --gpu=0 --path=spirl/configs/skill_prior_learning/maze/hierarchical_cl --val_data_size=160 --prefix=maze_ol_01
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=0 --prefix=maze_ol_01 
+python3 spirl/train.py  --gpu=0 --path=spirl/configs/skill_prior_learning/maze/hierarchical --val_data_size=160 --prefix=maze_ol_01
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl --seed=0 --prefix=maze_ol_01 
 
 
 ## skill-critic
