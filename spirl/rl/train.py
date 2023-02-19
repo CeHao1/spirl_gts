@@ -173,7 +173,7 @@ class RLTrainer:
                 with timers['log'].time():
                     if self.is_chef and self.log_outputs_now:
                         self.agent.log_outputs(agent_outputs, None, self.logger,
-                                               log_images=False, step=self.global_step)
+                                               log_images=self.log_images_now, step=self.global_step)
                         self.print_train_update(epoch, agent_outputs, timers)
 
     def train_epoch_with_after_sampling_rollout(self, epoch):
@@ -206,7 +206,7 @@ class RLTrainer:
         with timers['log'].time():
             # if self.is_chef and self.log_outputs_now:
             self.agent.log_outputs(agent_outputs, None, self.logger,
-                                    log_images=False, step=self.global_step)
+                                    log_images=self.log_images_now, step=self.global_step)
             self.print_train_update(epoch, agent_outputs, timers)
 
 
@@ -223,7 +223,7 @@ class RLTrainer:
         if self.is_chef:
             with timing("Eval log time: "):
                 self.agent.log_outputs(rollout_stats, val_rollout_storage,
-                                       self.logger, log_images=False, step=self.global_step)
+                                       self.logger, log_images=self.log_images_now, step=self.global_step)
             print("Evaluation Avg_Reward: {}".format(rollout_stats.avg_reward))
         del val_rollout_storage
 
