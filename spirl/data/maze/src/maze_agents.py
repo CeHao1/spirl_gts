@@ -11,6 +11,7 @@ class MazeAgent:
     """Adds replay logging function."""
     def visualize(self, logger, rollout_storage, step):
         self._vis_replay_buffer(logger, step)
+        # self._vis_rollout(logger, rollout_storage)
 
     def _vis_replay_buffer(self, logger, step):
         """Visualizes maze trajectories from replay buffer (if step < replay capacity)."""
@@ -27,7 +28,12 @@ class MazeAgent:
         logger.log_plot(fig, "replay_vis", step)
         plt.close(fig)
 
-
+    def _vis_rollout(self, logger, rollout_storage):
+        rollouts = rollout_storage.rollouts
+        fig = plt.figure()
+        for rollout in rollouts:
+            states = rollout['observation']
+        
 class MazeSkillSpaceAgent(SkillSpaceAgent, MazeAgent):
     """Collects samples in replay buffer for visualization."""
     def __init__(self, *args, **kwargs):
