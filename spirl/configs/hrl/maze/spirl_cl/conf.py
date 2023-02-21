@@ -36,7 +36,7 @@ configuration = AttrDict(configuration)
 # Replay Buffer
 replay_params = AttrDict(
     capacity=1e5,
-    dump_replay=False,
+    # dump_replay=False,
 )
 
 # Observation Normalization

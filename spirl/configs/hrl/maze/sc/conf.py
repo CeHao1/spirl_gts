@@ -3,7 +3,7 @@ import copy
 
 from spirl.utils.general_utils import AttrDict
 from spirl.rl.agents.skill_critic.joint_agent import JointAgent, skill_critic_stages
-from spirl.rl.components.critic import SplitObsMLPCritic
+from spirl.rl.components.critic import SplitObsMLPCritic, MLPCritic
 from spirl.rl.components.sampler import ACMultiImageAugmentedHierarchicalSampler
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.rl.policies.prior_policies import ACLearnedPriorAugmentedPIPolicy
@@ -35,7 +35,7 @@ configuration = AttrDict(configuration)
 # Replay Buffer
 replay_params = AttrDict(
     capacity=1e5,
-    dump_replay=False,
+    # dump_replay=False,
 )
 
 # Observation Normalization
@@ -82,7 +82,7 @@ ll_critic_params = AttrDict(
     input_dim=data_spec.state_dim + ll_model_params.nz_vae + ll_model_params.n_rollout_steps,
     output_dim=1,
     action_input=True,
-    # unused_obs_size=10,     # ignore HL policy z output in observation for LL critic
+    unused_obs_size=10,     # ignore HL policy z output in observation for LL critic
 )
 
 # LL Agent
@@ -91,9 +91,10 @@ ll_agent_config.update(AttrDict(
     policy=DecoderRegu_TimeIndexedCDMdlPolicy, 
     policy_params=ll_policy_params,
     critic=SplitObsMLPCritic,
+    # critic=MLPCritic,
     critic_params=ll_critic_params,
 
-    visualize_values = True,
+    # visualize_values = True,
 ))
 
 ######=============== High-Level ===============########
@@ -115,7 +116,7 @@ hl_critic_params = AttrDict(
     n_layers=2,  # number of policy network layers
     nz_mid=256,
     action_input=True,
-    # unused_obs_size=ll_model_params.prior_input_res **2 * 3 * ll_model_params.n_input_frames,
+    unused_obs_size=ll_model_params.prior_input_res **2 * 3 * ll_model_params.n_input_frames,
 )
 
 # HL Agent
@@ -124,10 +125,11 @@ hl_agent_config.update(AttrDict(
     policy=ACLearnedPriorAugmentedPIPolicy,
     policy_params=hl_policy_params,
     critic=SplitObsMLPCritic,
+    # critic=MLPCritic,
     critic_params=hl_critic_params,
     td_schedule_params=AttrDict(p=1.),
 
-    visualize_values = True,
+    # visualize_values = True,
 ))
 
 #####========== Joint Agent =======#######
