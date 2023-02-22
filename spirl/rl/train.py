@@ -237,7 +237,7 @@ class RLTrainer:
             with torch.no_grad():
                 for _ in tqdm(range(self.args.n_val_samples)):
                     while True:     # keep producing rollouts until we get a valid one
-                        episode = self.sampler.sample_episode(is_train=False, render=True, 
+                        episode = self.sampler.sample_episode(is_train=False, render=False, 
                                     deterministic_action=self.args.deterministic_action)
                         valid = not hasattr(self.agent, 'rollout_valid') or self.agent.rollout_valid
                         n_total += 1
@@ -355,7 +355,7 @@ class RLTrainer:
         self.global_step, start_epoch, _ = \
             CheckpointHandler.load_weights(weights_file, self.agent,
                                            load_step=True, strict=self.args.strict_weight_loading)
-        self.agent.load_state(self._hp.exp_path)
+        # self.agent.load_state(self._hp.exp_path)
         self.agent.to(self.device)
         return start_epoch
 

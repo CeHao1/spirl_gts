@@ -25,7 +25,7 @@ class RolloutSaver(object):
         # store trajectory info in traj0 group
         traj_data = f.create_group("traj0")
         traj_data.create_dataset("states", data=np.array(episode.observation))
-        traj_data.create_dataset("images", data=np.array(episode.image, dtype=np.uint8))
+        # traj_data.create_dataset("images", data=np.array(episode.image, dtype=np.uint8))
         traj_data.create_dataset("actions", data=np.array(episode.action))
         traj_data.create_dataset("reward", data=np.array(episode.reward))
         traj_data.create_dataset("done", data=np.array(episode.done))
