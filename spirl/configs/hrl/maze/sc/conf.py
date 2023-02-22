@@ -28,9 +28,9 @@ configuration = {
     'num_epochs': 100,
     'max_rollout_len': 2000,
     'n_steps_per_epoch': 1e5,
-    # 'n_warmup_steps': 5e3,
+    'n_warmup_steps': 5e3,
     
-    'n_warmup_steps': 300, #debug
+    # 'n_warmup_steps': 300, #debug
 }
 configuration = AttrDict(configuration)
 
@@ -123,7 +123,13 @@ hl_critic_params = AttrDict(
     n_layers=2,  # number of policy network layers
     nz_mid=256,
     action_input=True,
+    
+    # unused_obs_size=ll_model_params.prior_input_res **2 * 3 * ll_model_params.n_input_frames,
+    # discard_part = 'mid', # obs = (s+z+t) + a //remove image in the middle
+    # unused_obs_start = data_spec.state_dim,
+    
     unused_obs_size=ll_model_params.prior_input_res **2 * 3 * ll_model_params.n_input_frames,
+
 )
 
 # HL Agent

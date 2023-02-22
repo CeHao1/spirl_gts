@@ -129,7 +129,8 @@ class JointAgent(FixedIntervalTimeIndexedHierarchicalAgent):
 
 
         # 2) for and update HL, LL
-        for idx in tqdm(range(self._hp.update_iterations)):
+        # for idx in tqdm(range(self._hp.update_iterations)):
+        for idx in range(self._hp.update_iterations):
             vis = True if idx == self._hp.update_iterations -1 else False
             
             hl_update_outputs = self.hl_agent.update()

@@ -164,12 +164,16 @@ class LLActionAgent(ActionPriorSACAgent):
         return hl_q_target
 
     def _compute_hl_critic_loss(self, experience_batch, hl_q_target): 
-        # Qz(s,z,k), the input is only obs, not action(a) here
+        # Qz(s,z,k), the input is only obs, not action(a) here, old implementation
         split_obs = self._split_obs(experience_batch.observation)
         obs = self._get_hl_obs(split_obs)
         act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
-
         hl_qs = [critic(obs, act).q.squeeze(-1) for critic in self.hl_critics]
+        
+        # this experience batch is LL, we need to split it
+        # obs + z + t 
+        # hl_qs = [critic(experience_batch.observation).q.squeeze(-1) for critic in self.hl_critics]
+
         check_shape(hl_qs[0], [self._hp.batch_size])
         hl_critic_losses = [0.5 * (q - hl_q_target).pow(2).mean() for q in hl_qs] # mse loss
         return hl_critic_losses, hl_qs
@@ -226,7 +230,7 @@ class LLActionAgent(ActionPriorSACAgent):
     def _compute_next_value(self, experience_batch, hl_policy_output_next): 
         # V = Qz - alp_z * DKL(PI_z)
         split_obs = self._split_obs(experience_batch.observation_next)
-        obs = self._get_ll_obs(split_obs)
+        obs = self._get_hl_obs(split_obs)
         act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
         q_next = torch.min(*[critic_target(obs, act).q for critic_target in self.hl_critic_targets])
         next_val = (q_next - self.hl_agent.alpha * hl_policy_output_next.prior_divergence[:, None])
@@ -417,7 +421,7 @@ class MazeLLActionAgent(LLActionAgent):
         )
         
     def _get_hl_obs(self, split_obs):
-        return split_obs.image
+        return torch.cat((split_obs.state, split_obs.image), dim=-1)
     
     def _get_ll_obs(self, split_obs):
         return split_obs.state
