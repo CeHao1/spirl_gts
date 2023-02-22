@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from spirl.utils.general_utils import batch_apply, ParamDict
+from spirl.utils.general_utils import batch_apply, ParamDict, AttrDict
 from spirl.utils.pytorch_utils import make_one_hot
 from spirl.utils.pytorch_utils import get_constant_parameter, ResizeSpatial, RemoveSpatial
 from spirl.models.skill_prior_mdl import SkillPriorMdl, ImageSkillPriorMdl
@@ -152,3 +152,4 @@ class ImageTimeIndexCDSPiRLMDL(TimeIndexCDSPiRLMDL, ImageSkillPriorMdl):
     @property
     def prior_input_size(self):
         return self.enc_size
+    

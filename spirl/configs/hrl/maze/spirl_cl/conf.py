@@ -28,7 +28,9 @@ configuration = {
     'num_epochs': 100,
     'max_rollout_len': 2000,
     'n_steps_per_epoch': 1e5,
-    'n_warmup_steps': 5e3,
+    # 'n_warmup_steps': 5e3,
+    
+    'n_warmup_steps': 1e3,
 }
 configuration = AttrDict(configuration)
 

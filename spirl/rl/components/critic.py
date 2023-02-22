@@ -94,7 +94,8 @@ class SplitObsMLPCritic(MLPCritic):
     def _default_hparams(self):
         default_dict = ParamDict({
             'unused_obs_size': None,    # dimensionality of split off observation part
-            'discard_part': 'back',     # which part of observation to discard ['front', 'back']
+            'discard_part': 'back',     # which part of observation to discard ['front', 'back', 'mid]
+            'unused_obs_start': None,   # if discart=mid, then discard start: start+size
         })
         return super()._default_hparams().overwrite(default_dict)
 
@@ -103,6 +104,12 @@ class SplitObsMLPCritic(MLPCritic):
             return super().forward(raw_obs[:, self._hp.unused_obs_size:], *args, **kwargs)
         elif self._hp.discard_part == 'back':
             return super().forward(raw_obs[:, :-self._hp.unused_obs_size], *args, **kwargs)
+        elif self._hp.discard_part == 'mid':
+            assert self._hp.unused_obs_start is not None
+            cut_obs0 = raw_obs[:, :self._hp.unused_obs_start]
+            cut_obs1 = raw_obs[:, self._hp.unused_obs_start + self._hp.unused_obs_size:]
+            cut_obs = torch.cat((cut_obs0, cut_obs1), 1)
+            return super().forward(cut_obs, *args, **kwargs)
         else:
             raise ValueError("Cannot parse discard_part parameter {}!".format(self._hp.discard_part))
 

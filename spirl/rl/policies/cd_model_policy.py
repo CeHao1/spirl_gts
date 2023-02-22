@@ -143,14 +143,19 @@ class DecoderRegu_TimeIndexedCDMdlPolicy(TimeIndexedCDMdlPolicy):
         return torch.clamp(divergence, -self._hp.max_divergence_range, self._hp.max_divergence_range)
 
     def _compute_decoder_divergence(self, policy_output, obs):
+        split_obs = self._split_obs(obs)
+        concatenate_obs = self._get_concatenate_obs(split_obs)
+        
         with no_batchnorm_update(self.decoder_net): 
-            act = self.decoder_net.decoder(obs).detach()
+            act = self.decoder_net.decoder(concatenate_obs).detach()
             decoder_dist = self._get_constrainted_distribution(act)
             return self._mc_divergence(policy_output, decoder_dist), decoder_dist
 
     def _mc_divergence(self, policy_output, decoder_dist):
         return mc_kl_divergence(policy_output.dist, decoder_dist, n_samples=self._hp.num_mc_samples)
 
+
+class AC_DecoderRegu_TimeIndexedCDMdlPolicy(DecoderRegu_TimeIndexedCDMdlPolicy):
     def _split_obs(self, obs):
         # the obs = state + image (32x32 x 3 color x 2 time)
         dim_image = self.net.resolution**2 * 3 * 2 
@@ -163,13 +168,4 @@ class DecoderRegu_TimeIndexedCDMdlPolicy(TimeIndexedCDMdlPolicy):
             z=obs[:, obs_dim : obs_dim + self.net.latent_dim],
             time_index = obs[:, obs_dim + self.net.latent_dim:] # or [:, -self.net.n_rollout_steps:]
         )
-
-    # def sample_rand(self, obs):
-    #     with torch.no_grad():
-    #         with no_batchnorm_update(self.decoder_net):
-    #             act = self.decoder_net.decoder(obs).detach()
-    #             decoder_dist = self._get_constrainted_distribution(act)
-    #     action = decoder_dist.sample()
-    #     action, log_prob = self._tanh_squash_output(action, 0)
-    #     return AttrDict(action=action, log_prob=log_prob)
 

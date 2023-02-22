@@ -166,7 +166,7 @@ class LLActionAgent(ActionPriorSACAgent):
     def _compute_hl_critic_loss(self, experience_batch, hl_q_target): 
         # Qz(s,z,k), the input is only obs, not action(a) here
         split_obs = self._split_obs(experience_batch.observation)
-        obs = split_obs.state
+        obs = self._get_hl_obs(split_obs)
         act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
 
         hl_qs = [critic(obs, act).q.squeeze(-1) for critic in self.hl_critics]
@@ -194,7 +194,7 @@ class LLActionAgent(ActionPriorSACAgent):
         with torch.no_grad():
             # (0) use s to generate hl policy
             split_obs = self._split_obs(experience_batch.observation_next)
-            hl_policy_output_next = self.hl_agent._run_policy(split_obs.state)
+            hl_policy_output_next = self.hl_agent._run_policy(self._get_hl_obs(split_obs))
 
             # (1) V_next
             v_next, q_next = self._compute_next_value(experience_batch, hl_policy_output_next)
@@ -226,7 +226,7 @@ class LLActionAgent(ActionPriorSACAgent):
     def _compute_next_value(self, experience_batch, hl_policy_output_next): 
         # V = Qz - alp_z * DKL(PI_z)
         split_obs = self._split_obs(experience_batch.observation_next)
-        obs = split_obs.state
+        obs = self._get_ll_obs(split_obs)
         act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
         q_next = torch.min(*[critic_target(obs, act).q for critic_target in self.hl_critic_targets])
         next_val = (q_next - self.hl_agent.alpha * hl_policy_output_next.prior_divergence[:, None])
@@ -250,6 +250,11 @@ class LLActionAgent(ActionPriorSACAgent):
             time_index=obs[:, -self.onehot_dim:],
         )
         
+    def _get_hl_obs(self, split_obs):
+        return split_obs.state
+    
+    def _get_ll_obs(self, split_obs):
+        return split_obs.state
     # ====================================== property =======================================
     @property
     def state_dim(self):
@@ -399,61 +404,28 @@ class LLActionAgent(ActionPriorSACAgent):
     def offline(self):
         self.update(self, experience_batch=None, vis=True)
 
-        '''
-        # archived update
-        from tqdm import tqdm
-        q_target_store = []
-        update_time = self._hp.update_iterations
-        # update_time = int(1e4)
-        for idx in tqdm(range(update_time)):
-            # print('======= iter =====', idx )
-            # sample batch and normalize
-            experience_batch = self._sample_experience()
-            experience_batch = self._normalize_batch(experience_batch)
-            experience_batch = map2torch(experience_batch, self._hp.device)
-            experience_batch = self._preprocess_experience(experience_batch)
 
 
-            # (1) LL policy loss
-            policy_output = self._run_policy(experience_batch.observation)
-            # update alpha
-            alpha_loss = self._update_alpha(experience_batch, policy_output)
-            policy_loss = self._compute_policy_loss(experience_batch, policy_output)
-
-
-            # (2) Qz(s,z,k) loss, Qz_target
-            hl_q_target = self._compute_hl_q_target(experience_batch, policy_output)
-            hl_critic_loss, hl_qs = self._compute_hl_critic_loss(experience_batch, hl_q_target)
-            
-
-            # (3) Qa(s,z,k,a) loss, Qa_target
-            ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch)
-            ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)
-            
-            q_target_store.append(map2np(ll_q_target.mean()))
-
-            # (4) update loss
-            # policy
-            # self._perform_update(policy_loss, self.policy_opt, self.policy)
-            # hl
-            [self._perform_update(critic_loss, critic_opt, critic)
-                    for critic_loss, critic_opt, critic in zip(hl_critic_loss, self.hl_critic_opts, self.hl_critics)]
-            # ll
-            [self._perform_update(critic_loss, critic_opt, critic)
-                    for critic_loss, critic_opt, critic in zip(ll_critic_loss, self.critic_opts, self.critics)]
-
-
-            # (5) soft update targets
-            [self._soft_update_target_network(critic_target, critic)
-                    for critic_target, critic in zip(self.hl_critic_targets, self.hl_critics)]
-
-            [self._soft_update_target_network(critic_target, critic)
-                    for critic_target, critic in zip(self.critic_targets, self.critics)]
-
-
-        # finally plot the ll q target
-        plt.figure(figsize=(10,7))
-        plt.plot(q_target_store, 'b.')
-        plt.show()
-
-    '''
+class MazeLLActionAgent(LLActionAgent):
+    def _split_obs(self, obs):
+        assert obs.shape[1] == self.state_dim + self.image_dim + self.latent_dim + self.onehot_dim
+        return AttrDict(
+            state=obs[:, :self.state_dim],   
+            image=obs[:, self.state_dim: self.state_dim + self.image_dim],
+            z=obs[:, self.state_dim + self.image_dim:-self.onehot_dim],
+            time_index=obs[:, -self.onehot_dim:],
+        )
+        
+    def _get_hl_obs(self, split_obs):
+        return split_obs.image
+    
+    def _get_ll_obs(self, split_obs):
+        return split_obs.state
+    
+    @property
+    def prior_input_res(self):
+        return self._hp.policy_params.policy_model_params.prior_input_res
+    
+    @property
+    def image_dim(self):
+        return self.prior_input_res**2 * 3  * self._hp.policy_params.policy_model_params.n_input_frames

@@ -8,8 +8,8 @@ from spirl.rl.components.sampler import ACMultiImageAugmentedHierarchicalSampler
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.rl.policies.prior_policies import ACLearnedPriorAugmentedPIPolicy
 from spirl.rl.envs.maze import ACRandMaze0S40Env
-from spirl.rl.agents.skill_critic.ll_action_agent import LLActionAgent
-from spirl.rl.policies.cd_model_policy import DecoderRegu_TimeIndexedCDMdlPolicy
+from spirl.rl.agents.skill_critic.ll_action_agent import MazeLLActionAgent
+from spirl.rl.policies.cd_model_policy import AC_DecoderRegu_TimeIndexedCDMdlPolicy
 from spirl.data.maze.src.maze_agents import MazeHLSkillAgent
 from spirl.models.cond_dec_spirl_mdl import ImageTimeIndexCDSPiRLMDL
 from spirl.configs.default_data_configs.maze import data_spec
@@ -28,7 +28,9 @@ configuration = {
     'num_epochs': 100,
     'max_rollout_len': 2000,
     'n_steps_per_epoch': 1e5,
-    'n_warmup_steps': 5e3,
+    # 'n_warmup_steps': 5e3,
+    
+    'n_warmup_steps': 300, #debug
 }
 configuration = AttrDict(configuration)
 
@@ -79,19 +81,24 @@ ll_policy_params.update(ll_model_params)
 # LL Critic
 ll_critic_params = AttrDict(
     action_dim=data_spec.n_actions,
+    # input_dim=data_spec.state_dim + ll_model_params.nz_vae + ll_model_params.n_rollout_steps,
     input_dim=data_spec.state_dim + ll_model_params.nz_vae + ll_model_params.n_rollout_steps,
     output_dim=1,
     action_input=True,
-    unused_obs_size=10,     # ignore HL policy z output in observation for LL critic
+    
+    discard_part = 'mid', # obs = (s+z+t) + a //remove image in the middle
+    unused_obs_start = data_spec.state_dim,
+    unused_obs_size=ll_model_params.prior_input_res **2 * 3 * ll_model_params.n_input_frames,
+
 )
 
 # LL Agent
 ll_agent_config = copy.deepcopy(base_agent_params)
 ll_agent_config.update(AttrDict(
-    policy=DecoderRegu_TimeIndexedCDMdlPolicy, 
+    policy=AC_DecoderRegu_TimeIndexedCDMdlPolicy, 
     policy_params=ll_policy_params,
     critic=SplitObsMLPCritic,
-    # critic=MLPCritic,
+    # obs(s + z + t) + a = 4 + 10 + 10 + 2
     critic_params=ll_critic_params,
 
     # visualize_values = True,
@@ -136,7 +143,7 @@ hl_agent_config.update(AttrDict(
 agent_config = AttrDict(
     hl_agent=MazeHLSkillAgent, 
     hl_agent_params=hl_agent_config,
-    ll_agent=LLActionAgent,  
+    ll_agent=MazeLLActionAgent,  
     ll_agent_params=ll_agent_config,
     hl_interval=ll_model_params.n_rollout_steps,
     log_videos=False,
