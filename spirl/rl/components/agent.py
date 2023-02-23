@@ -8,12 +8,13 @@ from torch.optim import Adam, SGD
 
 from spirl.utils.general_utils import ParamDict, get_clipped_optimizer, AttrDict, prefix_dict, map_dict, \
                                         nan_hook, np2obj, ConstantSchedule
-from spirl.utils.pytorch_utils import RAdam, remove_grads, map2np, map2torch
+from spirl.utils.pytorch_utils import RAdam, remove_grads, map2np, map2torch, make_one_hot
 from spirl.utils.vis_utils import add_caption_to_img, add_captions_to_seq
 from spirl.rl.components.normalization import DummyNormalizer
 from spirl.rl.components.policy import Policy
 from spirl.components.checkpointer import CheckpointHandler
 from spirl.rl.utils.mpi import sync_grads
+from spirl.modules.variational_inference import MultivariateGaussian
 
 
 class BaseAgent(nn.Module):
@@ -24,6 +25,7 @@ class BaseAgent(nn.Module):
         self._is_train = True           # indicates whether agent should sample in training mode
         self._rand_act_mode = False     # indicates whether agent should act randomly (for warmup collection)
         self._rollout_mode = False      # indicates whether agent is run in rollout mode (omit certain policy outputs)
+        self._deterministic_act_mode = False # if true, use the mean value of policy distribution
         self._obs_normalizer = self._hp.obs_normalizer(self._hp.obs_normalizer_params)
 
     def _default_hparams(self):
@@ -203,13 +205,36 @@ class BaseAgent(nn.Module):
     def update_iterations(self):
         return self._hp.update_iterations
 
+    # ============== action determinstic related =================
+    @contextmanager
+    def deterministic_act_mode(self):
+        # assert False
+        self._deterministic_act_mode = True
+        yield
+        self._deterministic_act_mode = False
+
+    def switch_on_deterministic_action_mode(self):
+        # assert False
+        self._deterministic_act_mode = True
+
+    def switch_off_deterministic_action_mode(self):
+        self._deterministic_act_mode = False
+
+    def _post_process_policy_output(self, policy_output):
+        if self._deterministic_act_mode:
+            # print('post !')
+            if 'dist' in policy_output and isinstance(policy_output.dist, MultivariateGaussian):
+                policy_output.ori_action = policy_output.action
+                policy_output.action = policy_output.dist.mean
+        return policy_output
+                
 
 class HierarchicalAgent(BaseAgent):
     """Implements a basic hierarchical agent with high-level and low-level policy/policies."""
     def __init__(self, config):
         super().__init__(config)
-        self.hl_agent = self._hp.hl_agent(self._hp.overwrite(self._hp.hl_agent_params))
-        self.ll_agent = self._hp.ll_agent(self._hp.overwrite(self._hp.ll_agent_params))
+        self.hl_agent = self._hp.hl_agent(self._hp.temp_overwrite(self._hp.hl_agent_params))
+        self.ll_agent = self._hp.ll_agent(self._hp.temp_overwrite(self._hp.ll_agent_params))
         self._last_hl_output = None     # stores last high-level output to feed to low-level during intermediate steps
 
     def _default_hparams(self):
@@ -225,7 +250,7 @@ class HierarchicalAgent(BaseAgent):
         })
         return super()._default_hparams().overwrite(default_dict)
 
-    def act(self, obs):
+    def act(self, obs): 
         """Output dict contains is_hl_step in case high-level action was performed during this action."""
         obs_input = obs[None] if len(obs.shape) == 1 else obs    # need batch input for agents
         output = AttrDict()
@@ -344,3 +369,16 @@ class FixedIntervalHierarchicalAgent(HierarchicalAgent):
     def reset(self):
         super().reset()
         self._steps_since_hl = 0     # start new episode with high-level step
+
+class FixedIntervalTimeIndexedHierarchicalAgent(FixedIntervalHierarchicalAgent):
+    def make_ll_obs(self, obs, hl_action):
+        """Creates low-level agent's observation from env observation,  HL action and time index."""
+        idx = torch.tensor([self._steps_since_hl % self._hp.hl_interval])
+        dim_of_obs = 1 if len(obs.shape) == 1 else obs.shape[0]
+        one_hot_torch = make_one_hot(idx, self._hp.hl_interval).repeat(dim_of_obs, 1)
+        one_hot_np = map2np(one_hot_torch)
+
+        if len(obs.shape) == 1:
+            one_hot_np = one_hot_np.squeeze()
+
+        return np.concatenate((obs, hl_action, one_hot_np), axis=-1)

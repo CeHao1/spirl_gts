@@ -83,9 +83,20 @@ class BaseModel(nn.Module):
     def _log_losses(self, losses, step, log_images, phase):
         for name, loss in losses.items():
             self._logger.log_scalar(loss.value, name + '_loss', step, phase)
+
+            if 'weight' in loss.keys():
+                self._logger.log_scalar(loss.value * loss.weight, name + '_loss_weighted', step, phase)
+
             if 'breakdown' in loss and log_images:
                 self._logger.log_graph(loss.breakdown, name + '_breakdown', step, phase)
 
+            # log the loss at separate dim
+            if 'error_separate' in loss:
+                dim = 0
+                for error in loss.error_separate:
+                    self._logger.log_scalar(error , name + '_dimension_' + str(dim), step, phase)
+                    dim += 1
+                    
     def _load_weights(self, weight_loading_info):
         """
         Loads weights of submodels from defined checkpoints + scopes.
