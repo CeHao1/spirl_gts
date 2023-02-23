@@ -50,8 +50,7 @@ sampler_config = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    # batch_size=256,
-    batch_size=64,
+    batch_size=256,
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,

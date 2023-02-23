@@ -25,18 +25,20 @@ configuration = {
     'environment': ACRandMaze0S40Env,
     'sampler': ACMultiImageAugmentedHierarchicalSampler,
     'data_dir': '.',
+    # "use_update_after_sampling": True,
     'num_epochs': 100,
     'max_rollout_len': 2000,
-    'n_steps_per_epoch': 1e5,
-    'n_warmup_steps': 5e3,
+    # 'n_steps_per_epoch': 1e5,
+    # 'n_warmup_steps': 5e3,
     
-    # 'n_warmup_steps': 300, #debug
+    'n_steps_per_epoch': 1e4, #debug
+    'n_warmup_steps': 300, #debug
 }
 configuration = AttrDict(configuration)
 
 # Replay Buffer
 replay_params = AttrDict(
-    capacity=1e5,
+    capacity=1e6,
     # dump_replay=False,
 )
 
@@ -148,8 +150,9 @@ agent_config = AttrDict(
     hl_interval=ll_model_params.n_rollout_steps,
     log_videos=False,
     update_hl=True,
-    # update_ll=False,
     update_ll=True,
+    
+    update_iterations = 512,
 )
 
 # Dataset - Random data
