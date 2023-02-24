@@ -41,7 +41,7 @@ class Sampler:
                 with self._agent.rollout_mode():
                     while step < batch_size:
                         # perform one rollout step
-                        agent_output = self.sample_action(self._obs)
+                        agent_output = self.sample_action(self._obs)                       
                         if agent_output.action is None:
                             self._episode_reset(global_step)
                             continue
@@ -68,7 +68,7 @@ class Sampler:
 
         return listdict2dictlist(experience_batch), step
 
-    def sample_episode(self, is_train, render=False):
+    def sample_episode(self, is_train, render=False, deterministic_action=False, return_list=False):
         """Samples one episode from the environment."""
         self.init(is_train)
         episode, done = [], False
@@ -80,7 +80,7 @@ class Sampler:
                         agent_output = self.sample_action(self._obs)
                         if agent_output.action is None:
                             break
-                        agent_output = self._postprocess_agent_output(agent_output)
+                        agent_output = self._postprocess_agent_output(agent_output, deterministic_action=deterministic_action)
                         if render:
                             render_obs = self._env.render()
                         obs, reward, done, info = self._env.step(agent_output.action)
@@ -100,6 +100,8 @@ class Sampler:
                         self._obs = obs
                         self._episode_step += 1
         episode[-1].done = True     # make sure episode is marked as done at final time step
+        if return_list:
+            return [listdict2dictlist(episode)]
 
         return listdict2dictlist(episode)
 
@@ -127,8 +129,12 @@ class Sampler:
         """Optionally post-process observation."""
         return obs
 
-    def _postprocess_agent_output(self, agent_output):
+    def _postprocess_agent_output(self, agent_output, deterministic_action=False):
         """Optionally post-process / store agent output."""
+        if deterministic_action:
+            if isinstance(agent_output.dist, MultivariateGaussian):
+                agent_output.ori_action = agent_output.action
+                agent_output.action = agent_output.dist.mean[0]
         return agent_output
 
 
@@ -199,9 +205,10 @@ class HierarchicalSampler(Sampler):
                                 ll_experience_batch[-1].done = True
                                 if hl_experience_batch:   # can potentially be empty 
                                     hl_experience_batch[-1].done = True
+                            print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
                             self._episode_reset(global_step)
 
-
+                            
         return AttrDict(
             hl_batch=listdict2dictlist(hl_experience_batch),
             ll_batch=listdict2dictlist(ll_experience_batch[:-1]),   # last element does not have updated obs_next!

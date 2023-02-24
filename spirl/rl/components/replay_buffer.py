@@ -26,6 +26,13 @@ class ReplayBuffer:
 
     def append(self, experience_batch):
         """Appends the vals in the AttrDict experience_batch to the existing replay buffer."""
+
+        # process batched experience for gts, reshape to array
+        if len(np.array(experience_batch.observation).shape) > 2:
+            for key in experience_batch:
+                exp = np.array(experience_batch[key])
+                experience_batch[key] = exp.reshape(exp.shape[0]*exp.shape[1], -1).squeeze()
+
         if self._replay_buffer is None:
             self._init(experience_batch)
 
@@ -102,10 +109,14 @@ class ReplayBuffer:
 
 class UniformReplayBuffer(ReplayBuffer):
     """Samples batch uniformly from all experience samples in the buffer."""
-    def sample(self, n_samples, filter=None):
+    def sample(self, n_samples, filter=None, random=True):
         assert n_samples <= self.size      # need enough samples in replay buffer
         assert isinstance(self.size, int)   # need integer-valued size
-        idxs = np.random.choice(np.arange(self.size), size=n_samples)
+        if random:
+            idxs = np.random.choice(np.arange(self.size), size=n_samples)
+        else:
+            st = np.random.randint(0, self.size-n_samples)
+            idxs = np.arange(st, st+n_samples)
 
         sampled_transitions = AttrDict()
         for key in self._replay_buffer:

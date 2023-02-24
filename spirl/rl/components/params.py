@@ -15,8 +15,10 @@ def get_args():
     parser.add_argument('--resume', default='', type=str, metavar='PATH',
                         help='path to latest checkpoint (default: none)')
     parser.add_argument('--mode', default='train', type=str,
-                        choices=['train', 'val', 'rollout'],
+                        choices=['train', 'val', 'rollout', 'offline'],
                         help='mode of the program (training, validation, or generate rollout)')
+    parser.add_argument('--ip_address', default='192.168.1.100', type=str,
+                        help='ip adress of ps4')
 
     # Misc
     parser.add_argument('--seed', default=-1, type=int,
@@ -27,10 +29,14 @@ def get_args():
                         help='if True, uses strict weight loading function')
     parser.add_argument('--deterministic', default=False, type=int,
                         help='if True, sets fixed seeds for torch and numpy')
+    parser.add_argument('--deterministic_action', action='store_true',
+                        help='if True, use deterministic action without variance')
     parser.add_argument('--n_val_samples', default=10, type=int,
                         help='number of validation episodes')
     parser.add_argument('--save_dir', type=str,
                         help='directory for saving the generated rollouts in rollout mode')
+    parser.add_argument('--counter', default=0, type=int,
+                        help='start count of save rollout')
     parser.add_argument('--config_override', default='', type=str,
                         help='override to config file in format "key1.key2=val1,key3=val2"')
 
