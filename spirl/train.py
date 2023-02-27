@@ -1,4 +1,4 @@
-import matplotlib; matplotlib.use('Agg')
+# import matplotlib; matplotlib.use('Agg')
 import torch
 import os
 import time
@@ -23,8 +23,8 @@ from spirl.components.trainer_base import BaseTrainer
 from spirl.utils.wandb import WandBLogger
 from spirl.components.params import get_args
 
-WANDB_PROJECT_NAME = 'your_project_name'
-WANDB_ENTITY_NAME = 'your_entity_name'
+WANDB_PROJECT_NAME = 'maze_skill'
+WANDB_ENTITY_NAME = 'cehao'
 
 
 class ModelTrainer(BaseTrainer):
@@ -64,7 +64,7 @@ class ModelTrainer(BaseTrainer):
         self.optimizer = self.get_optimizer_class()(filter(lambda p: p.requires_grad, self.model.parameters()), lr=self._hp.lr)
         self.evaluator = self._hp.evaluator(self._hp, self.log_dir, self._hp.top_of_n_eval,
                                             self._hp.top_comp_metric, tb_logger=self.logger_test)
-        
+
         # load model params from checkpoint
         self.global_step, start_epoch = 0, 0
         if args.resume or conf.ckpt_path is not None:

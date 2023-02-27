@@ -11,7 +11,7 @@ from matplotlib.patches import Ellipse
 from spirl.components.base_model import BaseModel
 from spirl.components.logger import Logger
 from spirl.components.checkpointer import load_by_key, freeze_modules
-from spirl.modules.losses import KLDivLoss, NLL
+from spirl.modules.losses import KLDivLoss, NLL, MSE
 from spirl.modules.subnetworks import BaseProcessingLSTM, Predictor, Encoder
 from spirl.modules.recurrent_modules import RecurrentPredictor
 from spirl.utils.general_utils import AttrDict, ParamDict, split_along_axis, get_clipped_optimizer
@@ -86,6 +86,8 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
             'reconstruction_mse_weight': 1.,    # weight of MSE reconstruction loss
             'kl_div_weight': 1.,                # weight of KL divergence loss
             'target_kl': None,                  # if not None, adds automatic beta-tuning to reach target KL divergence
+            'learned_prior_weight' : 1.,        # weight for train learned prior
+            'action_dim_weights': 1,            # the weights for reconstruction mes loss at each dimension
         })
 
         # loading pre-trained components
@@ -115,6 +117,17 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         :arg inputs: dict with 'states', 'actions', 'images' keys from data loader
         :arg use_learned_prior: if True, decodes samples from learned prior instead of posterior, used for RL
         """
+
+        '''
+        Summary the meaning of each variable
+        self.q = encoder, self.decoder, self.p = prior
+
+        output.q = z~encoder()
+        output.p = N(0,I)
+        output.q_hat = z~prior()
+        if use_learned_prior(argument): make p = q_hat, why???
+        '''
+
         output = AttrDict()
         inputs.observations = inputs.actions    # for seamless evaluation
 
@@ -129,6 +142,15 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         if use_learned_prior:
             output.p = output.q_hat     # use output of learned skill prior for sampling
 
+        '''
+        if self._sample_prior:
+            1) z =   p.sample(), sample from N(0,I) or prior 
+            2) z_q = q.sample(). sample from encoder
+        else: ordinary condition
+            1) z =   q.sample(), sample from encoder
+            2) z_q = z as well.
+        '''
+
         # sample latent variable
         output.z = output.p.sample() if self._sample_prior else output.q.sample()
         output.z_q = output.z.clone() if not self._sample_prior else output.q.sample()   # for loss computation
@@ -139,6 +161,13 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
                                             cond_inputs=self._learned_prior_input(inputs),
                                             steps=self._hp.n_rollout_steps,
                                             inputs=inputs)
+
+        # prior reconstruction
+        # output.prior_reconstruction = self.decode(output.q_hat.sample(),
+        #                                     cond_inputs=self._learned_prior_input(inputs),
+        #                                     steps=self._hp.n_rollout_steps,
+        #                                     inputs=inputs)
+
         return output
 
     def loss(self, model_output, inputs):
@@ -148,16 +177,28 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         """
         losses = AttrDict()
 
+        weights = self._hp.action_dim_weights
+
         # reconstruction loss, assume unit variance model output Gaussian
         losses.rec_mse = NLL(self._hp.reconstruction_mse_weight) \
             (Gaussian(model_output.reconstruction, torch.zeros_like(model_output.reconstruction)),
              self._regression_targets(inputs))
+
+
+        # try a new mse formulatoin
+        # losses.rec_mse = MSE(self._hp.reconstruction_mse_weight) \
+        #                 (model_output.reconstruction, self._regression_targets(inputs), 
+        #                 weights=weights)
 
         # KL loss
         losses.kl_loss = KLDivLoss(self.beta)(model_output.q, model_output.p)
 
         # learned skill prior net loss
         losses.q_hat_loss = self._compute_learned_prior_loss(model_output)
+
+        # losses.q_hat_loss = MSE(self._hp.learned_prior_weight) \
+        #                 (model_output.prior_reconstruction, self._regression_targets(inputs), 
+        #                 weights=weights)
 
         # Optionally update beta
         if self.training and self._hp.target_kl is not None:

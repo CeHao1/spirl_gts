@@ -15,8 +15,8 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'your_project_name'
-WANDB_ENTITY_NAME = 'your_entity_name'
+WANDB_PROJECT_NAME = 'maze'
+WANDB_ENTITY_NAME = 'cehao'
 
 
 class RLTrainer:
@@ -52,8 +52,9 @@ class RLTrainer:
         self.conf.env.seed = self._hp.seed
         if 'task_params' in self.conf.env: self.conf.env.task_params.seed=self._hp.seed
         if 'general' in self.conf: self.conf.general.seed=self._hp.seed
-        self.env = self._hp.environment(self.conf.env)
-        self.conf.agent.env_params = self.env.agent_params      # (optional) set params from env for agent
+        if args.mode != 'offline': # offline has no env
+            self.env = self._hp.environment(self.conf.env)
+            self.conf.agent.env_params = self.env.agent_params      # (optional) set params from env for agent
         if self.is_chef:
             pretty_print(self.conf)
 
@@ -63,7 +64,8 @@ class RLTrainer:
         self.agent.to(self.device)
 
         # build sampler
-        self.sampler = self._hp.sampler(self.conf.sampler, self.env, self.agent, self.logger, self._hp.max_rollout_len)
+        if args.mode != 'offline': # offline has no sampler
+            self.sampler = self._hp.sampler(self.conf.sampler, self.env, self.agent, self.logger, self._hp.max_rollout_len)
 
         # load from checkpoint
         self.global_step, self.n_update_steps, start_epoch = 0, 0, 0
@@ -76,8 +78,10 @@ class RLTrainer:
             self.train(start_epoch)
         elif args.mode == 'val':
             self.val()
-        else:
+        elif args.mode == 'rollout':
             self.generate_rollouts()
+        elif args.mode == 'offline':
+            self.offline()
 
     def _default_hparams(self):
         default_dict = ParamDict({
@@ -95,17 +99,30 @@ class RLTrainer:
             'log_images_per_epoch': 4,    # log images/videos N times per epoch
             'logging_target': 'wandb',    # where to log results to
             'n_warmup_steps': 0,    # steps of warmup experience collection before training
+            'use_update_after_sampling': False, # call another function
+            'save_initial_weight': False, # to save a weight with 9999. of offline usage
         })
         return default_dict
 
     def train(self, start_epoch):
         """Run outer training loop."""
         if self._hp.n_warmup_steps > 0:
+            # save inital weights of agents
+            if self._hp.save_initial_weight:
+                save_checkpoint({
+                        'epoch': 9999,
+                        'global_step': self.global_step,
+                        'state_dict': self.agent.state_dict(),
+                    }, os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name(9999))
             self.warmup()
 
+        print('after warm up, start training epochs')
         for epoch in range(start_epoch, self._hp.num_epochs):
             print("Epoch {}".format(epoch))
-            self.train_epoch(epoch)
+            if (self._hp.use_update_after_sampling):
+                self.train_epoch_with_after_sampling_rollout(epoch)
+            else:
+                self.train_epoch(epoch)
 
             if not self.args.dont_save and self.is_chef:
                 save_checkpoint({
@@ -114,7 +131,7 @@ class RLTrainer:
                     'state_dict': self.agent.state_dict(),
                 }, os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name(epoch))
                 self.agent.save_state(self._hp.exp_path)
-                self.val()
+                self.val() # do not do val in train
 
     def train_epoch(self, epoch):
         """Run inner training loop."""
@@ -152,6 +169,40 @@ class RLTrainer:
                                                log_images=False, step=self.global_step)
                         self.print_train_update(epoch, agent_outputs, timers)
 
+    def train_epoch_with_after_sampling_rollout(self, epoch):
+        # initialize timing
+        timers = defaultdict(lambda: AverageTimer())
+
+        self.sampler.init(is_train=True)
+        print('!! start of the train after')
+
+        with timers['batch'].time():
+            # collect experience
+            with timers['rollout'].time(): # collect all sample for each epoch
+                experience_batch, env_steps = self.sampler.sample_batch(batch_size=self._hp.n_steps_per_epoch,
+                                                                        global_step=self.global_step)
+                if self.use_multiple_workers:
+                    experience_batch = mpi_gather_experience(experience_batch)
+                self.global_step += mpi_sum(env_steps)
+
+        # update policy and Q
+        with timers['update'].time():
+            if self.is_chef:
+                agent_outputs = self.agent.update(experience_batch)
+            if self.use_multiple_workers:
+                self.agent.sync_networks()
+            self.n_update_steps += self.agent.update_iterations
+
+        print('!! update step is', self.n_update_steps)
+
+        # log results
+        with timers['log'].time():
+            # if self.is_chef and self.log_outputs_now:
+            self.agent.log_outputs(agent_outputs, None, self.logger,
+                                    log_images=False, step=self.global_step)
+            self.print_train_update(epoch, agent_outputs, timers)
+
+
     def val(self):
         """Evaluate agent."""
         val_rollout_storage = RolloutStorage()
@@ -159,8 +210,8 @@ class RLTrainer:
             with torch.no_grad():
                 with timing("Eval rollout time: "):
                     for _ in range(WandBLogger.N_LOGGED_SAMPLES):   # for efficiency instead of self.args.n_val_samples
-                        val_rollout_storage.append(self.sampler.sample_episode(is_train=False, render=True))
-
+                        episode = self.sampler.sample_episode(is_train=False, render=True, deterministic_action=self.args.deterministic_action)
+                        val_rollout_storage.append(episode)
         rollout_stats = val_rollout_storage.rollout_stats()
         if self.is_chef:
             with timing("Eval log time: "):
@@ -172,20 +223,25 @@ class RLTrainer:
     def generate_rollouts(self):
         """Generate rollouts and save to hdf5 files."""
         print("Saving {} rollouts to directory {}...".format(self.args.n_val_samples, self.args.save_dir))
-        saver = RolloutSaver(self.args.save_dir)
+        saver = RolloutSaver(self.args.save_dir, self.args.counter)
         n_success = 0
         n_total = 0
         with self.agent.val_mode():
             with torch.no_grad():
                 for _ in tqdm(range(self.args.n_val_samples)):
                     while True:     # keep producing rollouts until we get a valid one
-                        episode = self.sampler.sample_episode(is_train=False, render=True)
+                        episode = self.sampler.sample_episode(is_train=False, render=True, 
+                                    deterministic_action=self.args.deterministic_action)
                         valid = not hasattr(self.agent, 'rollout_valid') or self.agent.rollout_valid
                         n_total += 1
                         if valid:
                             n_success += 1
                             break
-                    saver.save_rollout_to_file(episode)
+                    if isinstance(episode, list):
+                        for epsi in episode:
+                            saver.save_rollout_to_file(epsi)
+                    else:
+                        saver.save_rollout_to_file(episode)
         print("Success rate: {:d} / {:d} = {:.3f}%".format(n_success, n_total, float(n_success) / n_total * 100))
 
     def warmup(self):
@@ -269,6 +325,12 @@ class RLTrainer:
                                          path=self._hp.exp_path, conf=conf)
                 else:
                     raise NotImplementedError   # TODO implement alternative logging (e.g. TB)
+
+            elif self.args.mode == 'val':
+                exp_name = f"{os.path.basename(self.args.path)}_{self.args.prefix}" if self.args.prefix \
+                    else os.path.basename(self.args.path)
+                logger = WandBLogger(exp_name, WANDB_PROJECT_NAME, entity=WANDB_ENTITY_NAME,
+                                        path=self._hp.exp_path, conf=conf)
             return logger
 
     def setup_device(self):
@@ -288,6 +350,17 @@ class RLTrainer:
         self.agent.load_state(self._hp.exp_path)
         self.agent.to(self.device)
         return start_epoch
+
+    def offline(self):
+        # customized method
+        # load states means load replay buffer
+        # self.agent.load_state(self._hp.exp_path) 
+        # self.agent.to(self.device)
+
+        self.agent.offline()
+        # self.agent.hl_agent.offline()
+        # self.agent.ll_agent.offline()
+
 
     def print_train_update(self, epoch, agent_outputs, timers):
         print('GPU {}: {}'.format(os.environ["CUDA_VISIBLE_DEVICES"] if self.use_cuda else 'none',
