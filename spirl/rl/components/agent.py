@@ -233,8 +233,11 @@ class HierarchicalAgent(BaseAgent):
     """Implements a basic hierarchical agent with high-level and low-level policy/policies."""
     def __init__(self, config):
         super().__init__(config)
-        self.hl_agent = self._hp.hl_agent(self._hp.temp_overwrite(self._hp.hl_agent_params))
-        self.ll_agent = self._hp.ll_agent(self._hp.temp_overwrite(self._hp.ll_agent_params))
+        # self.hl_agent = self._hp.hl_agent(self._hp.temp_overwrite(self._hp.hl_agent_params))
+        # self.ll_agent = self._hp.ll_agent(self._hp.temp_overwrite(self._hp.ll_agent_params))
+        self.hl_agent = self._hp.hl_agent(self._hp.overwrite(self._hp.hl_agent_params))
+        self.ll_agent = self._hp.ll_agent(self._hp.overwrite(self._hp.ll_agent_params))
+        
         self._last_hl_output = None     # stores last high-level output to feed to low-level during intermediate steps
 
     def _default_hparams(self):
