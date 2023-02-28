@@ -9,32 +9,7 @@ type_feature_index, sac_nz10_01
 export EXP_DIR=./experiments
 export DATA_DIR=./data
 
-Hi Karl Pertsch, I am trying to reproduce the SPiRL and SPiRL_closed-loop performance in the maze navigation environment.
-
-I downloaded the data you provided and  
-
-1) train skill prior using the default parameters by
-``` python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchical --val_data_size=160```
-and 
-``` python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchical_cl --val_data_size=160```
-
-2) train downstream RL of maze navigation using the skill prior model by
-```python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl --seed=0 --prefix=SPIRL_maze_seed0```
-and 
-```python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=0 --prefix=SPIRL_cl_maze_seed0```
-
-3) We check the reward curve of the two methods. SPiRL(open-loop) does not reach the target so the reward is always 0.   
-SPiRL(closed-loop) indeed reaches the target and gains rewards, but the initial step when the agent reaches the target is more than 0.5 million and the reward even becomes 0 after 1 millison steps. 
-
-In the SPiRL paper, figure 9, you show 'Our' method is better success rate than 'Our w/ state cond.'. But from my reproduction, we found some mismatch. I tried seed=0, 1, 2 and the results are similar.
-
-So we did another that using the pre-trained closed-loop model you provided.
-https://github.com/clvrai/spirl/blob/master/spirl/data/pretrained_models.md
-
-Then we run the downstream RL, and found the performance is closer to what you show in Figure 9. The inital reward occour at 50k(0.05m).   
-I am not sure whether the mismatch is caused by my skill prior training. So can I reproduce the performance in you paper using the default parameters in the master branch?
-
-=====================================================================================
+================================================================
 # Train model
 python3 spirl/train.py \
 --val_data_size=160 --gpu=0 --prefix=xxx_t01 --resume=latest
