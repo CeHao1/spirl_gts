@@ -1,3 +1,12 @@
 .idea
 __pycache__
 *.egg-info
+
+*.pickle
+*.json
+*.ipynb
+
+data/
+experiments/
+save_rollout/
+rollout/
