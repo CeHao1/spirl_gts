@@ -21,9 +21,11 @@ class MazeAgent:
         size = self.replay_buffer.size
         states = self.replay_buffer.get().observation[:size, :2]
 
+        print('!! place 1, log maze image, step is', step)
         fig = plt.figure()
         plt.scatter(states[:, 0], states[:, 1], s=5, c=np.arange(size), cmap='Blues')
         plt.axis("equal")
+        plt.title('step' + str(step))
         logger.log_plot(fig, "replay_vis", step)
         plt.close(fig)
 
@@ -91,15 +93,18 @@ class MazeACActionPriorSACAgent(ActionPriorSACAgent, MazeAgent):
     def _vis_replay_buffer(self, logger, step):
         """Visualizes maze trajectories from replay buffer (if step < replay capacity)."""
         if step > self.replay_buffer.capacity:
+            print('!! place 2, out of capacity')
             return   # visualization does not work if earlier samples were overridden
 
         # get data
         size = self.vis_replay_buffer.size
         states = self.vis_replay_buffer.get().observation[:size, :2]
 
+        print('place 2!! log maze image, step is', step)
         fig = plt.figure()
         plt.scatter(states[:, 0], states[:, 1], s=5, c=np.arange(size), cmap='Blues')
         plt.axis("equal")
+        plt.title('step ' + str(step))
         logger.log_plot(fig, "replay_vis", step)
         plt.close(fig)
 
@@ -128,6 +133,7 @@ class MazeHLSkillAgent(HLSKillAgent, MazeAgent):
         size = self.vis_replay_buffer.size
         states = self.vis_replay_buffer.get().observation[:size, :2]
 
+        print('place 3, !! log maze image, step is', step)
         fig = plt.figure()
         plt.scatter(states[:, 0], states[:, 1], s=5, c=np.arange(size), cmap='Blues')
         plt.axis("equal")

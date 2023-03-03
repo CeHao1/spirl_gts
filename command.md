@@ -8,13 +8,22 @@ export DISPLAY=:1
 python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchical --val_data_size=160 \
 --gpu=0 --prefix=ol_maze_init01
 
+
+# train skill
 python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchical_cl --val_data_size=160 \
 --gpu=0 --prefix=cl_maze_init01
 
+python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchical_cd --val_data_size=160 \
+--gpu=0 --prefix=cd_maze_init01
+
+
+# train RL
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=1 --gpu=0 \
+--prefix=cl_paper199_seed1
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl --seed=3 --gpu=0 \
+--prefix=ol_iter199_seed3
+
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=0 --gpu=0 \
---prefix=cl_paper199_seed0
+--prefix=cl_iter199_seed0
 
-mpi4py                   3.1.4
-
-
-imp.load_source('conf', "spirl/configs/hrl/maze/spirl_cl/conf.py")

@@ -27,8 +27,7 @@ def set_shutdown_hooks():
 
 
 def mpi_sum(x):
-    buf = np.zeros_like(np.array(x))
-    return buf
+    return x
 
 
 # sync gradients across the different cores

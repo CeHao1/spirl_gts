@@ -76,7 +76,7 @@ ll_model_params = AttrDict(
 ll_policy_params = AttrDict(
     policy_model=ImageClSPiRLMdl,
     policy_model_params=ll_model_params,
-    policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/maze/hierarchical_cl"),
+    policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/maze_noT/hierarchical_cl"),
     initial_log_sigma=-50.,
 )
 ll_policy_params.update(ll_model_params)
