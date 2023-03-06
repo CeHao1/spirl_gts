@@ -103,7 +103,7 @@ ll_agent_config.update(AttrDict(
     # obs(s + z + t) + a = 4 + 10 + 10 + 2
     critic_params=ll_critic_params,
 
-    visualize_values = True,
+    visualize_values = False,
 ))
 
 ######=============== High-Level ===============########
@@ -138,7 +138,7 @@ hl_agent_config.update(AttrDict(
     critic_params=hl_critic_params,
     td_schedule_params=AttrDict(p=1.),
 
-    visualize_values = True,
+    visualize_values = False,
 ))
 
 #####========== Joint Agent =======#######

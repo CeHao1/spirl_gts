@@ -205,7 +205,7 @@ class HierarchicalSampler(Sampler):
                                 ll_experience_batch[-1].done = True
                                 if hl_experience_batch:   # can potentially be empty 
                                     hl_experience_batch[-1].done = True
-                            # print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
+                            print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
                             self._episode_reset(global_step)
 
                             
