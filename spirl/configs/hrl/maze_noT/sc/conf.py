@@ -152,7 +152,7 @@ agent_config = AttrDict(
     update_hl=True,
     update_ll=True,
     
-    update_iterations = 512,
+    # update_iterations = 512,
 )
 
 # Dataset - Random data
