@@ -8,26 +8,24 @@ from spirl.rl.agents.skill_space_agent import SkillSpaceAgent, ACSkillSpaceAgent
 
 
 class MazeAgent:
+    START_POS = np.array([10., 24.])
+    TARGET_POS = np.array([18., 8.])
+
     """Adds replay logging function."""
     def visualize(self, logger, rollout_storage, step):
         self._vis_replay_buffer(logger, step)
 
     def _vis_replay_buffer(self, logger, step):
         """Visualizes maze trajectories from replay buffer (if step < replay capacity)."""
-        if step > self.replay_buffer.capacity:
-            return   # visualization does not work if earlier samples were overridden
+        # if step > self.replay_buffer.capacity:
+        #     return   # visualization does not work if earlier samples were overridden
 
         # get data
         size = self.replay_buffer.size
         states = self.replay_buffer.get().observation[:size, :2]
 
         print('!! place 1, log maze image, step is', step)
-        fig = plt.figure()
-        plt.scatter(states[:, 0], states[:, 1], s=5, c=np.arange(size), cmap='Blues')
-        plt.axis("equal")
-        plt.title('step' + str(step))
-        logger.log_plot(fig, "replay_vis", step)
-        plt.close(fig)
+        plot_maze_fun(states, logger, step, size)
 
         
 class MazeSkillSpaceAgent(SkillSpaceAgent, MazeAgent):
@@ -92,22 +90,17 @@ class MazeACActionPriorSACAgent(ActionPriorSACAgent, MazeAgent):
 
     def _vis_replay_buffer(self, logger, step):
         """Visualizes maze trajectories from replay buffer (if step < replay capacity)."""
-        if step > self.replay_buffer.capacity:
-            print('!! place 2, out of capacity')
-            return   # visualization does not work if earlier samples were overridden
+        # if step > self.replay_buffer.capacity:
+        #     return   # visualization does not work if earlier samples were overridden
 
         # get data
         size = self.vis_replay_buffer.size
         states = self.vis_replay_buffer.get().observation[:size, :2]
 
         print('place 2!! log maze image, step is', step)
-        fig = plt.figure()
-        plt.scatter(states[:, 0], states[:, 1], s=5, c=np.arange(size), cmap='Blues')
-        plt.axis("equal")
-        plt.title('step ' + str(step))
-        logger.log_plot(fig, "replay_vis", step)
-        plt.close(fig)
 
+        fig = plt.figure(figsize=(10,10))
+        plot_maze_fun(states, logger, step, size)
 
 class MazeHLSkillAgent(HLSKillAgent, MazeAgent):
     def __init__(self, *args, **kwargs):
@@ -130,16 +123,25 @@ class MazeHLSkillAgent(HLSKillAgent, MazeAgent):
 
     def _vis_replay_buffer(self, logger, step):
         """Visualizes maze trajectories from replay buffer (if step < replay capacity)."""
-        if step > self.replay_buffer.capacity:
-            return   # visualization does not work if earlier samples were overridden
+        # if step > self.replay_buffer.capacity:
+        #     return   # visualization does not work if earlier samples were overridden
 
         # get data
         size = self.vis_replay_buffer.size
         states = self.vis_replay_buffer.get().observation[:size, :2]
 
-        print('place 3, !! log maze image, step is', step)
-        fig = plt.figure()
-        plt.scatter(states[:, 0], states[:, 1], s=5, c=np.arange(size), cmap='Blues')
-        plt.axis("equal")
-        logger.log_plot(fig, "replay_vis", step)
-        plt.close(fig)
+        plot_maze_fun(states, logger, step, size)
+
+
+def plot_maze_fun(states, logger, step, size):
+    print('!! plot maze at step ', step)
+    fig = plt.figure(figsize=(8,8))
+    plt.scatter(states[:, 0], states[:, 1], s=5, c=np.arange(size), cmap='Blues')
+    plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go')
+    plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'ro')
+    plt.axis("equal")
+    plt.title('step ' + str(step))
+    plt.xlim([-3, 43])
+    plt.ylim([-3, 43])
+    logger.log_plot(fig, "replay_vis", step)
+    plt.close(fig)

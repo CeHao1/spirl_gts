@@ -4,7 +4,7 @@ import copy
 from spirl.utils.general_utils import AttrDict
 from spirl.rl.agents.skill_critic.joint_agent import JointAgent, skill_critic_stages
 from spirl.rl.components.critic import SplitObsMLPCritic, MLPCritic
-from spirl.rl.components.sampler import ACMultiImageAugmentedHierarchicalSampler
+from spirl.rl.components.sampler import ACMultiImageAugmentedHierarchicalSampler, TrainAfter_ACMultiImageAugmentedHierarchicalSampler
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.rl.policies.prior_policies import ACLearnedPriorAugmentedPIPolicy
 from spirl.rl.envs.maze import ACRandMaze0S40Env
@@ -23,16 +23,16 @@ configuration = {
     'seed': 42,
     'agent': JointAgent,
     'environment': ACRandMaze0S40Env,
-    'sampler': ACMultiImageAugmentedHierarchicalSampler,
+    'sampler': TrainAfter_ACMultiImageAugmentedHierarchicalSampler,
     'data_dir': '.',
-    # "use_update_after_sampling": True,
+    "use_update_after_sampling": True,
     'num_epochs': 100,
     'max_rollout_len': 2000,
-    'n_steps_per_epoch': 1e5,
-    'n_warmup_steps': 5e3,
+    # 'n_steps_per_epoch': 1e5,
+    # 'n_warmup_steps': 5e3,
     
-    # 'n_steps_per_epoch': 1e4, #debug
-    # 'n_warmup_steps': 300, #debug
+    'n_steps_per_epoch': 1e4, #debug
+    'n_warmup_steps': 500, #debug
 }
 configuration = AttrDict(configuration)
 
@@ -103,7 +103,9 @@ ll_agent_config.update(AttrDict(
     # obs(s + z + t) + a = 4 + 10 + 10 + 2
     critic_params=ll_critic_params,
 
-    visualize_values = True,
+    td_schedule_params=AttrDict(p=1.),
+
+    # visualize_values = True,
 ))
 
 ######=============== High-Level ===============########
@@ -138,7 +140,7 @@ hl_agent_config.update(AttrDict(
     critic_params=hl_critic_params,
     td_schedule_params=AttrDict(p=1.),
 
-    visualize_values = True,
+    # visualize_values = True,
 ))
 
 #####========== Joint Agent =======#######
@@ -152,7 +154,8 @@ agent_config = AttrDict(
     update_hl=True,
     update_ll=True,
     
-    # update_iterations = 512,
+    update_iterations = 512,
+    initial_train_stage = skill_critic_stages.HL_TRAIN
 )
 
 # Dataset - Random data

@@ -205,7 +205,7 @@ class HierarchicalSampler(Sampler):
                                 ll_experience_batch[-1].done = True
                                 if hl_experience_batch:   # can potentially be empty 
                                     hl_experience_batch[-1].done = True
-                            print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
+                            # print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
                             self._episode_reset(global_step)
 
                             
@@ -278,3 +278,21 @@ class ACMultiImageAugmentedHierarchicalSampler(MultiImageAugmentedHierarchicalSa
                                                ACImageAugmentedHierarchicalSampler):
     def _reset_env(self):
         return ACImageAugmentedHierarchicalSampler._reset_env(self)
+
+
+class TrainAfter_ACMultiImageAugmentedHierarchicalSampler(ACMultiImageAugmentedHierarchicalSampler):
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     self.in_batch_step = 0
+
+    def _episode_reset(self, global_step=None):
+        if global_step is not None:
+            self.in_batch_step += self._episode_step
+            in_batch_global_step = global_step + self.in_batch_step
+            super()._episode_reset(in_batch_global_step)
+        else:
+            super()._episode_reset(global_step)
+
+    def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True):
+        self.in_batch_step = 0
+        return super().sample_batch(batch_size, is_train, global_step, store_ll)
