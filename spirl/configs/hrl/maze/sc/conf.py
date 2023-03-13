@@ -30,10 +30,17 @@ configuration = {
     'max_rollout_len': 2000,
     # 'n_steps_per_epoch': 1e5,
     # 'n_warmup_steps': 5e3,
-    
-    'n_steps_per_epoch': 1e4, 
-    # 'n_steps_per_epoch': 1e3, 
+
+    # 'n_steps_per_update': 2e3, # hl step
+    # 'n_steps_per_epoch': 1e5,  # global step
+    # 'log_output_per_epoch' : 1e5 / 2e3,
+
     'n_warmup_steps': 500,
+
+
+    # 'n_steps_per_update': 5e2, # hl step
+    'n_steps_per_epoch': 1e4,  # global step
+    # 'log_output_per_epoch' : 1e4 / 5e2,
 }
 configuration = AttrDict(configuration)
 
@@ -52,8 +59,8 @@ sampler_config = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    # batch_size=256,
-    batch_size=64,
+    batch_size=256,
+    # batch_size=64,
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -77,7 +84,9 @@ ll_policy_params = AttrDict(
     policy_model=ImageTimeIndexCDSPiRLMDL, 
     policy_model_params=ll_model_params,
     policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/maze/hierarchical_cd"),
-    initial_log_sigma=-50.,
+    # initial_log_sigma=-50.,
+
+    manual_log_sigma=[0, 0],
 )
 ll_policy_params.update(ll_model_params)
 
@@ -104,7 +113,8 @@ ll_agent_config.update(AttrDict(
     # obs(s + z + t) + a = 4 + 10 + 10 + 2
     critic_params=ll_critic_params,
 
-    td_schedule_params=AttrDict(p=1.),
+    # td_schedule_params=AttrDict(p=1.),
+    fixed_alpha = 0.001,
 
     # visualize_values = True,
 ))
@@ -155,7 +165,7 @@ agent_config = AttrDict(
     update_hl=True,
     update_ll=True,
     
-    update_iterations = 512,
+    update_iterations = 128,
     initial_train_stage = skill_critic_stages.HL_TRAIN
 )
 
