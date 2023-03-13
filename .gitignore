@@ -13,4 +13,6 @@ viz/ipy/
 sample/
 
 *.ipynb
+*.csv
+*.png
 .vscode/
