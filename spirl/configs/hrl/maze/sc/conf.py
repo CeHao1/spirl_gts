@@ -23,24 +23,31 @@ configuration = {
     'seed': 42,
     'agent': JointAgent,
     'environment': ACRandMaze0S40Env,
-    'sampler': TrainAfter_ACMultiImageAugmentedHierarchicalSampler,
+    # 'sampler': TrainAfter_ACMultiImageAugmentedHierarchicalSampler,
+    'sampler': ACMultiImageAugmentedHierarchicalSampler,
     'data_dir': '.',
-    "use_update_after_sampling": True,
+    # "use_update_after_sampling": True,
     'num_epochs': 100,
     'max_rollout_len': 2000,
     # 'n_steps_per_epoch': 1e5,
-    # 'n_warmup_steps': 5e3,
+    'n_warmup_steps': 5e3,
 
     # 'n_steps_per_update': 2e3, # hl step
     # 'n_steps_per_epoch': 1e5,  # global step
     # 'log_output_per_epoch' : 1e5 / 2e3,
 
-    'n_warmup_steps': 500,
+    # 'n_warmup_steps': 500,
 
 
     # 'n_steps_per_update': 5e2, # hl step
-    'n_steps_per_epoch': 1e4,  # global step
+    'n_steps_per_epoch': 2e4,  # global step
     # 'log_output_per_epoch' : 1e4 / 5e2,
+
+
+    # 'n_warmup_steps': 100,
+    # 'n_steps_per_update': 2000, # hl step
+    # 'n_steps_per_epoch': 1e5,  # global step
+    # 'log_output_per_epoch' : 1e4 / 200,
 }
 configuration = AttrDict(configuration)
 
@@ -59,8 +66,8 @@ sampler_config = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    batch_size=256,
-    # batch_size=64,
+    # batch_size=256,
+    batch_size=1024,
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -149,7 +156,9 @@ hl_agent_config.update(AttrDict(
     critic=SplitObsMLPCritic,
     # critic=MLPCritic,
     critic_params=hl_critic_params,
-    td_schedule_params=AttrDict(p=1.),
+    # td_schedule_params=AttrDict(p=1.),
+
+    fixed_alpha = 0.01,
 
     # visualize_values = True,
 ))
@@ -165,7 +174,7 @@ agent_config = AttrDict(
     update_hl=True,
     update_ll=True,
     
-    update_iterations = 128,
+    # update_iterations = 256,
     initial_train_stage = skill_critic_stages.HL_TRAIN
 )
 

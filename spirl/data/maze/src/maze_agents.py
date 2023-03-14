@@ -134,13 +134,13 @@ class MazeHLSkillAgent(HLSKillAgent, MazeAgent):
 
 
 def plot_maze_fun(states, logger, step, size):
-    print('!! plot maze at step ', step, ' size ', size)
+    # print('!! plot maze at step ', step, ' size ', size)
     fig = plt.figure(figsize=(8,8))
     plt.scatter(states[:, 0], states[:, 1], s=5, c=np.arange(size), cmap='Blues')
     plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go')
     plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'ro')
     plt.axis("equal")
-    plt.title('step ' + str(step))
+    plt.title('step ' + str(step) + ' size ' + str(size))
     plt.xlim([-3, 43])
     plt.ylim([-3, 43])
     logger.log_plot(fig, "replay_vis", step)

@@ -21,14 +21,14 @@ python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchic
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=1 --gpu=0 \
 --prefix=cl_paper199_seed1
 
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl --seed=3 --gpu=0 \
---prefix=ol_base_s3
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl --seed=0 --gpu=0 \
+--prefix=ol_size_s0
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=3 --gpu=0 \
 --prefix=cl_base_s3
 
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sc --seed=2 --gpu=0 \
---prefix=sc_debugtest_09
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sc --seed=0 --gpu=0 \
+--prefix=sc_back2ori_s0_2
 
 # train noT skill
 

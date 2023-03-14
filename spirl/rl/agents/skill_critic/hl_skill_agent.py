@@ -73,6 +73,7 @@ class HLSKillAgent(ActionPriorSACAgent):
                 hl_avg_sigma = policy_output.dist.sigma.mean(),
             ))
             info.update(self._aux_info(experience_batch, policy_output))
+            info.target_divergence = self._target_divergence(self.schedule_steps)
             info = map_dict(ten2ar, info)
 
             self._update_steps += 1
