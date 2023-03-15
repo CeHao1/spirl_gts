@@ -132,6 +132,7 @@ class LLActionAgent(ActionPriorSACAgent):
                 v_next=v_next.mean(), 
                 q_next=q_next.mean(), 
                 u_next=u_next.mean(),
+                ll_avg_reward=experience_batch.reward.mean(),
             ))
             info.update(self._aux_info(experience_batch, policy_output))
             info = map_dict(ten2ar, info)
@@ -148,8 +149,11 @@ class LLActionAgent(ActionPriorSACAgent):
     # ================================ hl critic ================================
     def _compute_hl_q_target(self, experience_batch, policy_output, vis=False): 
         # Qz(s,z,k) = Qa(s,z,k,a) - alph * DKL(PIa)
-        state = experience_batch.observation_next
-        act = experience_batch.action
+        # state = experience_batch.observation_next
+        # act = experience_batch.action
+
+        state = experience_batch.observation
+        act = policy_output.action
 
         with torch.no_grad():
             qa_target = torch.min(*[critic_target(state, act).q for critic_target in self.critic_targets])# this part is

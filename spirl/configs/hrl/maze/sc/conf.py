@@ -27,7 +27,7 @@ configuration = {
     'sampler': ACMultiImageAugmentedHierarchicalSampler,
     'data_dir': '.',
     # "use_update_after_sampling": True,
-    'num_epochs': 100,
+    'num_epochs': 500,
     'max_rollout_len': 2000,
     # 'n_steps_per_epoch': 1e5,
     'n_warmup_steps': 5e3,
@@ -184,7 +184,7 @@ data_config.dataset_spec = data_spec
 
 # Environment
 env_config = AttrDict(
-    reward_norm=1.,
+    reward_norm=0.05,
     screen_height=ll_model_params.prior_input_res,
     screen_width=ll_model_params.prior_input_res,
 )

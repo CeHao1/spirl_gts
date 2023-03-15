@@ -27,8 +27,8 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl --seed=0 --gpu=0 \
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=3 --gpu=0 \
 --prefix=cl_base_s3
 
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sc --seed=0 --gpu=0 \
---prefix=sc_back2ori_s0_2
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sc  --gpu=0 \
+--seed=3 --prefix=sc_rewnorm_s3_2
 
 # train noT skill
 
