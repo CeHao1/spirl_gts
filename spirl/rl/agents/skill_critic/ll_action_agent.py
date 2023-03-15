@@ -149,9 +149,6 @@ class LLActionAgent(ActionPriorSACAgent):
     # ================================ hl critic ================================
     def _compute_hl_q_target(self, experience_batch, policy_output, vis=False): 
         # Qz(s,z,k) = Qa(s,z,k,a) - alph * DKL(PIa)
-        # state = experience_batch.observation_next
-        # act = experience_batch.action
-
         state = experience_batch.observation
         act = policy_output.action
 
@@ -235,7 +232,7 @@ class LLActionAgent(ActionPriorSACAgent):
         # V = Qz - alp_z * DKL(PI_z)
         split_obs = self._split_obs(experience_batch.observation_next)
         obs = self._get_hl_obs(split_obs)
-        act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
+        act = torch.cat((hl_policy_output_next.action, split_obs.time_index), dim=-1)
         q_next = torch.min(*[critic_target(obs, act).q for critic_target in self.hl_critic_targets])
         next_val = (q_next - self.hl_agent.alpha * hl_policy_output_next.prior_divergence[:, None])
         check_shape(next_val, [self._hp.batch_size, 1])
