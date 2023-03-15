@@ -184,7 +184,7 @@ class LLActionAgent(ActionPriorSACAgent):
 
     #  =============================== ll policy ================================
     '''
-    # same as the father class
+    # same as the parent class
     def _compute_policy_loss(self, experience_batch, policy_output):
         q_est = torch.min(*[critic(experience_batch.observation, self._prep_action(policy_output.action)).q
                                       for critic in self.critics])
