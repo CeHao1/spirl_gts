@@ -84,9 +84,6 @@ class HLSKillAgent(ActionPriorSACAgent):
         # update the input as (s, z, k0), k0 =  one-hot method 
         # PIz(z|s) = argmax E[ Qz(s,z,k0) - alpz*DKL(PIz||Pa) ] 
 
-        # k0 = self._get_k0_onehot(experience_batch.observation)
-        # act = torch.cat((self._prep_action(policy_output.action), k0), dim=-1)
-
         act = self._prep_action(policy_output.action) # QHL(s, z), no K
   
         q_est = torch.min(*[critic(experience_batch.observation, act).q for critic in self.critics])

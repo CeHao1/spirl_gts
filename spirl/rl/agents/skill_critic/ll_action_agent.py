@@ -1,7 +1,7 @@
 from email import policy
 from posixpath import split
 from spirl.utils.general_utils import ParamDict, map_dict, AttrDict
-from spirl.utils.pytorch_utils import ten2ar, avg_grad_norm, TensorModule, check_shape, map2torch, map2np, parse_one_hot
+from spirl.utils.pytorch_utils import ten2ar, avg_grad_norm, TensorModule, check_shape, map2torch, map2np, parse_one_hot, make_one_hot
 
 from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
@@ -52,7 +52,14 @@ class LLActionAgent(ActionPriorSACAgent):
 
 
             # (1) LL policy loss
-            policy_output = self._run_policy(experience_batch.observation)
+
+            # create new ll obs when k=0
+            split_obs = self._split_obs(experience_batch.observation)
+            obs = self._get_hl_obs(split_obs)
+            k0 = make_one_hot(torch.tensor([0], device=self.device), self.n_rollout_steps).repeat(obs.shape[0], 1)
+            ll_input = torch.cat((obs, split_obs.z, k0), dim=-1)
+            policy_output = self._run_policy(ll_input)
+            
             # update alpha
             alpha_loss = self._update_alpha(experience_batch, policy_output)
 
@@ -73,11 +80,11 @@ class LLActionAgent(ActionPriorSACAgent):
 
             # (3) Qa(s,z,k,a) loss, Qa_target
             if self._update_ll_q_flag:
-                ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch)
+                ll_q_target, q_hl_next, q_ll_next, u_next = self._compute_ll_q_target(experience_batch)
                 ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)
             else:
                 with torch.no_grad():
-                    ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch)
+                    ll_q_target, q_hl_next, q_ll_next, u_next = self._compute_ll_q_target(experience_batch)
                     ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)
             
 
@@ -121,7 +128,7 @@ class LLActionAgent(ActionPriorSACAgent):
             info.update(AttrDict(       # misc
                 ll_alpha=self.alpha,
                 ll_pi_KLD=policy_output.prior_divergence.mean(),
-                ll_policy_entropy=policy_output.dist.entropy().mean(),
+                # ll_policy_entropy=policy_output.dist.entropy().mean(),
                 ll_avg_sigma = policy_output.dist.sigma.mean(),
                 hl_q_target=hl_q_target.mean(),
                 hl_q_1=hl_qs[0].mean(),
@@ -129,8 +136,8 @@ class LLActionAgent(ActionPriorSACAgent):
                 ll_q_target=ll_q_target.mean(),
                 ll_q_1=ll_qs[0].mean(),
                 ll_q_2=ll_qs[1].mean(),
-                v_next=v_next.mean(), 
-                q_next=q_next.mean(), 
+                ll_q_hl_next=q_hl_next.mean(), 
+                ll_q_ll_next=q_ll_next.mean(), 
                 u_next=u_next.mean(),
                 ll_avg_reward=experience_batch.reward.mean(),
             ))
@@ -141,7 +148,7 @@ class LLActionAgent(ActionPriorSACAgent):
 
         if self._hp.visualize_values and vis:
             hl_q_target = self._compute_hl_q_target(experience_batch, policy_output, vis=True)
-            ll_q_target, v_next, q_next, u_next = self._compute_ll_q_target(experience_batch, vis=True)
+            ll_q_target, q_hl_next, q_ll_next, u_next = self._compute_ll_q_target(experience_batch, vis=True)
             self.visualize_gradients(experience_batch)
 
         return info
@@ -168,9 +175,7 @@ class LLActionAgent(ActionPriorSACAgent):
         # Qz(s,z,k), the input is only obs, not action(a) here, old implementation
         split_obs = self._split_obs(experience_batch.observation)
         obs = self._get_hl_obs(split_obs)
-        # act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
-
-        act = split_obs.z, split_obs.time_index # QHL(s, z), no K
+        act = split_obs.z # QHL(s, z), no K
 
         hl_qs = [critic(obs, act).q.squeeze(-1) for critic in self.hl_critics]
         
@@ -196,20 +201,20 @@ class LLActionAgent(ActionPriorSACAgent):
     # ================================ ll critic ================================
     def _compute_ll_q_target(self, experience_batch, vis=False):
         # Qa(s,z,k,a) = r + gamma * U_next
-        # U_next = [1-beta] * Qz_next + [beta] * V_next
-        # V_next = Qz_next - hl_alp * DKL(PIz_next)
+        # U_next = [1-beta] * q_ll_next + [beta] * q_hl_next
 
         with torch.no_grad():
             # (0) use s to generate hl policy
             split_obs = self._split_obs(experience_batch.observation_next)
             hl_policy_output_next = self.hl_agent._run_policy(self._get_hl_obs(split_obs))
+            ll_policy_output_next = self._run_policy(experience_batch.observation_next)
 
             # (1) V_next
-            v_next, q_next = self._compute_next_value(experience_batch, hl_policy_output_next)
+            q_hl_next, q_ll_next = self._compute_next_value(experience_batch, hl_policy_output_next, ll_policy_output_next)
 
             # (2) U_next 
             beta_mask = self._compute_termination_mask(experience_batch.observation_next)
-            u_next =  (1 - beta_mask) * q_next + beta_mask * v_next
+            u_next =  (1 - beta_mask) * q_ll_next + beta_mask * q_hl_next
 
             # (3) ll_q_target
             ll_q_target = experience_batch.reward * self._hp.reward_scale + (1 - experience_batch.done) * self._hp.discount_factor * u_next
@@ -218,9 +223,9 @@ class LLActionAgent(ActionPriorSACAgent):
             check_shape(ll_q_target, [self._hp.batch_size])
 
             if vis:
-                self.visualize_LL_Q(ll_q_target, v_next, q_next, u_next, experience_batch.reward)
+                self.visualize_LL_Q(ll_q_target, q_hl_next, q_ll_next, u_next, experience_batch.reward)
 
-        return ll_q_target, v_next, q_next, u_next
+        return ll_q_target, q_hl_next, q_ll_next, u_next
 
     def _compute_ll_critic_loss(self, experience_batch, ll_q_target):
         # Qa(s,z,k,a)
@@ -231,18 +236,24 @@ class LLActionAgent(ActionPriorSACAgent):
         ll_critic_losses = [0.5 * (q - ll_q_target).pow(2).mean() for q in ll_qs]
         return ll_critic_losses, ll_qs
 
-    def _compute_next_value(self, experience_batch, hl_policy_output_next): 
-        # V = Qz - alp_z * DKL(PI_z)
+    def _compute_next_value(self, experience_batch, hl_policy_output_next, ll_policy_output_next): 
+
         split_obs = self._split_obs(experience_batch.observation_next)
         obs = self._get_hl_obs(split_obs)
-        # act = torch.cat((hl_policy_output_next.action, split_obs.time_index), dim=-1)
 
-        act = hl_policy_output_next.action # QHL(s, z), no K
+        # QLL(k+1)
+        q_ll_next = torch.min(*[critic_target(experience_batch.observation_next, ll_policy_output_next.action).q 
+                            for critic_target in self.critic_targets])
+        q_ll_next = q_ll_next - self.alpha * ll_policy_output_next.prior_divergence[:, None]
 
-        q_next = torch.min(*[critic_target(obs, act).q for critic_target in self.hl_critic_targets])
-        next_val = (q_next - self.hl_agent.alpha * hl_policy_output_next.prior_divergence[:, None])
-        check_shape(next_val, [self._hp.batch_size, 1])
-        return next_val.squeeze(-1), q_next.squeeze(-1)
+        # QHL(k+1)
+        q_hl_next = torch.min(*[critic_target(obs, hl_policy_output_next.action).q for critic_target in self.hl_critic_targets])
+        q_hl_next = q_hl_next - self.hl_agent.alpha * hl_policy_output_next.prior_divergence[:, None]
+
+        check_shape(q_ll_next, [self._hp.batch_size, 1])
+        check_shape(q_hl_next, [self._hp.batch_size, 1])
+
+        return q_hl_next.squeeze(-1), q_ll_next.squeeze(-1)
 
     def _compute_termination_mask(self, obs):
         # [1,0,0] is the start of a new hl step, so return 1 in the mask
