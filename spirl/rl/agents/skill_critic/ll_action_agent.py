@@ -56,7 +56,8 @@ class LLActionAgent(ActionPriorSACAgent):
             # create new ll obs when k=0
             split_obs = self._split_obs(experience_batch.observation)
             obs = self._get_hl_obs(split_obs)
-            k0 = make_one_hot(torch.tensor([0], device=self.device), self.n_rollout_steps).repeat(obs.shape[0], 1)
+            idx0 = torch.tensor([0], device=self.device)
+            k0 = make_one_hot(idx0, self.hl_agent.n_rollout_steps).repeat(obs.shape[0], 1)
             ll_input = torch.cat((obs, split_obs.z, k0), dim=-1)
             policy_output = self._run_policy(ll_input)
             

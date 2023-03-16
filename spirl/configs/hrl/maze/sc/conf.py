@@ -44,7 +44,7 @@ configuration = {
     # 'log_output_per_epoch' : 1e4 / 5e2,
 
 
-    # 'n_warmup_steps': 100,
+    # 'n_warmup_steps': 500,
     # 'n_steps_per_update': 2000, # hl step
     # 'n_steps_per_epoch': 1e5,  # global step
     # 'log_output_per_epoch' : 1e4 / 200,
