@@ -235,7 +235,10 @@ class LLActionAgent(ActionPriorSACAgent):
         # V = Qz - alp_z * DKL(PI_z)
         split_obs = self._split_obs(experience_batch.observation_next)
         obs = self._get_hl_obs(split_obs)
-        act = torch.cat((hl_policy_output_next.action, split_obs.time_index), dim=-1)
+        # act = torch.cat((hl_policy_output_next.action, split_obs.time_index), dim=-1)
+
+        act = hl_policy_output_next.action # QHL(s, z), no K
+
         q_next = torch.min(*[critic_target(obs, act).q for critic_target in self.hl_critic_targets])
         next_val = (q_next - self.hl_agent.alpha * hl_policy_output_next.prior_divergence[:, None])
         check_shape(next_val, [self._hp.batch_size, 1])
