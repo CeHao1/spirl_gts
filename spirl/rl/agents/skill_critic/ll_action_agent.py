@@ -168,7 +168,10 @@ class LLActionAgent(ActionPriorSACAgent):
         # Qz(s,z,k), the input is only obs, not action(a) here, old implementation
         split_obs = self._split_obs(experience_batch.observation)
         obs = self._get_hl_obs(split_obs)
-        act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
+        # act = torch.cat((split_obs.z, split_obs.time_index), dim=-1)
+
+        act = split_obs.z, split_obs.time_index # QHL(s, z), no K
+
         hl_qs = [critic(obs, act).q.squeeze(-1) for critic in self.hl_critics]
         
         # this experience batch is LL, we need to split it
