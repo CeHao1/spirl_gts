@@ -29,7 +29,7 @@ configuration = {
     # "use_update_after_sampling": True,
     'num_epochs': 500,
     'max_rollout_len': 2000,
-    # 'n_steps_per_epoch': 1e5,
+    'n_steps_per_epoch': 1e5,
     'n_warmup_steps': 5e3,
 
     # 'n_steps_per_update': 2e3, # hl step
@@ -40,7 +40,7 @@ configuration = {
 
 
     # 'n_steps_per_update': 5e2, # hl step
-    'n_steps_per_epoch': 2e4,  # global step
+    # 'n_steps_per_epoch': 1e4,  # global step
     # 'log_output_per_epoch' : 1e4 / 5e2,
 
 

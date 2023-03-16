@@ -79,6 +79,7 @@ class BaseAgent(nn.Module):
         logger.log_scalar_dict(logging_stats, prefix='train' if self._is_train else 'val', step=step)
 
         if log_images:
+            '''
             assert rollout_storage is not None      # need rollout data for image logging
             # log rollout videos with info captions
             if 'image' in rollout_storage and self._hp.log_videos:
@@ -89,6 +90,7 @@ class BaseAgent(nn.Module):
                     vids = [np.stack(rollout.image).transpose(0, 3, 1, 2)
                             for rollout in rollout_storage.get()[-logger.n_logged_samples:]]
                 logger.log_videos(vids, name="rollouts", step=step)
+            '''
             self.visualize(logger, rollout_storage, step)
 
     def visualize(self, logger, rollout_storage, step):

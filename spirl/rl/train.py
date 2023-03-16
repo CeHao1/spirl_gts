@@ -97,6 +97,8 @@ class RLTrainer:
             'n_steps_per_epoch': 20000,       # number of env steps per epoch
             'log_output_per_epoch': 100,  # log the non-image/video outputs N times per epoch
             'log_images_per_epoch': 4,    # log images/videos N times per epoch
+            'log_image_interval': 1000,    # log images/videos every N steps
+            'log_output_interval': 200,   # log the non-image/video outputs every N steps
             'logging_target': 'wandb',    # where to log results to
             'n_warmup_steps': 0,    # steps of warmup experience collection before training
             'use_update_after_sampling': False, # call another function
@@ -166,7 +168,7 @@ class RLTrainer:
                 with timers['log'].time():
                     if self.is_chef and self.log_outputs_now:
                         self.agent.log_outputs(agent_outputs, None, self.logger,
-                                               log_images=False, step=self.global_step)
+                                               log_images=self.log_images_now, step=self.global_step)
                         self.print_train_update(epoch, agent_outputs, timers)
 
     def train_epoch_with_after_sampling_rollout(self, epoch):
@@ -377,14 +379,16 @@ class RLTrainer:
 
     @property
     def log_outputs_now(self):
-        return self.n_update_steps % int((self._hp.n_steps_per_epoch / self._hp.n_steps_per_update)
-                                       / self._hp.log_output_per_epoch) == 0 \
-                    or self.log_images_now
+        # return self.n_update_steps % int((self._hp.n_steps_per_epoch / self._hp.n_steps_per_update)
+                                    #    / self._hp.log_output_per_epoch) == 0 \
+                    # or self.log_images_now
+        return self.n_update_steps % self._hp.log_output_interval == 0
 
     @property
     def log_images_now(self):
-        return self.n_update_steps % int((self._hp.n_steps_per_epoch / self._hp.n_steps_per_update)
-                                       / self._hp.log_images_per_epoch) == 0
+        # return self.n_update_steps % int((self._hp.n_steps_per_epoch / self._hp.n_steps_per_update)
+        #                                / self._hp.log_images_per_epoch) == 0
+        return self.n_update_steps % self._hp.log_image_interval == 0
 
     @property
     def is_chef(self):
