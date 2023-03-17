@@ -159,7 +159,7 @@ hl_agent_config.update(AttrDict(
     critic_params=hl_critic_params,
     # td_schedule_params=AttrDict(p=1.),
 
-    fixed_alpha = 0.001,
+    fixed_alpha = 0.1,
 
     # visualize_values = True,
 ))
