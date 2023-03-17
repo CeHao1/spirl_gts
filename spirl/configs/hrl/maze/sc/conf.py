@@ -67,8 +67,8 @@ sampler_config = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    # batch_size=256,
-    batch_size=1024,
+    batch_size=256,
+    # batch_size=1024,
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -159,7 +159,7 @@ hl_agent_config.update(AttrDict(
     critic_params=hl_critic_params,
     # td_schedule_params=AttrDict(p=1.),
 
-    fixed_alpha = 0.01,
+    fixed_alpha = 0.001,
 
     # visualize_values = True,
 ))
