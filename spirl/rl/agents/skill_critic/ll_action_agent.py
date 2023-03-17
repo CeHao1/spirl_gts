@@ -52,7 +52,9 @@ class LLActionAgent(ActionPriorSACAgent):
 
 
             # (1) LL policy loss
+            policy_output = self._run_policy(experience_batch.observation)
 
+            '''
             # create new ll obs when k=0
             split_obs = self._split_obs(experience_batch.observation)
             obs = self._get_hl_obs(split_obs)
@@ -60,6 +62,7 @@ class LLActionAgent(ActionPriorSACAgent):
             k0 = make_one_hot(idx0, self.hl_agent.n_rollout_steps).repeat(obs.shape[0], 1)
             ll_input = torch.cat((obs, split_obs.z, k0), dim=-1)
             policy_output = self._run_policy(ll_input)
+            '''
             
             # update alpha
             alpha_loss = self._update_alpha(experience_batch, policy_output)
@@ -208,14 +211,14 @@ class LLActionAgent(ActionPriorSACAgent):
             # (0) use s to generate hl policy
             split_obs = self._split_obs(experience_batch.observation_next)
             hl_policy_output_next = self.hl_agent._run_policy(self._get_hl_obs(split_obs))
-            ll_policy_output_next = self._run_policy(experience_batch.observation_next)
+            # ll_policy_output_next = self._run_policy(experience_batch.observation_next)
 
             # (1) V_next
-            q_hl_next, q_ll_next = self._compute_next_value(experience_batch, hl_policy_output_next, ll_policy_output_next)
+            v_next, q_next = self._compute_next_value(experience_batch, hl_policy_output_next)
 
             # (2) U_next 
             beta_mask = self._compute_termination_mask(experience_batch.observation_next)
-            u_next =  (1 - beta_mask) * q_ll_next + beta_mask * q_hl_next
+            u_next =  (1 - beta_mask) * q_next + beta_mask * v_next
 
             # (3) ll_q_target
             ll_q_target = experience_batch.reward * self._hp.reward_scale + (1 - experience_batch.done) * self._hp.discount_factor * u_next
@@ -224,9 +227,9 @@ class LLActionAgent(ActionPriorSACAgent):
             check_shape(ll_q_target, [self._hp.batch_size])
 
             if vis:
-                self.visualize_LL_Q(ll_q_target, q_hl_next, q_ll_next, u_next, experience_batch.reward)
+                self.visualize_LL_Q(ll_q_target, v_next, q_next, u_next, experience_batch.reward)
 
-        return ll_q_target, q_hl_next, q_ll_next, u_next
+        return ll_q_target, v_next, q_next, u_next
 
     def _compute_ll_critic_loss(self, experience_batch, ll_q_target):
         # Qa(s,z,k,a)
@@ -237,11 +240,24 @@ class LLActionAgent(ActionPriorSACAgent):
         ll_critic_losses = [0.5 * (q - ll_q_target).pow(2).mean() for q in ll_qs]
         return ll_critic_losses, ll_qs
 
-    def _compute_next_value(self, experience_batch, hl_policy_output_next, ll_policy_output_next): 
+    def _compute_next_value(self, experience_batch, hl_policy_output_next): 
 
         split_obs = self._split_obs(experience_batch.observation_next)
         obs = self._get_hl_obs(split_obs)
+        act = hl_policy_output_next.action
 
+        # at the end of high-level step, then choose a new z
+        q_next_newz = torch.min(*[critic_target(obs, act).q for critic_target in self.hl_critic_targets])
+        v_next = (q_next_newz - self.hl_agent.alpha * hl_policy_output_next.prior_divergence[:, None])
+
+        # still in the same z
+        q_next_samez = torch.min(*[critic_target(obs, experience_batch.action).q for critic_target in self.hl_critic_targets])
+
+        check_shape(v_next, [self._hp.batch_size, 1])
+
+        return v_next.squeeze(-1), q_next_samez.squeeze(-1)
+
+        '''
         # QLL(k+1)
         q_ll_next = torch.min(*[critic_target(experience_batch.observation_next, ll_policy_output_next.action).q 
                             for critic_target in self.critic_targets])
@@ -253,8 +269,10 @@ class LLActionAgent(ActionPriorSACAgent):
 
         check_shape(q_ll_next, [self._hp.batch_size, 1])
         check_shape(q_hl_next, [self._hp.batch_size, 1])
+        
 
         return q_hl_next.squeeze(-1), q_ll_next.squeeze(-1)
+        '''
 
     def _compute_termination_mask(self, obs):
         # [1,0,0] is the start of a new hl step, so return 1 in the mask
