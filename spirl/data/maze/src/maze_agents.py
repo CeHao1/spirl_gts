@@ -145,14 +145,15 @@ def plot_maze_fun(states, logger, step, size):
     logger.log_plot(fig, "replay_vis", step)
     plt.close(fig)
 
-def plot_maze_hl_q(q, states, logger, step, size):
-    fig = plt.figure(figsize=(8,8))
+def plot_maze_value(q, states, logger, step, size, fig_name='vis'):
+    fig = plt.figure(figsize=(10,8))
     plt.scatter(states[:, 0], states[:, 1], s=5, c=q, cmap='Oranges')
     plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go')
     plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'ro')
     plt.axis("equal")
-    plt.title('Value step ' + str(step) + ' size ' + str(size))
+    plt.title(fig_name + ' step ' + str(step) + ' size ' + str(size))
     plt.xlim([-3, 43])
     plt.ylim([-3, 43])
-    logger.log_plot(fig, "value_vis", step)
+    plt.colorbar()
+    logger.log_plot(fig, fig_name, step)
     plt.close(fig)

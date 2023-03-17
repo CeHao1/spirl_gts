@@ -251,7 +251,7 @@ class LLActionAgent(ActionPriorSACAgent):
         v_next = (q_next_newz - self.hl_agent.alpha * hl_policy_output_next.prior_divergence[:, None])
 
         # still in the same z
-        q_next_samez = torch.min(*[critic_target(obs, experience_batch.action).q for critic_target in self.hl_critic_targets])
+        q_next_samez = torch.min(*[critic_target(obs, split_obs.z).q for critic_target in self.hl_critic_targets])
 
         check_shape(v_next, [self._hp.batch_size, 1])
 

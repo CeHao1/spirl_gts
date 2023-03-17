@@ -94,8 +94,8 @@ class ActionPriorSACAgent(SACAgent):
 
         q_est = np.concatenate(q_est_sum, axis=0)
         
-        from spirl.data.maze.src.maze_agents import plot_maze_hl_q
-        plot_maze_hl_q(q_est, states, logger, step, size)
+        from spirl.data.maze.src.maze_agents import plot_maze_value
+        plot_maze_value(q_est, states, logger, step, size)
 
 
 class RandActScheduledActionPriorSACAgent(ActionPriorSACAgent):
