@@ -245,13 +245,14 @@ class LLActionAgent(ActionPriorSACAgent):
         split_obs = self._split_obs(experience_batch.observation_next)
         obs = self._get_hl_obs(split_obs)
         act = hl_policy_output_next.action
+        last_hl_obs = experience_batch.last_hl_obs
 
         # at the end of high-level step, then choose a new z
         q_next_newz = torch.min(*[critic_target(obs, act).q for critic_target in self.hl_critic_targets])
         v_next = (q_next_newz - self.hl_agent.alpha * hl_policy_output_next.prior_divergence[:, None])
 
         # still in the same z
-        q_next_samez = torch.min(*[critic_target(obs, split_obs.z).q for critic_target in self.hl_critic_targets])
+        q_next_samez = torch.min(*[critic_target(last_hl_obs, split_obs.z).q for critic_target in self.hl_critic_targets])
 
         check_shape(v_next, [self._hp.batch_size, 1])
 
@@ -278,7 +279,7 @@ class LLActionAgent(ActionPriorSACAgent):
         # [1,0,0] is the start of a new hl step, so return 1 in the mask
         split_obs  = self._split_obs(obs) # to s,z,k
         beta_onehot = split_obs.time_index
-        
+
         if isinstance(beta_onehot, np.ndarray):
             beta_onehot = torch.from_numpy(beta_onehot).float()
 

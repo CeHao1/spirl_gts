@@ -150,6 +150,7 @@ class HierarchicalSampler(Sampler):
         hl_experience_batch, ll_experience_batch = [], []
 
         env_steps, hl_step = 0, 0
+        self.last_hl_obs = self._obs
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
@@ -173,6 +174,7 @@ class HierarchicalSampler(Sampler):
                                 done=done,
                                 action=agent_output.action,
                                 observation_next=obs,       # this will get updated in the next step
+                                last_hl_obs=self.last_hl_obs,
                             ))
 
                         # store HL experience batch if this was HL action or episode is done
