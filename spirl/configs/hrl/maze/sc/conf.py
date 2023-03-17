@@ -123,7 +123,7 @@ ll_agent_config.update(AttrDict(
 
     # td_schedule_params=AttrDict(p=1.),
     fixed_alpha = 0.001,
-    # discount_factor=0.999,
+    discount_factor=1,
 
     # visualize_values = True,
 ))

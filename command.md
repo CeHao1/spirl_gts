@@ -22,13 +22,13 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=1 --gpu=
 --prefix=cl_paper199_seed1
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl --seed=2 --gpu=0 \
---prefix=ol_viz_s2
+--prefix=ol_viz_s2_02
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=3 --gpu=0 \
 --prefix=cl_base_s3
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sc  --gpu=0 \
---seed=2 --prefix=sc_newQ2_s2_alp1-1
+--seed=2 --prefix=sc_HLobs_s2
 
 # train noT skill
 
