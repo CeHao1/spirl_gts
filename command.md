@@ -28,7 +28,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=3 --gpu=
 --prefix=cl_base_s3
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sc  --gpu=0 \
---seed=3 --prefix=sc_newQ_s3
+--seed=3 --prefix=sc_logV_s3
 
 # train noT skill
 

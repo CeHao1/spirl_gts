@@ -1,7 +1,7 @@
 from spirl.configs.hrl.maze.base_conf import *
 from spirl.rl.policies.prior_policies import ACLearnedPriorAugmentedPIPolicy
 from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
-
+from spirl.data.maze.src.maze_agents import MazeACActionPriorSACAgent
 
 # update policy to use learned prior
 hl_policy_params.update(AttrDict(
@@ -12,7 +12,8 @@ hl_policy_params.update(AttrDict(
 hl_agent_config.policy = ACLearnedPriorAugmentedPIPolicy
 
 # update agent to regularize with prior, set target divergence
-agent_config.hl_agent = ActionPriorSACAgent
+# agent_config.hl_agent = ActionPriorSACAgent
+agent_config.hl_agent = MazeACActionPriorSACAgent
 agent_config.hl_agent_params.update(AttrDict(
     td_schedule_params=AttrDict(p=1.),
 ))

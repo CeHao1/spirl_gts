@@ -71,6 +71,31 @@ class ActionPriorSACAgent(SACAgent):
         if self._hp.alpha_min is not None:
             return torch.clamp(super().alpha, min=self._hp.alpha_min)
         return super().alpha
+    
+    # ========== vis maze hl q value ==========
+    def _vis_hl_q(self, logger, step):
+        experience_batch = self.replay_buffer.get()
+        size = self.replay_buffer.size
+        states = experience_batch.observation[:size, :2]
+        obs = experience_batch.observation[:size]
+
+        batch_size = 1024
+        batch_num = int(np.ceil(size / batch_size))
+        q_est_sum = []
+
+        for i in range(batch_num):
+            obs_batch = obs[i*batch_size:(i+1)*batch_size]
+            obs_batch = map2torch(obs_batch, self._hp.device)
+            policy_output = self._run_policy(obs_batch)
+
+            act = self._prep_action(policy_output.action) # QHL(s, z), no K
+            q_est = torch.min(*[critic(obs_batch, act).q for critic in self.critics])
+            q_est_sum.append(q_est.detach().cpu().numpy())
+
+        q_est = np.concatenate(q_est_sum, axis=0)
+        
+        from spirl.data.maze.src.maze_agents import plot_maze_hl_q
+        plot_maze_hl_q(q_est, states, logger, step, size)
 
 
 class RandActScheduledActionPriorSACAgent(ActionPriorSACAgent):
@@ -110,3 +135,4 @@ class RandActScheduledActionPriorSACAgent(ActionPriorSACAgent):
             info = super().update(experience_batch)
         info.omega = self._omega(self._update_steps)
         return info
+

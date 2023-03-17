@@ -33,7 +33,7 @@ configuration = {
 
     # for debug
     # 'n_steps_per_epoch': 2000,
-    # 'n_warmup_steps': 2000,
+    # 'n_warmup_steps': 500,
 }
 configuration = AttrDict(configuration)
 

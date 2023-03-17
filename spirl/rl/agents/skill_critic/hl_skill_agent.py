@@ -118,7 +118,6 @@ class HLSKillAgent(ActionPriorSACAgent):
 
             act = self._prep_action(policy_output.action) # QHL(s, z), no K
             q_est = torch.min(*[critic(obs_batch, act).q for critic in self.critics])
-            q_est = q_est.detach().cpu().numpy()
             q_est_sum.append(q_est.detach().cpu().numpy())
 
         q_est = np.concatenate(q_est_sum, axis=0)

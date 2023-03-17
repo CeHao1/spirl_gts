@@ -44,7 +44,7 @@ class MazeSkillSpaceAgent(SkillSpaceAgent, MazeAgent):
         return SkillSpaceAgent.update(self, experience_batch)
 
     def visualize(self, logger, rollout_storage, step):
-        MazeAgent.visualize(self, logger, rollout_storage, step)
+        # MazeAgent.visualize(self, logger, rollout_storage, step) # only plot high level
         SkillSpaceAgent.visualize(self, logger, rollout_storage, step)
 
 
@@ -86,6 +86,7 @@ class MazeACActionPriorSACAgent(ActionPriorSACAgent, MazeAgent):
 
     def visualize(self, logger, rollout_storage, step):
         self._vis_replay_buffer(logger, step)
+        self._vis_hl_q(logger, step)
         ActionPriorSACAgent.visualize(self, logger, rollout_storage, step)
 
     def _vis_replay_buffer(self, logger, step):
@@ -93,13 +94,10 @@ class MazeACActionPriorSACAgent(ActionPriorSACAgent, MazeAgent):
         # if step > self.replay_buffer.capacity:
         #     return   # visualization does not work if earlier samples were overridden
 
+        print('!! place 2, log maze image, step is', step)
         # get data
         size = self.vis_replay_buffer.size
         states = self.vis_replay_buffer.get().observation[:size, :2]
-
-        print('place 2!! log maze image, step is', step)
-
-        fig = plt.figure(figsize=(10,10))
         plot_maze_fun(states, logger, step, size)
 
 class MazeHLSkillAgent(HLSKillAgent, MazeAgent):
