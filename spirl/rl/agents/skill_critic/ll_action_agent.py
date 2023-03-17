@@ -113,12 +113,12 @@ class LLActionAgent(ActionPriorSACAgent):
 
             # logging
             info = AttrDict(    # losses
-                ll_policy_loss=policy_loss,
-                ll_alpha_loss=alpha_loss,
-                qz_critic_loss_1=hl_critic_loss[0],
-                qz_critic_loss_2=hl_critic_loss[1],
-                qa_critic_loss_1=ll_critic_loss[0],
-                qa_critic_loss_2=ll_critic_loss[1],
+                # ll_policy_loss=policy_loss,
+                # ll_alpha_loss=alpha_loss,
+                # qz_critic_loss_1=hl_critic_loss[0],
+                # qz_critic_loss_2=hl_critic_loss[1],
+                # qa_critic_loss_1=ll_critic_loss[0],
+                # qa_critic_loss_2=ll_critic_loss[1],
             )
             # if self._update_steps % 100 == 0:
             #     info.update(AttrDict(       # gradient norms
@@ -131,12 +131,12 @@ class LLActionAgent(ActionPriorSACAgent):
                 ll_pi_KLD=policy_output.prior_divergence.mean(),
                 # ll_policy_entropy=policy_output.dist.entropy().mean(),
                 ll_avg_sigma = policy_output.dist.sigma.mean(),
-                hl_q_target=hl_q_target.mean(),
-                hl_q_1=hl_qs[0].mean(),
-                hl_q_2=hl_qs[1].mean(),
-                ll_q_target=ll_q_target.mean(),
-                ll_q_1=ll_qs[0].mean(),
-                ll_q_2=ll_qs[1].mean(),
+                # hl_q_target=hl_q_target.mean(),
+                # hl_q_1=hl_qs[0].mean(),
+                # hl_q_2=hl_qs[1].mean(),
+                # ll_q_target=ll_q_target.mean(),
+                # ll_q_1=ll_qs[0].mean(),
+                # ll_q_2=ll_qs[1].mean(),
                 ll_q_hl_next=q_hl_next.mean(), 
                 ll_q_ll_next=q_ll_next.mean(), 
                 u_next=u_next.mean(),

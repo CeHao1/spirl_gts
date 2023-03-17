@@ -48,17 +48,17 @@ class HLSKillAgent(ActionPriorSACAgent):
 
             # compute policy loss
             if self._update_hl_policy_flag: # update only when the flag is on
-                policy_loss = self._compute_policy_loss(experience_batch, policy_output)
+                policy_loss, q_est = self._compute_policy_loss(experience_batch, policy_output)
         
                 self._perform_update(policy_loss, self.policy_opt, self.policy)
             else:
                 with torch.no_grad():
-                    policy_loss = self._compute_policy_loss(experience_batch, policy_output)
+                    policy_loss, q_est = self._compute_policy_loss(experience_batch, policy_output)
 
             # logging
             info = AttrDict(    # losses
-                hl_policy_loss=policy_loss,
-                hl_alpha_loss=alpha_loss,
+                # hl_policy_loss=policy_loss,
+                # hl_alpha_loss=alpha_loss,
             )
 
             # if self._update_steps % 100 == 0:
@@ -69,9 +69,11 @@ class HLSKillAgent(ActionPriorSACAgent):
             info.update(AttrDict(       # misc
                 hl_alpha=self.alpha,
                 hl_pi_KLD=policy_output.prior_divergence.mean(),
-                hl_policy_entropy=policy_output.dist.entropy().mean(),
+                # hl_policy_entropy=policy_output.dist.entropy().mean(),
                 hl_avg_sigma = policy_output.dist.sigma.mean(),
-                hl_target_divergence=self._target_divergence(self.schedule_steps)
+                # hl_target_divergence=self._target_divergence(self.schedule_steps),
+                hl_avg_reward=experience_batch.reward.mean(),
+                hl_pi_avg_q=q_est.mean(),
             ))
             info.update(self._aux_info(experience_batch, policy_output))
             info = map_dict(ten2ar, info)
@@ -90,13 +92,39 @@ class HLSKillAgent(ActionPriorSACAgent):
 
         policy_loss = -1 * q_est + self.alpha * policy_output.prior_divergence[:, None]
         check_shape(policy_loss, [self._hp.batch_size, 1])
-        return policy_loss.mean()
+        return policy_loss.mean(), q_est
 
     def _get_k0_onehot(self, obs):
         # generate one-hot, length=high-level steps, index=0
         idx = torch.tensor([0], device=self.device)
         k0 = make_one_hot(idx, self.n_rollout_steps).repeat(obs.shape[0], 1)
         return k0
+
+    # ========== vis maze hl q value ==========
+    def _vis_hl_q(self, logger, step):
+        experience_batch = self.replay_buffer.get()
+        size = self.replay_buffer.size
+        states = experience_batch.observation[:size, :2]
+        obs = experience_batch.observation[:size]
+
+        batch_size = 1024
+        batch_num = int(np.ceil(size / batch_size))
+        q_est_sum = []
+
+        for i in range(batch_num):
+            obs_batch = obs[i*batch_size:(i+1)*batch_size]
+            obs_batch = map2torch(obs_batch, self._hp.device)
+            policy_output = self._run_policy(obs_batch)
+
+            act = self._prep_action(policy_output.action) # QHL(s, z), no K
+            q_est = torch.min(*[critic(obs_batch, act).q for critic in self.critics])
+            q_est = q_est.detach().cpu().numpy()
+            q_est_sum.append(q_est.detach().cpu().numpy())
+
+        q_est = np.concatenate(q_est_sum, axis=0)
+        
+        from spirl.data.maze.src.maze_agents import plot_maze_hl_q
+        plot_maze_hl_q(q_est, states, logger, step, size)
 
     # =================== visualize =================
     def visualize_actions(self, experience_batch):

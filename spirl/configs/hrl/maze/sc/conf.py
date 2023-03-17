@@ -37,6 +37,7 @@ configuration = {
     # 'log_output_per_epoch' : 1e5 / 2e3,
 
     # 'n_warmup_steps': 500,
+    # 'log_image_interval' : 2000,
 
 
     # 'n_steps_per_update': 5e2, # hl step
@@ -66,8 +67,8 @@ sampler_config = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    # batch_size=256,
-    batch_size=1024,
+    batch_size=256,
+    # batch_size=1024,
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
