@@ -495,7 +495,6 @@ class LLActionAgent(ActionPriorSACAgent):
         self.update(self, experience_batch=None, vis=True)
 
 
-
 class MazeLLActionAgent(LLActionAgent):
     def _split_obs(self, obs):
         assert obs.shape[1] == self.state_dim + self.image_dim + self.latent_dim + self.onehot_dim

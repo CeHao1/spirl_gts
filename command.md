@@ -30,6 +30,8 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=3 --gpu=
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sc  --gpu=0 \
 --seed=2 --prefix=sc_HLobs_s2
 
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh  --gpu=0 \
+--seed=2 --prefix=sh_test_01
 # train noT skill
 
 python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze_noT/hierarchical --val_data_size=160 \

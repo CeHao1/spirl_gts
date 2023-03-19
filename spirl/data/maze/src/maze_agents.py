@@ -4,6 +4,7 @@ import numpy as np
 from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
 from spirl.rl.agents.skill_critic.hl_skill_agent import HLSKillAgent
+from spirl.rl.agents.skill_critic.hl_inherit_agent  import HLInheritAgent
 from spirl.rl.agents.skill_space_agent import SkillSpaceAgent, ACSkillSpaceAgent
 
 
@@ -122,15 +123,34 @@ class MazeHLSkillAgent(HLSKillAgent, MazeAgent):
 
     def _vis_replay_buffer(self, logger, step):
         """Visualizes maze trajectories from replay buffer (if step < replay capacity)."""
-        # if step > self.replay_buffer.capacity:
-        #     return   # visualization does not work if earlier samples were overridden
-
-        # get data
         size = self.vis_replay_buffer.size
         states = self.vis_replay_buffer.get().observation[:size, :2]
-
         plot_maze_fun(states, logger, step, size)
 
+class MazeHLInheritAgent(HLInheritAgent, MazeAgent):
+    def __init__(self, *args, **kwargs):
+        HLInheritAgent.__init__(self, *args, **kwargs)
+        from spirl.rl.components.replay_buffer import SplitObsUniformReplayBuffer
+        self.vis_replay_buffer = SplitObsUniformReplayBuffer({'capacity': 1e7, 'unused_obs_size': 6144,})
+
+    def add_experience(self, experience_batch): 
+        self.vis_replay_buffer.append(experience_batch)
+        super().add_experience(experience_batch)
+
+    def update(self, experience_batch=None):
+        # self.vis_replay_buffer.append(experience_batch)
+        return HLInheritAgent.update(self, experience_batch)
+
+    def visualize(self, logger, rollout_storage, step):
+        self._vis_replay_buffer(logger, step)
+        self._vis_hl_q(logger, step)
+        HLInheritAgent.visualize(self, logger, rollout_storage, step)
+
+    def _vis_replay_buffer(self, logger, step):
+        """Visualizes maze trajectories from replay buffer (if step < replay capacity)."""
+        size = self.vis_replay_buffer.size
+        states = self.vis_replay_buffer.get().observation[:size, :2]
+        plot_maze_fun(states, logger, step, size)
 
 def plot_maze_fun(states, logger, step, size):
     # print('!! plot maze at step ', step, ' size ', size)
