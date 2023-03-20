@@ -135,6 +135,7 @@ class HLInheritAgent(ActionPriorSACAgent):
         size = self.replay_buffer.size
         states = experience_batch.observation[:size, :2]
         obs = experience_batch.observation[:size]
+        rew = experience_batch.reward[:size]
 
         batch_size = 1024
         batch_num = int(np.ceil(size / batch_size))
@@ -163,6 +164,7 @@ class HLInheritAgent(ActionPriorSACAgent):
         plot_maze_value(q_est, states, logger, step, size, fig_name='vis hl_q')
         plot_maze_value(KLD, states, logger, step, size, fig_name='vis hl_KLD')
         plot_maze_value(policy_v, states, logger, step, size, fig_name='vis hl_policy_v')
+        plot_maze_value(rew, states, logger, step, size, fig_name='vis hl_rew')
 
     # =================== visualize =================
     def visualize_actions(self, experience_batch):

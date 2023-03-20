@@ -81,6 +81,10 @@ class MazeACActionPriorSACAgent(ActionPriorSACAgent, MazeAgent):
         # TODO: don't hardcode this for res 32x32
         self.vis_replay_buffer = SplitObsUniformReplayBuffer({'capacity': 1e7, 'unused_obs_size': 6144,})
 
+    def add_experience(self, experience_batch): 
+        self.vis_replay_buffer.append(experience_batch)
+        super().add_experience(experience_batch)
+
     def update(self, experience_batch):
         self.vis_replay_buffer.append(experience_batch)
         return ActionPriorSACAgent.update(self, experience_batch)

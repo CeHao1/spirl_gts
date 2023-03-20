@@ -29,13 +29,13 @@ configuration = {
     'num_epochs': 500,
     'max_rollout_len': 2000,
     'n_steps_per_epoch': 1e5,
-    # 'n_warmup_steps': 5e3,
+    'n_warmup_steps': 5e3,
 
     # 'n_steps_per_update': 2e3, # hl step
     # 'n_steps_per_epoch': 1e5,  # global step
     # 'log_output_per_epoch' : 1e5 / 2e3,
 
-    'n_warmup_steps': 500,
+    # 'n_warmup_steps': 500,
     # 'log_image_interval' : 2000,
 
 
