@@ -34,94 +34,80 @@ class LLInheritAgent(ActionPriorSACAgent):
 
         if experience_batch is not None:
             self.add_experience(experience_batch)
-            if vis:
-                self.visualize_actions(experience_batch)
 
-        # for _ in range(self._hp.update_iterations):
-        for _ in range(1):
-            # sample batch and normalize
-            experience_batch = self._sample_experience()
-            experience_batch = self._normalize_batch(experience_batch)
-            experience_batch = map2torch(experience_batch, self._hp.device)
-            experience_batch = self._preprocess_experience(experience_batch)
+        # sample batch and normalize
+        experience_batch = self._sample_experience()
+        experience_batch = self._normalize_batch(experience_batch)
+        experience_batch = map2torch(experience_batch, self._hp.device)
+        experience_batch = self._preprocess_experience(experience_batch)
 
 
-            # (1) LL policy loss
-            policy_output = self._run_policy(experience_batch.observation)
+        # (1) LL policy loss
+        policy_output = self._run_policy(experience_batch.observation)
+        
+        # logging
+        info = AttrDict(    # losses
+        )
 
-            '''
-            # create new ll obs when k=0
-            split_obs = self._split_obs(experience_batch.observation)
-            obs = self._get_hl_obs(split_obs)
-            idx0 = torch.tensor([0], device=self.device)
-            k0 = make_one_hot(idx0, self.hl_agent.n_rollout_steps).repeat(obs.shape[0], 1)
-            ll_input = torch.cat((obs, split_obs.z, k0), dim=-1)
-            policy_output = self._run_policy(ll_input)
-            '''
-            
-            # logging
-            info = AttrDict(    # losses
-            )
+        # update alpha
+        alpha_loss = self._update_alpha(experience_batch, policy_output)
+        # info.update(AttrDict(ll_alpha_loss=alpha_loss,))
 
-            # update alpha
-            alpha_loss = self._update_alpha(experience_batch, policy_output)
-            # info.update(AttrDict(ll_alpha_loss=alpha_loss,))
+        if self._update_ll_policy_flag:
+            policy_loss = self._compute_policy_loss(experience_batch, policy_output)
 
-            if self._update_ll_policy_flag:
-                policy_loss = self._compute_policy_loss(experience_batch, policy_output)
+        # (2) Qa(s,z,k,a) loss, Qa_target
+        if self._update_ll_q_flag:
+            ll_q_target, q_hl_next, q_ll_next, u_next = self._compute_ll_q_target(experience_batch)
+            ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)           
 
-            # (2) Qa(s,z,k,a) loss, Qa_target
-            if self._update_ll_q_flag:
-                ll_q_target, q_hl_next, q_ll_next, u_next = self._compute_ll_q_target(experience_batch)
-                ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)           
+        # (4) update loss
+        # policy
+        if self._update_ll_policy_flag:
+            self._perform_update(policy_loss, self.policy_opt, self.policy)
+            # info.update(AttrDict(
+            #     ll_policy_loss=policy_loss,
+            # ))
 
-            # (4) update loss
-            # policy
-            if self._update_ll_policy_flag:
-                self._perform_update(policy_loss, self.policy_opt, self.policy)
-                # info.update(AttrDict(
-                #     ll_policy_loss=policy_loss,
-                # ))
-
-            # ll
-            if self._update_ll_q_flag:
-                [self._perform_update(critic_loss, critic_opt, critic)
-                        for critic_loss, critic_opt, critic in zip(ll_critic_loss, self.critic_opts, self.critics)]
-                info.update(AttrDict(
-                    # ll_q_target=ll_q_target.mean(),
-                    # ll_q_1=ll_qs[0].mean(),
-                    # ll_q_2=ll_qs[1].mean(),
-                    ll_q_hl_next=q_hl_next.mean(), 
-                    ll_q_ll_next=q_ll_next.mean(), 
-                    u_next=u_next.mean(),
-                    # qa_critic_loss_1=ll_critic_loss[0],
-                    # qa_critic_loss_2=ll_critic_loss[1],
-                ))
-
-            # (5) soft update targets
-            if self._update_ll_q_flag:
-                [self._soft_update_target_network(critic_target, critic)
-                        for critic_target, critic in zip(self.critic_targets, self.critics)]
-
-            
-            # if self._update_steps % 100 == 0:
-            #     info.update(AttrDict(       # gradient norms
-            #         policy_grad_norm=avg_grad_norm(self.policy),
-            #         critic_1_grad_norm=avg_grad_norm(self.critics[0]),
-            #         critic_2_grad_norm=avg_grad_norm(self.critics[1]),
-            #     ))
-
-            info.update(AttrDict(       # misc
-                ll_alpha=self.alpha,
-                ll_pi_KLD=policy_output.prior_divergence.mean(),
-                # ll_policy_entropy=policy_output.dist.entropy().mean(),
-                ll_avg_sigma = policy_output.dist.sigma.mean(),
-                ll_avg_reward=experience_batch.reward.mean(),
+        # ll
+        if self._update_ll_q_flag:
+            [self._perform_update(critic_loss, critic_opt, critic)
+                    for critic_loss, critic_opt, critic in zip(ll_critic_loss, self.critic_opts, self.critics)]
+            info.update(AttrDict(
+                # ll_q_target=ll_q_target.mean(),
+                # ll_q_1=ll_qs[0].mean(),
+                # ll_q_2=ll_qs[1].mean(),
+                ll_q_hl_next=q_hl_next.mean(), 
+                ll_q_ll_next=q_ll_next.mean(), 
+                u_next=u_next.mean(),
+                # qa_critic_loss_1=ll_critic_loss[0],
+                # qa_critic_loss_2=ll_critic_loss[1],
             ))
-            info.update(self._aux_info(experience_batch, policy_output))
-            info = map_dict(ten2ar, info)
 
-            self._update_steps += 1
+        # (5) soft update targets
+        if self._update_ll_q_flag:
+            [self._soft_update_target_network(critic_target, critic)
+                    for critic_target, critic in zip(self.critic_targets, self.critics)]
+
+        
+        # if self._update_steps % 100 == 0:
+        #     info.update(AttrDict(       # gradient norms
+        #         policy_grad_norm=avg_grad_norm(self.policy),
+        #         critic_1_grad_norm=avg_grad_norm(self.critics[0]),
+        #         critic_2_grad_norm=avg_grad_norm(self.critics[1]),
+        #     ))
+
+        info.update(AttrDict(       # misc
+            ll_alpha=self.alpha,
+            ll_pi_KLD=policy_output.prior_divergence.mean(),
+            # ll_policy_entropy=policy_output.dist.entropy().mean(),
+            ll_avg_sigma = policy_output.dist.sigma.mean(),
+            ll_avg_reward=experience_batch.reward.mean(),
+        ))
+        info.update(self._aux_info(experience_batch, policy_output))
+        info = map_dict(ten2ar, info)
+
+        self._update_steps += 1
 
         return info
 
@@ -272,6 +258,9 @@ class LLInheritAgent(ActionPriorSACAgent):
 
     # ========= vis low-level q ==========
     def _vis_ll_q(self, logger, step):
+        if not self._update_ll_policy_flag:
+            return None
+
         experience_batch = self.replay_buffer.get()
         size = self.replay_buffer.size
 
