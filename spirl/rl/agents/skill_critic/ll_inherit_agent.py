@@ -91,9 +91,6 @@ class LLInheritAgent(ActionPriorSACAgent):
 
 
             # (5) soft update targets
-            if self._update_hl_q_flag:
-                [self._soft_update_target_network(critic_target, critic)
-                        for critic_target, critic in zip(self.hl_critic_targets, self.hl_critics)]
             if self._update_ll_q_flag:
                 [self._soft_update_target_network(critic_target, critic)
                         for critic_target, critic in zip(self.critic_targets, self.critics)]
@@ -118,9 +115,6 @@ class LLInheritAgent(ActionPriorSACAgent):
                 ll_pi_KLD=policy_output.prior_divergence.mean(),
                 # ll_policy_entropy=policy_output.dist.entropy().mean(),
                 ll_avg_sigma = policy_output.dist.sigma.mean(),
-                # hl_q_target=hl_q_target.mean(),
-                # hl_q_1=hl_qs[0].mean(),
-                # hl_q_2=hl_qs[1].mean(),
                 # ll_q_target=ll_q_target.mean(),
                 # ll_q_1=ll_qs[0].mean(),
                 # ll_q_2=ll_qs[1].mean(),

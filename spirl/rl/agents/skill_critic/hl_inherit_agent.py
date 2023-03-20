@@ -11,7 +11,7 @@ from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
 
 ## this is the high-level skill agent in the skill-critic
 
-class HLInhertAgent(ActionPriorSACAgent):
+class HLInheritAgent(ActionPriorSACAgent):
     def __init__(self, config):
         ActionPriorSACAgent.__init__(self, config)
         self._update_hl_policy_flag = True
@@ -45,8 +45,6 @@ class HLInhertAgent(ActionPriorSACAgent):
             # compute policy loss
             if self._update_hl_policy_flag: # update only when the flag is on
                 policy_loss, q_est = self._compute_policy_loss(experience_batch, policy_output)
-        
-                self._perform_update(policy_loss, self.policy_opt, self.policy)
             else:
                 with torch.no_grad():
                     policy_loss, q_est = self._compute_policy_loss(experience_batch, policy_output)
@@ -58,6 +56,19 @@ class HLInhertAgent(ActionPriorSACAgent):
                 with torch.no_grad():
                     hl_q_target = self._compute_hl_q_target(experience_batch, policy_output)
                     hl_critic_loss, hl_qs = self._compute_hl_critic_loss(experience_batch, hl_q_target)
+
+
+            # update losses
+            if self._update_hl_policy_flag:
+                self._perform_update(policy_loss, self.policy_opt, self.policy)
+
+            if self._update_hl_q_flag:
+                [self._perform_update(critic_loss, critic_opt, critic)
+                        for critic_loss, critic_opt, critic in zip(hl_critic_loss, self.critic_opts, self.critics)]
+
+            if self._update_hl_q_flag:
+                [self._soft_update_target_network(critic_target, critic)
+                        for critic_target, critic in zip(self.critic_targets, self.critics)]
 
             # logging
             info = AttrDict(    # losses
@@ -111,7 +122,7 @@ class HLInhertAgent(ActionPriorSACAgent):
         check_shape(next_val, [self._hp.batch_size, 1])
         return next_val.squeeze(-1)
     
-    def _compute_critic_loss(self, experience_batch, q_target):
+    def _compute_hl_critic_loss(self, experience_batch, q_target):
         qs = self._compute_q_estimates(experience_batch)
         check_shape(qs[0], [self._hp.batch_size])
         critic_losses = [0.5 * (q - q_target).pow(2).mean() for q in qs]
