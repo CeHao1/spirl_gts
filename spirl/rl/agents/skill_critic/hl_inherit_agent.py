@@ -116,11 +116,12 @@ class HLInheritAgent(ActionPriorSACAgent):
     
     # ================================ hl critic ================================
     def _compute_hl_q_target(self, experience_batch, policy_output):
-        q_next = torch.min(*[critic_target(experience_batch.observation_next, self._prep_action(policy_output.action)).q
-                             for critic_target in self.critic_targets])
-        next_val = (q_next - self.alpha * policy_output.log_prob[:, None])
-        check_shape(next_val, [self._hp.batch_size, 1])
-        return next_val.squeeze(-1)
+        with torch.no_grad():
+            q_next = torch.min(*[critic_target(experience_batch.observation_next, self._prep_action(policy_output.action)).q
+                                for critic_target in self.critic_targets])
+            next_val = (q_next - self.alpha * policy_output.log_prob[:, None])
+            check_shape(next_val, [self._hp.batch_size, 1])
+            return next_val.squeeze(-1)
     
     def _compute_hl_critic_loss(self, experience_batch, q_target):
         qs = self._compute_q_estimates(experience_batch)
