@@ -52,7 +52,7 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             self.hl_agent.switch_off_deterministic_action_mode()
             self.ll_agent.switch_on_deterministic_action_mode()
             self.hl_agent.fast_assign_flags([True, True])
-            self.ll_agent.fast_assign_flags([False, True])
+            self.ll_agent.fast_assign_flags([False, False])
 
         elif stage == skill_critic_stages.LL_TRAIN:
         # 3) LL training stage:
@@ -60,7 +60,7 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             # update: HL Q, LL Q, LL Pi
             self.hl_agent.switch_on_deterministic_action_mode()
             self.ll_agent.switch_off_deterministic_action_mode()
-            self.hl_agent.fast_assign_flags([False, True])
+            self.hl_agent.fast_assign_flags([False, False])
             self.ll_agent.fast_assign_flags([True, True])
 
         elif stage == skill_critic_stages.HYBRID:
@@ -93,7 +93,7 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             self.ll_agent.fast_assign_flags([True, True])
 
     '''
-    # same as the father class
+    # same as the parent class
     def act(self, obs): # obs is numpy array
         """Output dict contains is_hl_step in case high-level action was performed during this action."""
         obs_input = obs[None] if len(obs.shape) == 1 else obs    # need batch input for agents

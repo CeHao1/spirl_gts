@@ -33,52 +33,51 @@ class HLSKillAgent(ActionPriorSACAgent):
             self.add_experience(experience_batch)
         # obs = (s), action=(z)
 
-        # for _ in range(self._hp.update_iterations):
-        for _ in range(1):
-            # sample batch and normalize
-            experience_batch = self._sample_experience()
-            experience_batch = self._normalize_batch(experience_batch)
-            experience_batch = map2torch(experience_batch, self._hp.device)
-            experience_batch = self._preprocess_experience(experience_batch)
 
-            policy_output = self._run_policy(experience_batch.observation)
+        # sample batch and normalize
+        experience_batch = self._sample_experience()
+        experience_batch = self._normalize_batch(experience_batch)
+        experience_batch = map2torch(experience_batch, self._hp.device)
+        experience_batch = self._preprocess_experience(experience_batch)
 
-            # update alpha
-            alpha_loss = self._update_alpha(experience_batch, policy_output)
+        policy_output = self._run_policy(experience_batch.observation)
 
-            # compute policy loss
-            if self._update_hl_policy_flag: # update only when the flag is on
-                policy_loss, q_est = self._compute_policy_loss(experience_batch, policy_output)
-        
-                self._perform_update(policy_loss, self.policy_opt, self.policy)
-            else:
-                with torch.no_grad():
-                    policy_loss, q_est = self._compute_policy_loss(experience_batch, policy_output)
+        info = AttrDict(    # losses
+        )
 
-            # logging
-            info = AttrDict(    # losses
-                # hl_policy_loss=policy_loss,
-                # hl_alpha_loss=alpha_loss,
-            )
+        # update alpha
+        alpha_loss = self._update_alpha(experience_batch, policy_output)
+        # info.update(AttrDict(hl_alpha_loss=alpha_loss,))
 
-            # if self._update_steps % 100 == 0:
-            #     info.update(AttrDict(       # gradient norms
-            #         policy_grad_norm=avg_grad_norm(self.policy),
-            #     ))
+        # logging
 
-            info.update(AttrDict(       # misc
-                hl_alpha=self.alpha,
-                hl_pi_KLD=policy_output.prior_divergence.mean(),
-                # hl_policy_entropy=policy_output.dist.entropy().mean(),
-                hl_avg_sigma = policy_output.dist.sigma.mean(),
-                # hl_target_divergence=self._target_divergence(self.schedule_steps),
-                hl_avg_reward=experience_batch.reward.mean(),
+        # compute policy loss
+        if self._update_hl_policy_flag: # update only when the flag is on
+            policy_loss, q_est = self._compute_policy_loss(experience_batch, policy_output)
+            self._perform_update(policy_loss, self.policy_opt, self.policy)
+
+            info.update(AttrDict(
+                hl_policy_loss=policy_loss,
                 hl_pi_avg_q=q_est.mean(),
             ))
-            info.update(self._aux_info(experience_batch, policy_output))
-            info = map_dict(ten2ar, info)
 
-            self._update_steps += 1
+        # if self._update_steps % 100 == 0:
+        #     info.update(AttrDict(       # gradient norms
+        #         policy_grad_norm=avg_grad_norm(self.policy),
+        #     ))
+
+        info.update(AttrDict(       # misc
+            hl_alpha=self.alpha,
+            hl_pi_KLD=policy_output.prior_divergence.mean(),
+            # hl_policy_entropy=policy_output.dist.entropy().mean(),
+            hl_avg_sigma = policy_output.dist.sigma.mean(),
+            # hl_target_divergence=self._target_divergence(self.schedule_steps),
+            hl_avg_reward=experience_batch.reward.mean(),
+        ))
+        info.update(self._aux_info(experience_batch, policy_output))
+        info = map_dict(ten2ar, info)
+
+        self._update_steps += 1
 
         return info
 

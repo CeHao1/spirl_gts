@@ -38,43 +38,48 @@ class HLInheritAgent(ActionPriorSACAgent):
             experience_batch = self._preprocess_experience(experience_batch)
 
             policy_output = self._run_policy(experience_batch.observation)
+            
+
+            # logging
+            info = AttrDict(    # losses
+            )
 
             # update alpha
             alpha_loss = self._update_alpha(experience_batch, policy_output)
+            # info.update(AttrDict(hl_alpha_loss=alpha_loss,))
 
             # compute policy loss
             if self._update_hl_policy_flag: # update only when the flag is on
                 policy_loss, q_est = self._compute_policy_loss(experience_batch, policy_output)
-            else:
-                with torch.no_grad():
-                    policy_loss, q_est = self._compute_policy_loss(experience_batch, policy_output)
 
             if self._update_hl_q_flag:
                 hl_q_target = self._compute_hl_q_target(experience_batch, policy_output)
                 hl_critic_loss, hl_qs = self._compute_hl_critic_loss(experience_batch, hl_q_target)
-            else:
-                with torch.no_grad():
-                    hl_q_target = self._compute_hl_q_target(experience_batch, policy_output)
-                    hl_critic_loss, hl_qs = self._compute_hl_critic_loss(experience_batch, hl_q_target)
-
 
             # update losses
             if self._update_hl_policy_flag:
                 self._perform_update(policy_loss, self.policy_opt, self.policy)
 
+                info.update(AttrDict(
+                    hl_policy_loss=policy_loss,
+                    hl_pi_avg_q=q_est.mean(),
+                ))
+
             if self._update_hl_q_flag:
                 [self._perform_update(critic_loss, critic_opt, critic)
                         for critic_loss, critic_opt, critic in zip(hl_critic_loss, self.critic_opts, self.critics)]
 
+                # info.update(AttrDict(
+                #     hl_q_target=hl_q_target.mean(),
+                #     hl_q_1=hl_qs[0].mean(),
+                #     hl_q_2=hl_qs[1].mean(),
+                #     qz_critic_loss_1=hl_critic_loss[0],
+                #     qz_critic_loss_2=hl_critic_loss[1],
+                # ))
+
             if self._update_hl_q_flag:
                 [self._soft_update_target_network(critic_target, critic)
                         for critic_target, critic in zip(self.critic_targets, self.critics)]
-
-            # logging
-            info = AttrDict(    # losses
-                # hl_policy_loss=policy_loss,
-                # hl_alpha_loss=alpha_loss,
-            )
 
             # if self._update_steps % 100 == 0:
             #     info.update(AttrDict(       # gradient norms
@@ -88,7 +93,6 @@ class HLInheritAgent(ActionPriorSACAgent):
                 hl_avg_sigma = policy_output.dist.sigma.mean(),
                 # hl_target_divergence=self._target_divergence(self.schedule_steps),
                 hl_avg_reward=experience_batch.reward.mean(),
-                hl_pi_avg_q=q_est.mean(),
             ))
             info.update(self._aux_info(experience_batch, policy_output))
             info = map_dict(ten2ar, info)
