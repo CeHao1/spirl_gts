@@ -7,10 +7,11 @@ from spirl.rl.agents.skill_critic.hl_skill_agent import HLSKillAgent
 from spirl.rl.agents.skill_critic.hl_inherit_agent  import HLInheritAgent
 from spirl.rl.agents.skill_space_agent import SkillSpaceAgent, ACSkillSpaceAgent
 
+from spirl.rl.envs.maze import ACRandMaze0S40Env
 
 class MazeAgent:
-    START_POS = np.array([10., 24.])
-    TARGET_POS = np.array([18., 8.])
+    START_POS = ACRandMaze0S40Env.START_POS
+    TARGET_POS = ACRandMaze0S40Env.TARGET_POS
 
     """Adds replay logging function."""
     def visualize(self, logger, rollout_storage, step):

@@ -32,6 +32,13 @@ class LLInheritAgent(ActionPriorSACAgent):
     def update(self, experience_batch=None, vis=False):
         # push experience batch into replay buffer
 
+        # logging
+        info = AttrDict(    # losses
+        )
+
+        if not (self._update_ll_policy_flag and self._update_ll_q_flag):
+            return info
+
         if experience_batch is not None:
             self.add_experience(experience_batch)
 
@@ -45,10 +52,6 @@ class LLInheritAgent(ActionPriorSACAgent):
         # (1) LL policy loss
         policy_output = self._run_policy(experience_batch.observation)
         
-        # logging
-        info = AttrDict(    # losses
-        )
-
         # update alpha
         alpha_loss = self._update_alpha(experience_batch, policy_output)
         # info.update(AttrDict(ll_alpha_loss=alpha_loss,))

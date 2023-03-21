@@ -22,7 +22,12 @@ class HLInheritAgent(ActionPriorSACAgent):
 
     def update(self, experience_batch=None):
 
-        # we only update policy on HL
+        # logging
+        info = AttrDict(    # losses
+        )
+
+        if not (self._update_hl_policy_flag or self._update_hl_q_flag):
+            return info
 
         # push experience batch into replay buffer
         if experience_batch is not None:
@@ -37,11 +42,6 @@ class HLInheritAgent(ActionPriorSACAgent):
         experience_batch = self._preprocess_experience(experience_batch)
 
         policy_output = self._run_policy(experience_batch.observation)
-        
-
-        # logging
-        info = AttrDict(    # losses
-        )
 
         # update alpha
         alpha_loss = self._update_alpha(experience_batch, policy_output)
@@ -60,7 +60,7 @@ class HLInheritAgent(ActionPriorSACAgent):
             self._perform_update(policy_loss, self.policy_opt, self.policy)
 
             info.update(AttrDict(
-                # hl_policy_loss=policy_loss,
+                hl_policy_loss=policy_loss,
                 hl_pi_avg_q=q_est.mean(),
             ))
 
@@ -68,13 +68,13 @@ class HLInheritAgent(ActionPriorSACAgent):
             [self._perform_update(critic_loss, critic_opt, critic)
                     for critic_loss, critic_opt, critic in zip(hl_critic_loss, self.critic_opts, self.critics)]
 
-            # info.update(AttrDict(
-            #     hl_q_target=hl_q_target.mean(),
-            #     hl_q_1=hl_qs[0].mean(),
-            #     hl_q_2=hl_qs[1].mean(),
-            #     qz_critic_loss_1=hl_critic_loss[0],
-            #     qz_critic_loss_2=hl_critic_loss[1],
-            # ))
+            info.update(AttrDict(
+                hl_q_target=hl_q_target.mean(),
+                hl_q_1=hl_qs[0].mean(),
+                hl_q_2=hl_qs[1].mean(),
+                qz_critic_loss_1=hl_critic_loss[0],
+                qz_critic_loss_2=hl_critic_loss[1],
+            ))
 
         if self._update_hl_q_flag:
             [self._soft_update_target_network(critic_target, critic)
@@ -90,7 +90,7 @@ class HLInheritAgent(ActionPriorSACAgent):
             hl_pi_KLD=policy_output.prior_divergence.mean(),
             # hl_policy_entropy=policy_output.dist.entropy().mean(),
             hl_avg_sigma = policy_output.dist.sigma.mean(),
-            # hl_target_divergence=self._target_divergence(self.schedule_steps),
+            hl_target_divergence=self._target_divergence(self.schedule_steps),
             hl_avg_reward=experience_batch.reward.mean(),
         ))
         info.update(self._aux_info(experience_batch, policy_output))
