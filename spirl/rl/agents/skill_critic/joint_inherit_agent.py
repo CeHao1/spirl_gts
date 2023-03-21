@@ -124,8 +124,11 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
         update_outputs = AttrDict()
 
         # 1) add experience
-        self.hl_agent.add_experience(experience_batches.hl_batch)
-        self.ll_agent.add_experience(experience_batches.ll_batch)
+        if self._hp.update_hl:
+            self.hl_agent.add_experience(experience_batches.hl_batch)
+
+        if self._hp.update_ll:
+            self.ll_agent.add_experience(experience_batches.ll_batch)
 
 
         # 2) for and update HL, LL
@@ -133,11 +136,13 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
         for idx in range(self._hp.update_iterations):
             vis = True if idx == self._hp.update_iterations -1 else False
             
-            hl_update_outputs = self.hl_agent.update()
-            update_outputs.update(hl_update_outputs)
+            if self._hp.update_hl:
+                hl_update_outputs = self.hl_agent.update()
+                update_outputs.update(hl_update_outputs)
 
-            ll_update_outputs = self.ll_agent.update(vis=vis)
-            update_outputs.update(ll_update_outputs)
+            if self._hp.update_ll:
+                ll_update_outputs = self.ll_agent.update(vis=vis)
+                update_outputs.update(ll_update_outputs)
 
         return update_outputs
 

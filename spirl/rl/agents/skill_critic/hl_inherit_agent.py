@@ -22,6 +22,8 @@ class HLInheritAgent(ActionPriorSACAgent):
 
     def update(self, experience_batch=None):
 
+        return super().update(experience_batch)
+
         # logging
         info = AttrDict(    # losses
         )
@@ -100,6 +102,7 @@ class HLInheritAgent(ActionPriorSACAgent):
 
         return info
 
+    '''
     def _compute_policy_loss(self, experience_batch, policy_output):
         # update the input as (s, z, k0), k0 =  one-hot method 
         # PIz(z|s) = argmax E[ Qz(s,z,k0) - alpz*DKL(PIz||Pa) ] 
@@ -110,6 +113,7 @@ class HLInheritAgent(ActionPriorSACAgent):
         policy_loss = -1 * q_est + self.alpha * policy_output.prior_divergence[:, None]
         check_shape(policy_loss, [self._hp.batch_size, 1])
         return policy_loss.mean(), q_est
+    
 
     def _get_k0_onehot(self, obs):
         # generate one-hot, length=high-level steps, index=0
@@ -136,6 +140,8 @@ class HLInheritAgent(ActionPriorSACAgent):
         check_shape(qs[0], [self._hp.batch_size])
         critic_losses = [0.5 * (q - q_target).pow(2).mean() for q in qs]
         return critic_losses, qs
+
+    '''
 
     # ========== vis maze hl q value ==========
     def _vis_hl_q(self, logger, step):

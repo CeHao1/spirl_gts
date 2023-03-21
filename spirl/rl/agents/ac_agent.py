@@ -113,7 +113,8 @@ class SACAgent(ACAgent):
     def update(self, experience_batch):
         """Updates actor and critics."""
         # push experience batch into replay buffer
-        self.add_experience(experience_batch)
+        if experience_batch is not None:
+            self.add_experience(experience_batch)
 
         for _ in range(self._hp.update_iterations):
             # sample batch and normalize

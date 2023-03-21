@@ -36,7 +36,7 @@ class LLInheritAgent(ActionPriorSACAgent):
         info = AttrDict(    # losses
         )
 
-        if not (self._update_ll_policy_flag and self._update_ll_q_flag):
+        if not (self._update_ll_policy_flag or self._update_ll_q_flag):
             return info
 
         if experience_batch is not None:

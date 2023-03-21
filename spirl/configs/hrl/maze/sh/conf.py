@@ -173,7 +173,7 @@ agent_config = AttrDict(
     hl_interval=ll_model_params.n_rollout_steps,
     log_videos=False,
     update_hl=True,
-    update_ll=True,
+    update_ll=False,
     
     # update_iterations = 256,
     initial_train_stage = skill_critic_stages.HL_TRAIN
@@ -185,7 +185,7 @@ data_config.dataset_spec = data_spec
 
 # Environment
 env_config = AttrDict(
-    reward_norm=0.05,
+    # reward_norm=0.05,
     screen_height=ll_model_params.prior_input_res,
     screen_width=ll_model_params.prior_input_res,
 )
