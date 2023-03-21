@@ -97,7 +97,7 @@ class RLTrainer:
             'n_steps_per_epoch': 20000,       # number of env steps per epoch
             'log_output_per_epoch': 100,  # log the non-image/video outputs N times per epoch
             'log_images_per_epoch': 4,    # log images/videos N times per epoch
-            'log_image_interval': 1000,    # log images/videos every N steps
+            'log_image_interval': 2000,    # log images/videos every N steps
             'log_output_interval': 200,   # log the non-image/video outputs every N steps
             'logging_target': 'wandb',    # where to log results to
             'n_warmup_steps': 0,    # steps of warmup experience collection before training

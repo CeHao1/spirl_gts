@@ -28,11 +28,11 @@ configuration = {
     "use_update_after_sampling": True,
     'num_epochs': 100,
     'max_rollout_len': 2000,
-    # 'n_steps_per_epoch': 1e5,
-    # 'n_warmup_steps': 5e3,
+    'n_steps_per_epoch': 1e5,
+    'n_warmup_steps': 5e3,
     
-    'n_steps_per_epoch': 1e4, #debug
-    'n_warmup_steps': 500, #debug
+    # 'n_steps_per_epoch': 1e4, #debug
+    # 'n_warmup_steps': 500, #debug
 }
 configuration = AttrDict(configuration)
 
