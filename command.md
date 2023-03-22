@@ -28,10 +28,10 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=0 --gpu=
 --prefix=cl_vis_s0
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sc  --gpu=0 \
---seed=2 --prefix=sc_vis_s2_01
+--seed=0 --prefix=sc_easy_s0_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh  --gpu=0 \
---seed=2 --prefix=sh_prior_s2_02
+--seed=0 --prefix=sh_lv2_s0_01
 
 # train noT skill
 
