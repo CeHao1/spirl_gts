@@ -30,7 +30,6 @@ class LLInheritAgent(ActionPriorSACAgent):
         self.hl_critic_opts = hl_agent.critic_opts
 
     def update(self, experience_batch=None, vis=False):
-        # push experience batch into replay buffer
 
         # logging
         info = AttrDict(    # losses
@@ -62,7 +61,7 @@ class LLInheritAgent(ActionPriorSACAgent):
         # (2) Qa(s,z,k,a) loss, Qa_target
         if self._update_ll_q_flag:
             ll_q_target, q_hl_next, q_ll_next, u_next = self._compute_ll_q_target(experience_batch)
-            ll_critic_loss, ll_qs = self._compute_ll_critic_loss(experience_batch, ll_q_target)           
+            ll_critic_loss, ll_qs = self._compute_critic_loss(experience_batch, ll_q_target)           
 
         # (4) update loss
         # policy
@@ -114,51 +113,6 @@ class LLInheritAgent(ActionPriorSACAgent):
 
         return info
 
-    # ================================ hl critic ================================
-    def _compute_hl_q_target(self, experience_batch, policy_output, vis=False): 
-        # Qz(s,z,k) = Qa(s,z,k,a) - alph * DKL(PIa)
-        state = experience_batch.observation
-        act = policy_output.action
-
-        with torch.no_grad():
-            qa_target = torch.min(*[critic_target(state, act).q for critic_target in self.critic_targets])# this part is
-            hl_q_target = qa_target - self.alpha * policy_output.prior_divergence[:, None]
-            hl_q_target = hl_q_target.squeeze(-1)
-            hl_q_target = hl_q_target.detach()
-            check_shape(hl_q_target, [self._hp.batch_size])
-
-        if vis:
-            self.visualize_HL_Q(qa_target, hl_q_target)
-
-        return hl_q_target
-
-    def _compute_hl_critic_loss(self, experience_batch, hl_q_target): 
-        # Qz(s,z,k), the input is only obs, not action(a) here, old implementation
-        split_obs = self._split_obs(experience_batch.observation)
-        obs = self._get_hl_obs(split_obs)
-        act = split_obs.z.detach() # QHL(s, z), no K
-
-        hl_qs = [critic(obs, act).q.squeeze(-1) for critic in self.hl_critics]
-        
-        # this experience batch is LL, we need to split it
-        # obs + z + t 
-        # hl_qs = [critic(experience_batch.observation).q.squeeze(-1) for critic in self.hl_critics]
-
-        check_shape(hl_qs[0], [self._hp.batch_size])
-        hl_critic_losses = [0.5 * (q - hl_q_target).pow(2).mean() for q in hl_qs] # mse loss
-        return hl_critic_losses, hl_qs
-
-    #  =============================== ll policy ================================
-    '''
-    # same as the parent class
-    def _compute_policy_loss(self, experience_batch, policy_output):
-        q_est = torch.min(*[critic(experience_batch.observation, self._prep_action(policy_output.action)).q
-                                      for critic in self.critics])
-        policy_loss = -1 * q_est + self.alpha * policy_output.log_prob[:, None]
-        check_shape(policy_loss, [self._hp.batch_size, 1])
-        return policy_loss.mean()
-    '''
-
     # ================================ ll critic ================================
     def _compute_ll_q_target(self, experience_batch, vis=False):
         # Qa(s,z,k,a) = r + gamma * U_next
@@ -179,21 +133,10 @@ class LLInheritAgent(ActionPriorSACAgent):
 
             # (3) ll_q_target
             ll_q_target = experience_batch.reward * self._hp.reward_scale + (1 - experience_batch.done) * self._hp.discount_factor * u_next
-            ll_q_target = ll_q_target.squeeze(-1)
             ll_q_target = ll_q_target.detach()
             check_shape(ll_q_target, [self._hp.batch_size])
 
-
         return ll_q_target, q_hl_next, q_ll_next, u_next
-
-    def _compute_ll_critic_loss(self, experience_batch, ll_q_target):
-        # Qa(s,z,k,a)
-        ll_qs = [critic(experience_batch.observation, self._prep_action(experience_batch.action.detach())).q.squeeze(-1) \
-                for critic in self.critics]     # no gradient propagation into policy here!
-
-        check_shape(ll_qs[0], [self._hp.batch_size])
-        ll_critic_losses = [0.5 * (q - ll_q_target).pow(2).mean() for q in ll_qs]
-        return ll_critic_losses, ll_qs
 
     def _compute_next_value(self, experience_batch, hl_policy_output_next, ll_policy_output_next): 
 
@@ -201,19 +144,18 @@ class LLInheritAgent(ActionPriorSACAgent):
         obs = self._get_hl_obs(split_obs)
 
         # QLL(k+1)
-        q_ll_next = torch.min(*[critic_target(experience_batch.observation_next, ll_policy_output_next.action).q 
+        q_ll_next_raw = torch.min(*[critic_target(experience_batch.observation_next, self._prep_action(ll_policy_output_next.action)).q 
                             for critic_target in self.critic_targets])
-        q_ll_next = q_ll_next - self.alpha * ll_policy_output_next.prior_divergence[:, None]
+        q_ll_next = q_ll_next_raw - self.alpha * ll_policy_output_next.prior_divergence[:, None]
 
         # QHL(k+1)
-        q_hl_next = torch.min(*[critic_target(obs, hl_policy_output_next.action).q for critic_target in self.hl_critic_targets])
-        q_hl_next = q_hl_next - self.hl_agent.alpha * hl_policy_output_next.prior_divergence[:, None]
+        q_hl_next_raw = torch.min(*[critic_target(obs, self._prep_action(hl_policy_output_next.action)).q for critic_target in self.hl_critic_targets])
+        q_hl_next = q_hl_next_raw - self.hl_agent.alpha * hl_policy_output_next.prior_divergence[:, None]
 
         check_shape(q_ll_next, [self._hp.batch_size, 1])
         check_shape(q_hl_next, [self._hp.batch_size, 1])
         
         return q_hl_next.squeeze(-1), q_ll_next.squeeze(-1)
-
 
     def _compute_termination_mask(self, obs):
         # [1,0,0] is the start of a new hl step, so return 1 in the mask
