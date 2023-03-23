@@ -22,7 +22,7 @@ class HLInheritAgent(ActionPriorSACAgent):
 
     def update(self, experience_batch=None):
 
-        return super().update(experience_batch)
+        # return super().update(experience_batch)
 
         # logging
         info = AttrDict(    # losses
@@ -54,8 +54,8 @@ class HLInheritAgent(ActionPriorSACAgent):
             policy_loss, q_est = self._compute_policy_loss(experience_batch, policy_output)
 
         if self._update_hl_q_flag:
-            hl_q_target = self._compute_hl_q_target(experience_batch)
-            hl_critic_loss, hl_qs = self._compute_hl_critic_loss(experience_batch, hl_q_target)
+            q_target = self._compute_hl_q_target(experience_batch)
+            critic_loss, qs = self._compute_critic_loss(experience_batch, q_target)
 
         # update losses
         if self._update_hl_policy_flag:
@@ -68,14 +68,14 @@ class HLInheritAgent(ActionPriorSACAgent):
 
         if self._update_hl_q_flag:
             [self._perform_update(critic_loss, critic_opt, critic)
-                    for critic_loss, critic_opt, critic in zip(hl_critic_loss, self.critic_opts, self.critics)]
+                    for critic_loss, critic_opt, critic in zip(critic_loss, self.critic_opts, self.critics)]
 
             info.update(AttrDict(
-                hl_q_target=hl_q_target.mean(),
-                hl_q_1=hl_qs[0].mean(),
-                hl_q_2=hl_qs[1].mean(),
-                qz_critic_loss_1=hl_critic_loss[0],
-                qz_critic_loss_2=hl_critic_loss[1],
+                hl_q_target=q_target.mean(),
+                hl_q_1=qs[0].mean(),
+                hl_q_2=qs[1].mean(),
+                qz_critic_loss_1=critic_loss[0],
+                qz_critic_loss_2=critic_loss[1],
             ))
 
         if self._update_hl_q_flag:
@@ -102,38 +102,29 @@ class HLInheritAgent(ActionPriorSACAgent):
 
         return info
 
-    '''
+    
+    # ================================ hl policy ================================
     def _compute_policy_loss(self, experience_batch, policy_output):
-        # update the input as (s, z, k0), k0 =  one-hot method 
-        # PIz(z|s) = argmax E[ Qz(s,z,k0) - alpz*DKL(PIz||Pa) ] 
-
-        act = self._prep_action(policy_output.action) # QHL(s, z), no K
-        q_est = torch.min(*[critic(experience_batch.observation, act).q for critic in self.critics])
-
+        """Computes loss for policy update."""
+        q_est = torch.min(*[critic(experience_batch.observation, self._prep_action(policy_output.action)).q
+                                      for critic in self.critics])
         policy_loss = -1 * q_est + self.alpha * policy_output.prior_divergence[:, None]
         check_shape(policy_loss, [self._hp.batch_size, 1])
         return policy_loss.mean(), q_est
     
-
-    def _get_k0_onehot(self, obs):
-        # generate one-hot, length=high-level steps, index=0
-        idx = torch.tensor([0], device=self.device)
-        k0 = make_one_hot(idx, self.n_rollout_steps).repeat(obs.shape[0], 1)
-        return k0
     
     # ================================ hl critic ================================
     def _compute_hl_q_target(self, experience_batch):
         with torch.no_grad():
-            policy_output = self._run_policy(experience_batch.observation_next)
-            q_next = torch.min(*[critic_target(experience_batch.observation_next, self._prep_action(policy_output.action)).q
-                                for critic_target in self.critic_targets])
-            value_next = (q_next - self.alpha * policy_output.log_prob[:, None])
-
+            policy_output_next = self._run_policy(experience_batch.observation_next)
+            value_next = self._compute_next_value(experience_batch, policy_output_next)
             q_target = experience_batch.reward * self._hp.reward_scale + \
-                                (1 - experience_batch.done) * self._hp.discount_factor * value_next
-            
-            check_shape(value_next, [self._hp.batch_size, 1])
-            return q_target.squeeze(-1)
+                            (1 - experience_batch.done) * self._hp.discount_factor * value_next
+            if self._hp.clip_q_target:
+                q_target = self._clip_q_target(q_target)
+            q_target = q_target.detach()
+            check_shape(q_target, [self._hp.batch_size])
+        return q_target
     
     def _compute_hl_critic_loss(self, experience_batch, q_target):
         qs = self._compute_q_estimates(experience_batch)
@@ -141,7 +132,7 @@ class HLInheritAgent(ActionPriorSACAgent):
         critic_losses = [0.5 * (q - q_target).pow(2).mean() for q in qs]
         return critic_losses, qs
 
-    '''
+    
 
     # ========== vis maze hl q value ==========
     def _vis_hl_q(self, logger, step):

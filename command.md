@@ -31,18 +31,18 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sc  --gpu=0 \
 --seed=0 --prefix=sc_easy_s0_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh  --gpu=0 \
---seed=0 --prefix=sh_lv2_s0_01
+--seed=0 --prefix=sh_debug_s0_01
 
 # train noT skill
 
-python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze_noT/hierarchical --val_data_size=160 \
---gpu=0 --prefix=ol_mazeT_init01
+python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze_bar/hierarchical --val_data_size=160 \
+--gpu=0 --prefix=ol_mazeB_init01
 
-python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze_noT/hierarchical_cl --val_data_size=160 \
---gpu=0 --prefix=cl_mazeT_init01
+python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze_bar/hierarchical_cl --val_data_size=160 \
+--gpu=0 --prefix=cl_mazeB_init01
 
-python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze_noT/hierarchical_cd --val_data_size=160 \
---gpu=0 --prefix=cd_mazeT_init01
+python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze_bar/hierarchical_cd --val_data_size=160 \
+--gpu=0 --prefix=cd_mazeB_init01
 
 # train noT RL
 

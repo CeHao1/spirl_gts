@@ -174,7 +174,7 @@ class LLActionAgent(ActionPriorSACAgent):
         # Qz(s,z,k), the input is only obs, not action(a) here, old implementation
         split_obs = self._split_obs(experience_batch.observation)
         obs = self._get_hl_obs(split_obs)
-        act = split_obs.z # QHL(s, z), no K
+        act = split_obs.z.detach() # QHL(s, z), no K
 
         hl_qs = [critic(obs, act).q.squeeze(-1) for critic in self.hl_critics]
         
