@@ -28,7 +28,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=0 --gpu=
 --prefix=cl_vis_s0
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sc  --gpu=0 \
---seed=0 --prefix=sc_easy_s0_01
+--seed=0 --prefix=sc_nosquash_s0_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh  --gpu=0 \
 --seed=0 --prefix=sh_debug_s0_01
