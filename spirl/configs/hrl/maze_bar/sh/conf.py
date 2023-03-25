@@ -90,7 +90,7 @@ ll_model_params = AttrDict(
 ll_policy_params = AttrDict(
     policy_model=ImageTimeIndexCDSPiRLMDL, 
     policy_model_params=ll_model_params,
-    policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/maze/hierarchical_cd"),
+    policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/maze_bar/hierarchical_cd"),
     # initial_log_sigma=-50.,
 
     manual_log_sigma=[0, 0],

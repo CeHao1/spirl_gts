@@ -32,8 +32,8 @@ class MazeEnv(GymEnv):
 class ACRandMaze0S40Env(MazeEnv):
     START_POS = np.array([10., 24.])
     # TARGET_POS = np.array([18., 8.])
-    TARGET_POS = np.array([6., 16.]) # level-1 easiest one
-    # TARGET_POS = np.array([20., 16.]) # level-2
+    # TARGET_POS = np.array([6., 16.]) # level-1 easiest one
+    TARGET_POS = np.array([20., 16.]) # level-2
 
 
     def _default_hparams(self):

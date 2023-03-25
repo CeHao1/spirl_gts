@@ -2,15 +2,15 @@ import os
 import copy
 
 from spirl.utils.general_utils import AttrDict
-from spirl.rl.agents.skill_critic.joint_inherit_agent import JointInheritAgent, skill_critic_stages
+from spirl.rl.agents.skill_critic.joint_agent import JointAgent, skill_critic_stages
 from spirl.rl.components.critic import SplitObsMLPCritic, MLPCritic
-from spirl.rl.components.sampler import ACMultiImageAugmentedHierarchicalSampler
+from spirl.rl.components.sampler import ACMultiImageAugmentedHierarchicalSampler, TrainAfter_ACMultiImageAugmentedHierarchicalSampler
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.rl.policies.prior_policies import ACLearnedPriorAugmentedPIPolicy
 from spirl.rl.envs.maze import ACRandMaze0S40Env
-from spirl.rl.agents.skill_critic.ll_inherit_agent import MazeLLInheritAgent
+from spirl.rl.agents.skill_critic.ll_action_agent import MazeLLActionAgent
 from spirl.rl.policies.cd_model_policy import AC_DecoderRegu_TimeIndexedCDMdlPolicy
-from spirl.data.maze.src.maze_agents import MazeHLInheritAgent
+from spirl.data.maze.src.maze_agents import MazeHLSkillAgent
 from spirl.models.cond_dec_spirl_mdl import ImageTimeIndexCDSPiRLMDL
 from spirl.configs.default_data_configs.maze import data_spec
 
@@ -21,8 +21,9 @@ notes = 'skill critic on the maze env'
 
 configuration = {
     'seed': 42,
-    'agent': JointInheritAgent,
+    'agent': JointAgent,
     'environment': ACRandMaze0S40Env,
+    # 'sampler': TrainAfter_ACMultiImageAugmentedHierarchicalSampler,
     'sampler': ACMultiImageAugmentedHierarchicalSampler,
     'data_dir': '.',
     # "use_update_after_sampling": True,
@@ -90,7 +91,7 @@ ll_model_params = AttrDict(
 ll_policy_params = AttrDict(
     policy_model=ImageTimeIndexCDSPiRLMDL, 
     policy_model_params=ll_model_params,
-    policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/maze/hierarchical_cd"),
+    policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/maze_bar/hierarchical_cd"),
     # initial_log_sigma=-50.,
 
     manual_log_sigma=[0, 0],
@@ -122,7 +123,7 @@ ll_agent_config.update(AttrDict(
 
     # td_schedule_params=AttrDict(p=1.),
     fixed_alpha = 0.001,
-    discount_factor=1,
+    # discount_factor=1,
 
     # visualize_values = True,
 ))
@@ -161,21 +162,21 @@ hl_agent_config.update(AttrDict(
     critic_params=hl_critic_params,
     td_schedule_params=AttrDict(p=1.),
 
-    # fixed_alpha = 1,
+    # fixed_alpha = 0.1,
 
     # visualize_values = True,
 ))
 
 #####========== Joint Agent =======#######
 agent_config = AttrDict(
-    hl_agent=MazeHLInheritAgent, 
+    hl_agent=MazeHLSkillAgent, 
     hl_agent_params=hl_agent_config,
-    ll_agent=MazeLLInheritAgent,  
+    ll_agent=MazeLLActionAgent,  
     ll_agent_params=ll_agent_config,
     hl_interval=ll_model_params.n_rollout_steps,
     log_videos=False,
     update_hl=True,
-    update_ll=False,
+    update_ll=True,
     
     # update_iterations = 256,
     initial_train_stage = skill_critic_stages.HL_TRAIN
@@ -187,7 +188,7 @@ data_config.dataset_spec = data_spec
 
 # Environment
 env_config = AttrDict(
-    # reward_norm=0.05,
+    reward_norm=0.05,
     screen_height=ll_model_params.prior_input_res,
     screen_width=ll_model_params.prior_input_res,
 )

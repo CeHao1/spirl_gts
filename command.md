@@ -22,16 +22,16 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=1 --gpu=
 --prefix=cl_paper199_seed0_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl --seed=0 --gpu=0 \
---prefix=ol_easy_s0_01
+--prefix=ol_nosquash_s0_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=0 --gpu=0 \
 --prefix=cl_vis_s0
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sc  --gpu=0 \
---seed=0 --prefix=sc_nosquash_s0_01
+--seed=1 --prefix=sc_nosquash_s1_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh  --gpu=0 \
---seed=0 --prefix=sh_debug_s0_01
+--seed=0 --prefix=sh_vizdist_s0_02
 
 # train noT skill
 
@@ -46,11 +46,14 @@ python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze_bar/hierar
 
 # train noT RL
 
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_noT/spirl --seed=2 --gpu=0 \
---prefix=ol_mT_vis_s2_01
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_bar/spirl --seed=2 --gpu=0 \
+--prefix=ol_mB_vis_s2_01
 
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_noT/spirl_cl --seed=5 --gpu=0 \
---prefix=cl_mT_base_s5
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_bar/spirl_cl --seed=5 --gpu=0 \
+--prefix=cl_mB_base_s5
 
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_noT/sc --seed=0 --gpu=0 \
---prefix=sc_mT_s0
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_bar/sc --seed=0 --gpu=0 \
+--prefix=sc_mB_s0
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_bar/sh --seed=1 --gpu=0 \
+--prefix=sh_mB_lv2_s1_01
