@@ -94,6 +94,12 @@ class Policy(nn.Module):
     def switch_to_non_rollout(self):
         self._rollout_mode = False
 
+    def switch_to_no_squash(self):
+        self._hp.squash_output_dist = False
+
+    def switch_to_squash(self):
+        self._hp.squash_output_dist = True
+
     def visualize(self, logger, rollout_storage, step):
         """Optionally allows to further visualize the internal state of policy."""
         pass

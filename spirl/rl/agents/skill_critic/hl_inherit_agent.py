@@ -133,7 +133,7 @@ class HLInheritAgent(ActionPriorSACAgent):
         return critic_losses, qs
 
     
-
+    '''
     # ========== vis maze hl q value ==========
     def _vis_hl_q(self, logger, step):
         experience_batch = self.replay_buffer.get()
@@ -184,6 +184,8 @@ class HLInheritAgent(ActionPriorSACAgent):
         plt.title('distribution of latent variables', fontsize=fs)
         plt.grid()
         logger.log_plot(fig, name='vis hl_action', step=step)
+
+        '''
 
     # =================== visualize =================
     def visualize_actions(self, experience_batch):

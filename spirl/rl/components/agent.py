@@ -198,6 +198,13 @@ class BaseAgent(nn.Module):
         self._rollout_mode = False
         self.call_children("switch_to_non_rollout", Policy)
 
+    @contextmanager
+    def no_squash_mode(self):
+        """Disables squashing of actions within context. To be used like: with agent.no_squash_mode(): ...<do something>..."""
+        self.call_children("switch_to_no_squash", Policy)
+        yield
+        self.call_children("switch_to_squash", Policy)
+
     def call_children(self, fn, cls):
         """Call function with name fn in all submodules of class cls."""
         def conditional_fn(module):

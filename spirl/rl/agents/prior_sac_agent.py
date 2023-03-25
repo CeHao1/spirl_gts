@@ -93,6 +93,10 @@ class ActionPriorSACAgent(SACAgent):
             obs_batch = map2torch(obs_batch, self._hp.device)
             policy_output = self._run_policy(obs_batch)
 
+            with self.no_squash_mode():
+                policy_output_no_squash = self._run_policy(obs_batch)
+                
+
             act = self._prep_action(policy_output.action) # QHL(s, z), no K
             q_est = torch.min(*[critic(obs_batch, act).q for critic in self.critics])
             policy_v = q_est - self.alpha * policy_output.prior_divergence[:, None]
@@ -100,7 +104,7 @@ class ActionPriorSACAgent(SACAgent):
             q_est_sum.append(q_est.detach().cpu().numpy())
             KLD_sum.append(policy_output.prior_divergence.detach().cpu().numpy())
             policy_v_sum.append(policy_v.detach().cpu().numpy())
-            action_sum.append(policy_output.action.detach().cpu().numpy())
+            action_sum.append(policy_output_no_squash.action.detach().cpu().numpy())
 
         q_est = np.concatenate(q_est_sum, axis=0)
         KLD = np.concatenate(KLD_sum, axis=0)
