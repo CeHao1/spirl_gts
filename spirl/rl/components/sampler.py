@@ -107,7 +107,8 @@ class Sampler:
 
     def get_episode_info(self):
         episode_info = AttrDict(episode_reward=self._episode_reward,
-                                episode_length=self._episode_step,)
+                                episode_length=self._episode_step,
+                                episode_success=np.clip(self._episode_reward, 0, 1))
         if hasattr(self._env, "get_episode_info"):
             episode_info.update(self._env.get_episode_info())
         return episode_info

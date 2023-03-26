@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 from spirl.rl.agents.ac_agent import SACAgent
@@ -87,6 +88,7 @@ class ActionPriorSACAgent(SACAgent):
         KLD_sum = []
         policy_v_sum = []
         action_sum = []
+        action_nosquash_sum = []
 
         for i in range(batch_num):
             obs_batch = obs[i*batch_size:(i+1)*batch_size]
@@ -104,12 +106,14 @@ class ActionPriorSACAgent(SACAgent):
             q_est_sum.append(q_est.detach().cpu().numpy())
             KLD_sum.append(policy_output.prior_divergence.detach().cpu().numpy())
             policy_v_sum.append(policy_v.detach().cpu().numpy())
-            action_sum.append(policy_output_no_squash.action.detach().cpu().numpy())
+            action_sum.append(policy_output.action.detach().cpu().numpy())
+            action_nosquash_sum.append(policy_output_no_squash.action.detach().cpu().numpy())
 
         q_est = np.concatenate(q_est_sum, axis=0)
         KLD = np.concatenate(KLD_sum, axis=0)
         policy_v = np.concatenate(policy_v_sum, axis=0)
         action_sum = np.concatenate(action_sum, axis=0)
+        action_nosquash_sum = np.concatenate(action_nosquash_sum, axis=0)
         
         from spirl.data.maze.src.maze_agents import plot_maze_value
         plot_maze_value(q_est, states, logger, step, size, fig_name='vis hl_q')
@@ -117,16 +121,33 @@ class ActionPriorSACAgent(SACAgent):
         plot_maze_value(policy_v, states, logger, step, size, fig_name='vis hl_policy_v')
         plot_maze_value(rew, states, logger, step, size, fig_name='vis hl_rew')
         
-        import seaborn as sns
-        fs = 16
-        fig = plt.figure(figsize=(10, 5))
-        for idx in range(len(action_sum[0])):
-            sns.kdeplot(action_sum[:, idx], fill=True, label='dim_' + str(idx), cut=0)
-        plt.legend(loc='upper left', fontsize=fs)
-        plt.ylabel('Density', fontsize=fs)
-        plt.title('distribution of latent variables', fontsize=fs)
-        plt.grid()
-        logger.log_plot(fig, fig_name= 'vis hl_action', step=step)
+        plot_action_dist(action_sum, logger, step, size, 
+                         fig_name='vis squash, hl_action')
+        
+        plot_action_dist(action_sum, logger, step, size=int(1e4), 
+                         fig_name='vis squash, recent 10k, hl_action')
+        
+        plot_action_dist(action_nosquash_sum, logger, step, size, 
+                         fig_name='vis nosquash, hl_action', xlim=[-4.5, 4.5])
+        
+        plot_action_dist(action_nosquash_sum, logger, step, size=int(1e4), 
+                         fig_name='vis nosquash, recent 10k, hl_action', xlim=[-4.5, 4.5])
+
+
+def plot_action_dist(action, logger, step, size, fig_name='vis action', bw=0.5, xlim=None):
+    fs = 16
+    fig = plt.figure(figsize=(10, 5))
+    fig.tight_layout()
+    for idx in range(len(action[0])):
+        sns.kdeplot(action[-size:, idx], fill=True, label='dim_' + str(idx), cut=0, bw_adjust=bw)
+    # plt.legend(bbox_to_anchor=(1, 1), loc='upper left', fontsize=fs)
+    plt.legend(loc='upper left', fontsize=14, framealpha=0.5)
+    plt.ylabel('Density', fontsize=fs)
+    plt.title('distribution of latent variables, size ' + str(size), fontsize=fs)
+    plt.grid()
+    if xlim is not None:
+        plt.xlim(xlim)
+    logger.log_plot(fig, name= fig_name, step=step)
 
 class RandActScheduledActionPriorSACAgent(ActionPriorSACAgent):
     """Adds scheduled call to random action (aka prior execution) -> used if downstream policy trained from scratch."""

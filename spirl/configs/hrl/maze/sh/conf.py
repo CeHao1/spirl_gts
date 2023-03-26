@@ -53,7 +53,8 @@ configuration = AttrDict(configuration)
 
 # Replay Buffer
 replay_params = AttrDict(
-    capacity=1e6,
+    # capacity=1e6,
+    capacity = 1e5,
     dump_replay=False,
 )
 
