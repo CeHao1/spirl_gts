@@ -1,7 +1,7 @@
 import os
 import copy
 
-from ..sh.conf import *
+from spirl.configs.hrl.maze.sh.conf import *
 from spirl.rl.envs.maze import  ACmMaze1
 
 

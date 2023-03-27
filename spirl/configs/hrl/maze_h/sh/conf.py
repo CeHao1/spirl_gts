@@ -22,8 +22,7 @@ notes = 'skill critic on the maze env'
 configuration = {
     'seed': 42,
     'agent': JointInheritAgent,
-    # 'environment': ACRandMaze0S40Env,
-    'environment': ACmMaze1,
+    'environment': ACRandMaze0S40Env,
     'sampler': ACMultiImageAugmentedHierarchicalSampler,
     'data_dir': '.',
     # "use_update_after_sampling": True,

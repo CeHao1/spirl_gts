@@ -1,8 +1,8 @@
 import os
 import copy
 
-from ..sh.conf import *
-from spirl.rl.envs.maze import  ACmMaze1
+from spirl.configs.hrl.maze_h.sh.conf import *
+from spirl.rl.envs.maze import ACmMaze1
 
 
 current_dir = os.path.dirname(os.path.realpath(__file__))

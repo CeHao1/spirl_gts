@@ -71,3 +71,8 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_h/sh --seed=0 --gpu=0 \
 
 
 # test new maze1 env
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh_m1  --gpu=0 \
+--seed=1 --prefix=m1_s1_01
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_h/sh_m1  --gpu=0 \
+--seed=1 --prefix=m1_s1_01
