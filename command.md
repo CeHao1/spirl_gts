@@ -31,7 +31,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sc  --gpu=0 \
 --seed=1 --prefix=sc_nosquash_s1_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh  --gpu=0 \
---seed=0 --prefix=sh_lv1_nosquash_s0_01
+--seed=1 --prefix=m1_s1_05
 
 # train noT skill
 
@@ -67,4 +67,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_bar/sh --seed=0 --gpu=0 
 
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_h/sh --seed=0 --gpu=0 \
---prefix=mh_lv1_s0_01
+--prefix=mh_m1_s0_04
+
+
+# test new maze1 env

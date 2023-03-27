@@ -35,9 +35,23 @@ class ACRandMaze0S40Env(MazeEnv):
     TARGET_POS = np.array([6., 16.]) # level-1 easiest one
     # TARGET_POS = np.array([20., 16.]) # level-2
 
+    VIS_RANGE = [[-3, 43], [-3, 43]]
 
     def _default_hparams(self):
         default_dict = ParamDict({
             'name': "maze2d-randMaze0S40-ac-v0",
         })
         return super()._default_hparams().overwrite(default_dict)
+
+
+class ACmMaze1(MazeEnv):
+    TARGET_POS = np.array([7, 13])
+    START_POS = np.array([1, 2])
+    VIS_RANGE = [[-1, 12], [-1, 17]]
+    
+    def _default_hparams(self):
+        default_dict = ParamDict({
+            'name': "maze2d-mMaze1-v0",
+        })
+        return super()._default_hparams().overwrite(default_dict)
+

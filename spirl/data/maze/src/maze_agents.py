@@ -7,11 +7,13 @@ from spirl.rl.agents.skill_critic.hl_skill_agent import HLSKillAgent
 from spirl.rl.agents.skill_critic.hl_inherit_agent  import HLInheritAgent
 from spirl.rl.agents.skill_space_agent import SkillSpaceAgent, ACSkillSpaceAgent
 
-from spirl.rl.envs.maze import ACRandMaze0S40Env
+from spirl.rl.envs.maze import ACRandMaze0S40Env, ACmMaze1
 
 class MazeAgent:
-    START_POS = ACRandMaze0S40Env.START_POS
-    TARGET_POS = ACRandMaze0S40Env.TARGET_POS
+    chosen_maze = ACmMaze1
+    START_POS = chosen_maze.START_POS
+    TARGET_POS = chosen_maze.TARGET_POS
+    VIS_RANGE = chosen_maze.VIS_RANGE
 
     """Adds replay logging function."""
     def visualize(self, logger, rollout_storage, step):
@@ -165,8 +167,8 @@ def plot_maze_fun(states, logger, step, size):
     plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'ro')
     plt.axis("equal")
     plt.title('step ' + str(step) + ' size ' + str(size))
-    plt.xlim([-3, 43])
-    plt.ylim([-3, 43])
+    plt.xlim(MazeAgent.VIS_RANGE[0])
+    plt.ylim(MazeAgent.VIS_RANGE[1])
     logger.log_plot(fig, "replay_vis", step)
     plt.close(fig)
 
@@ -177,8 +179,8 @@ def plot_maze_value(q, states, logger, step, size, fig_name='vis'):
     plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'ro')
     plt.axis("equal")
     plt.title(fig_name + ' step ' + str(step) + ' size ' + str(size))
-    plt.xlim([-3, 43])
-    plt.ylim([-3, 43])
+    plt.xlim(MazeAgent.VIS_RANGE[0])
+    plt.ylim(MazeAgent.VIS_RANGE[1])
     plt.colorbar()
     logger.log_plot(fig, fig_name, step)
     plt.close(fig)

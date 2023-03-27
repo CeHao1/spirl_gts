@@ -7,7 +7,7 @@ from spirl.rl.components.critic import SplitObsMLPCritic, MLPCritic
 from spirl.rl.components.sampler import ACMultiImageAugmentedHierarchicalSampler
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.rl.policies.prior_policies import ACLearnedPriorAugmentedPIPolicy
-from spirl.rl.envs.maze import ACRandMaze0S40Env
+from spirl.rl.envs.maze import ACRandMaze0S40Env, ACmMaze1
 from spirl.rl.agents.skill_critic.ll_inherit_agent import MazeLLInheritAgent
 from spirl.rl.policies.cd_model_policy import AC_DecoderRegu_TimeIndexedCDMdlPolicy
 from spirl.data.maze.src.maze_agents import MazeHLInheritAgent
@@ -22,7 +22,8 @@ notes = 'skill critic on the maze env'
 configuration = {
     'seed': 42,
     'agent': JointInheritAgent,
-    'environment': ACRandMaze0S40Env,
+    # 'environment': ACRandMaze0S40Env,
+    'environment': ACmMaze1,
     'sampler': ACMultiImageAugmentedHierarchicalSampler,
     'data_dir': '.',
     # "use_update_after_sampling": True,
