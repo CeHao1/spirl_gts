@@ -37,8 +37,8 @@ configuration = AttrDict(configuration)
 
 # Replay Buffer
 replay_params = AttrDict(
-    # capacity=1e6,
-    capacity = 1e5,
+    # capacity = 1e5,
+    capacity = 5e4,
     dump_replay=False,
 )
 
@@ -78,7 +78,7 @@ ll_policy_params = AttrDict(
     policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/maze/hierarchical_cd"),
     # initial_log_sigma=-50.,
 
-    manual_log_sigma=[0, 0],
+    manual_log_sigma=[-1.5, -1.5],
 )
 ll_policy_params.update(ll_model_params)
 
@@ -104,8 +104,9 @@ ll_agent_config.update(AttrDict(
     # obs(s + z + t) + a = 4 + 10 + 10 + 2
     critic_params=ll_critic_params,
 
-    # td_schedule_params=AttrDict(p=1.),
-    fixed_alpha = 0.001,
+    td_schedule_params=AttrDict(p=1.),
+    # fixed_alpha = 0.001,
+    # fixed_alpha = 1.0,
 
 ))
 
