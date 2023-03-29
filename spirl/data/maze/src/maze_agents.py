@@ -11,7 +11,7 @@ from spirl.rl.agents.skill_space_agent import SkillSpaceAgent, ACSkillSpaceAgent
 from spirl.rl.envs.maze import ACRandMaze0S40Env, ACmMaze1
 
 class MazeAgent:
-    chosen_maze = ACmMaze1
+    chosen_maze = ACRandMaze0S40Env
     START_POS = chosen_maze.START_POS
     TARGET_POS = chosen_maze.TARGET_POS
     VIS_RANGE = chosen_maze.VIS_RANGE

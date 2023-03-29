@@ -76,6 +76,11 @@ class ActionPriorSACAgent(SACAgent):
     
     # ========== vis maze hl q value ==========
     def _vis_hl_q(self, logger, step):
+        self._vis_q(logger, step, prefix='hl')
+    
+    def _vis_q(self, logger, step, prefix='hl', 
+               content=['q', 'KLD', 'policy_v', 'rew', 
+                        'action', 'action_nosquash', 'action_recent', 'action_nosquash_recent']):
         experience_batch = self.replay_buffer.get()
         size = self.replay_buffer.size
         states = experience_batch.observation[:size, :2]
@@ -116,22 +121,28 @@ class ActionPriorSACAgent(SACAgent):
         action_nosquash_sum = np.concatenate(action_nosquash_sum, axis=0)
         
         from spirl.data.maze.src.maze_agents import plot_maze_value
-        plot_maze_value(q_est, states, logger, step, size, fig_name='vis hl_q')
-        plot_maze_value(KLD, states, logger, step, size, fig_name='vis hl_KLD')
-        plot_maze_value(policy_v, states, logger, step, size, fig_name='vis hl_policy_v')
-        plot_maze_value(rew, states, logger, step, size, fig_name='vis hl_rew')
         
-        plot_action_dist(action_sum, logger, step, size, 
-                         fig_name='vis squash, hl_action')
+        if 'q' in content:
+            plot_maze_value(q_est, states, logger, step, size, fig_name= prefix+'_q')
+        if 'KLD' in content:
+            plot_maze_value(KLD, states, logger, step, size, fig_name= prefix+'_policy KLD')
+        if 'policy_v' in content:
+            plot_maze_value(policy_v, states, logger, step, size, fig_name= prefix+'_policy_v')
+        if 'rew' in content:
+            plot_maze_value(rew, states, logger, step, size, fig_name= prefix+'_rew')
         
-        plot_action_dist(action_sum, logger, step, size=int(1e4), 
-                         fig_name='vis squash, recent 10k, hl_action')
-        
-        plot_action_dist(action_nosquash_sum, logger, step, size, 
-                         fig_name='vis nosquash, hl_action', xlim=[-4.5, 4.5])
-        
-        plot_action_dist(action_nosquash_sum, logger, step, size=int(1e4), 
-                         fig_name='vis nosquash, recent 10k, hl_action', xlim=[-4.5, 4.5])
+        if 'action' in content:
+            plot_action_dist(action_sum, logger, step, size, 
+                         fig_name=prefix+'_vis squash,action')
+        if 'action_nosquash' in content:
+            plot_action_dist(action_sum, logger, step, size=int(1e4), 
+                         fig_name=prefix+'_vis squash, recent 10k,action')
+        if 'action_recent' in content:
+            plot_action_dist(action_nosquash_sum, logger, step, size, 
+                         fig_name=prefix+'_vis nosquash, action', xlim=[-4.5, 4.5])
+        if 'action_nosquash_recent' in content:
+            plot_action_dist(action_nosquash_sum, logger, step, size=int(1e4), 
+                         fig_name=prefix+'_vis nosquash, recent 10k, action', xlim=[-4.5, 4.5])
 
 
 def plot_action_dist(action, logger, step, size, fig_name='vis action', bw=0.5, xlim=None):
@@ -148,6 +159,7 @@ def plot_action_dist(action, logger, step, size, fig_name='vis action', bw=0.5, 
     if xlim is not None:
         plt.xlim(xlim)
     logger.log_plot(fig, name= fig_name, step=step)
+    plt.close(fig)
 
 class RandActScheduledActionPriorSACAgent(ActionPriorSACAgent):
     """Adds scheduled call to random action (aka prior execution) -> used if downstream policy trained from scratch."""

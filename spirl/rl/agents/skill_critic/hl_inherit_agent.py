@@ -132,60 +132,6 @@ class HLInheritAgent(ActionPriorSACAgent):
         critic_losses = [0.5 * (q - q_target).pow(2).mean() for q in qs]
         return critic_losses, qs
 
-    
-    '''
-    # ========== vis maze hl q value ==========
-    def _vis_hl_q(self, logger, step):
-        experience_batch = self.replay_buffer.get()
-        size = self.replay_buffer.size
-        states = experience_batch.observation[:size, :2]
-        obs = experience_batch.observation[:size]
-        rew = experience_batch.reward[:size]
-
-        batch_size = 1024
-        batch_num = int(np.ceil(size / batch_size))
-        q_est_sum = []
-        KLD_sum = []
-        policy_v_sum = []
-        action_sum = []
-
-        for i in range(batch_num):
-            obs_batch = obs[i*batch_size:(i+1)*batch_size]
-            obs_batch = map2torch(obs_batch, self._hp.device)
-            policy_output = self._run_policy(obs_batch)
-
-            act = self._prep_action(policy_output.action) # QHL(s, z), no K
-            q_est = torch.min(*[critic(obs_batch, act).q for critic in self.critics])
-            policy_v = q_est - self.alpha * policy_output.prior_divergence[:, None]
-
-            q_est_sum.append(q_est.detach().cpu().numpy())
-            KLD_sum.append(policy_output.prior_divergence.detach().cpu().numpy())
-            policy_v_sum.append(policy_v.detach().cpu().numpy())
-            action_sum.append(policy_output.action.detach().cpu().numpy())
-
-        q_est = np.concatenate(q_est_sum, axis=0)
-        KLD = np.concatenate(KLD_sum, axis=0)
-        policy_v = np.concatenate(policy_v_sum, axis=0)
-        action_sum = np.concatenate(action_sum, axis=0)
-        
-        from spirl.data.maze.src.maze_agents import plot_maze_value
-        plot_maze_value(q_est, states, logger, step, size, fig_name='vis hl_q')
-        plot_maze_value(KLD, states, logger, step, size, fig_name='vis hl_KLD')
-        plot_maze_value(policy_v, states, logger, step, size, fig_name='vis hl_policy_v')
-        plot_maze_value(rew, states, logger, step, size, fig_name='vis hl_rew')
-
-        import seaborn as sns
-        fs = 16
-        fig = plt.figure(figsize=(10, 5))
-        for idx in range(len(action_sum[0])):
-            sns.kdeplot(action_sum[:, idx], fill=True, label='dim_' + str(idx), cut=0)
-        plt.legend(loc='upper left', fontsize=fs)
-        plt.ylabel('Density', fontsize=fs)
-        plt.title('distribution of latent variables', fontsize=fs)
-        plt.grid()
-        logger.log_plot(fig, name='vis hl_action', step=step)
-
-        '''
 
     # =================== visualize =================
     def visualize_actions(self, experience_batch):

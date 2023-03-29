@@ -155,7 +155,7 @@ agent_config = AttrDict(
     update_ll=True,
     
     # update_iterations = 256,
-    initial_train_stage = skill_critic_stages.HL_TRAIN
+    initial_train_stage = skill_critic_stages.HYBRID
 )
 
 # Dataset - Random data

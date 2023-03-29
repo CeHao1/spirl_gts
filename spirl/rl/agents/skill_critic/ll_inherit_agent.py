@@ -205,48 +205,9 @@ class LLInheritAgent(ActionPriorSACAgent):
     def _vis_ll_q(self, logger, step):
         if not self._update_ll_policy_flag:
             return None
-
-        experience_batch = self.replay_buffer.get()
-        size = self.replay_buffer.size
-
-        obs_next = experience_batch.observation_next[:size]
-        states = experience_batch.observation[:size, :2]
-        obs = experience_batch.observation[:size]
-
-        beta_mask = self._compute_termination_mask(obs_next)
-        beta_mask = beta_mask.cpu().numpy()
-        joint_index = np.where(beta_mask==1)[0]
-        states = states[joint_index]
-        obs = obs[joint_index]
-
-
-        batch_size = 1024
-        batch_num = int(np.ceil(size / batch_size))
-        q_est_sum = []
-        KLD_sum = []
-        policy_v_sum = []
-
-        for i in range(batch_num):
-            obs_batch = obs[i*batch_size:(i+1)*batch_size]
-            obs_batch = map2torch(obs_batch, self._hp.device)
-            policy_output = self._run_policy(obs_batch)
-
-            act = self._prep_action(policy_output.action) # QHL(s, z), no K
-            q_est = torch.min(*[critic(obs_batch, act).q for critic in self.critics])
-            policy_v = q_est - self.alpha * policy_output.prior_divergence[:, None]
-
-            q_est_sum.append(q_est.detach().cpu().numpy())
-            KLD_sum.append(policy_output.prior_divergence.detach().cpu().numpy())
-            policy_v_sum.append(policy_v.detach().cpu().numpy())
-
-        q_est = np.concatenate(q_est_sum, axis=0)
-        KLD = np.concatenate(KLD_sum, axis=0)
-        policy_v = np.concatenate(policy_v_sum, axis=0)
-        
-        from spirl.data.maze.src.maze_agents import plot_maze_value
-        plot_maze_value(q_est, states, logger, step, size, fig_name='vis ll_q')
-        plot_maze_value(KLD, states, logger, step, size, fig_name='vis ll_KLD')
-        plot_maze_value(policy_v, states, logger, step, size, fig_name='vis ll_policy_v')
+        super()._vis_q(logger, step, prefix='ll',
+                       content=['q', 'KLD', 
+                        'action', 'action_nosquash', 'action_recent', 'action_nosquash_recent'])
 
 
 class MazeLLInheritAgent(LLInheritAgent):
