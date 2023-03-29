@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 
 from spirl.rl.agents.ac_agent import SACAgent
@@ -166,11 +167,30 @@ def plot_maze_fun(states, logger, step, size):
     plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go')
     plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'ro')
     plt.axis("equal")
-    plt.title('step ' + str(step) + ' size ' + str(size))
+    plt.title('replay, step ' + str(step) + ' size ' + str(size))
     plt.xlim(MazeAgent.VIS_RANGE[0])
     plt.ylim(MazeAgent.VIS_RANGE[1])
     logger.log_plot(fig, "replay_vis", step)
     plt.close(fig)
+    
+    # plot density
+    # remove the point that close to the start
+    dist = states[:, :2] - MazeAgent.START_POS
+    dist_to_start = np.sqrt(dist[:,0]**2 + dist[:,1]**2)
+    show_index = np.where(dist_to_start > 1.0)[0]
+    
+    fig = plt.figure(figsize=(10,8))
+    sns.histplot(x=states[show_index, 0], y=states[show_index, 1], cmap='Blues', cbar=True,
+                 bins=50, pthresh=0.01)
+    plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go')
+    plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'ro')
+    plt.axis("equal")
+    plt.title('density, step ' + str(step) + ' size ' + str(size))
+    plt.xlim(MazeAgent.VIS_RANGE[0])
+    plt.ylim(MazeAgent.VIS_RANGE[1])
+    logger.log_plot(fig, "density_vis", step)
+    plt.close(fig)
+    
 
 def plot_maze_value(q, states, logger, step, size, fig_name='vis'):
     fig = plt.figure(figsize=(10,8))

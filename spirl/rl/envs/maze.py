@@ -45,9 +45,44 @@ class ACRandMaze0S40Env(MazeEnv):
 
 
 class ACmMaze1(MazeEnv):
-    TARGET_POS = np.array([7, 13])
-    START_POS = np.array([1, 2])
-    VIS_RANGE = [[-1, 12], [-1, 17]]
+    # v1
+    # TARGET_POS = np.array([6, 12])
+    # START_POS = np.array([1, 2])
+    # VIS_RANGE = [[-1, 12], [-1, 17]]
+    
+    # v2
+    # TARGET_POS = np.array([6, 11])
+    # START_POS = np.array([1, 2])
+    # VIS_RANGE = [[-1, 15], [-1, 17]]
+    
+    # v3
+    # TARGET_POS = np.array([18, 18])
+    # START_POS = np.array([2, 2])
+    # VIS_RANGE = [[-1, 22], [-1, 22]]
+    
+    # v4
+    # TARGET_POS = np.array([19, 16])
+    # START_POS = np.array([2, 2])
+    # VIS_RANGE = [[-1, 22], [-1, 22]]
+    
+    # v5
+    # TARGET_POS = np.array([19, 19])
+    # START_POS = np.array([2, 2])
+    # VIS_RANGE = [[-1, 22], [-1, 22]]
+    
+    # v7
+    # TARGET_POS = np.array([14, 11])
+    # START_POS = np.array([2, 2])
+    # VIS_RANGE = [[-1, 22], [-1, 22]]
+    
+    # v6
+    # TARGET_POS = np.array([13, 9])
+    TARGET_POS = np.array([9, 13])
+    
+    START_POS = np.array([1,1])
+    # START_POS = np.array([9,10])
+    
+    VIS_RANGE = [[-1, 20], [-1, 21]]
     
     def _default_hparams(self):
         default_dict = ParamDict({
