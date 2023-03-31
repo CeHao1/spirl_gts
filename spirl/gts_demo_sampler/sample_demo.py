@@ -81,8 +81,8 @@ for json args
 
 if __name__ == '__main__':
     sampler = SampleDemo(args=get_args())
-    # sampler.sample_rollout()
-    sampler.convert_rollout()
+    sampler.sample_rollout()
+    # sampler.convert_rollout()
 
     # sampler.init.init_gts()
     # raw_data = sampler.sample_raw_data()

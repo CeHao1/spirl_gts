@@ -182,23 +182,14 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
         # reconstruction loss, assume unit variance model output Gaussian
         losses.rec_mse = NLL(self._hp.reconstruction_mse_weight) \
             (Gaussian(model_output.reconstruction, torch.zeros_like(model_output.reconstruction)),
-             self._regression_targets(inputs))
+             self._regression_targets(inputs), weights=weights)
 
-
-        # try a new mse formulatoin
-        # losses.rec_mse = MSE(self._hp.reconstruction_mse_weight) \
-        #                 (model_output.reconstruction, self._regression_targets(inputs), 
-        #                 weights=weights)
 
         # KL loss
         losses.kl_loss = KLDivLoss(self.beta)(model_output.q, model_output.p)
 
         # learned skill prior net loss
         losses.q_hat_loss = self._compute_learned_prior_loss(model_output)
-
-        # losses.q_hat_loss = MSE(self._hp.learned_prior_weight) \
-        #                 (model_output.prior_reconstruction, self._regression_targets(inputs), 
-        #                 weights=weights)
 
         # Optionally update beta
         if self.training and self._hp.target_kl is not None:
