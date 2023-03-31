@@ -15,8 +15,8 @@ from spirl.gts_demo_sampler.file.base_file import BaseFile
 from spirl.gts_demo_sampler.start.pos_start import PosStart_by_course_v
 
 # ip_address = '192.168.1.5',
-do_init = False
-# do_init = True
+# do_init = False
+do_init = True
 
 # configs to initialize the gts
 init_config = AttrDict(

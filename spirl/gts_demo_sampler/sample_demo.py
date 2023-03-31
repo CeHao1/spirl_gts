@@ -76,13 +76,15 @@ for json args
     "--prefix" , "demo_test"
 ]
 
+python spirl/gts_demo_sampler/sample_demo.py \
+--path spirl/configs/data_collect/gts/time_trial/corner2_entrance --prefix corner2_entrance
 
 '''
 
 if __name__ == '__main__':
     sampler = SampleDemo(args=get_args())
-    sampler.sample_rollout()
-    # sampler.convert_rollout()
+    # sampler.sample_rollout()
+    sampler.convert_rollout()
 
     # sampler.init.init_gts()
     # raw_data = sampler.sample_raw_data()
