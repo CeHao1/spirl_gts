@@ -29,7 +29,7 @@ class LLInheritAgent(ActionPriorSACAgent):
         self.hl_critic_targets = hl_agent.critic_targets
         self.hl_critic_opts = hl_agent.critic_opts
 
-    def update(self, experience_batch=None, vis=False):
+    def update(self, experience_batch=None):
 
         # logging
         info = AttrDict(    # losses

@@ -1,3 +1,4 @@
+import matplotlib; matplotlib.use('Agg')
 import torch
 import os
 import imp
@@ -68,7 +69,7 @@ class RLTrainer:
             self.sampler = self._hp.sampler(self.conf.sampler, self.env, self.agent, self.logger, self._hp.max_rollout_len)
 
         # load from checkpoint
-        self.global_step, self.n_update_steps, start_epoch = -1, -1, 0
+        self.global_step, self.n_update_steps, start_epoch = 0, 0, 0
         if args.resume or self.conf.ckpt_path is not None:
             start_epoch = self.resume(args.resume, self.conf.ckpt_path)
             self._hp.n_warmup_steps = 0     # no warmup if we reload from checkpoint!
@@ -259,6 +260,7 @@ class RLTrainer:
         if self.is_chef:
             self.agent.add_experience(warmup_experience_batch)
             print("...Warmup done!")
+            self.agent.visualize(logger=self.logger, rollout_storage=None, step=self.global_step)
 
     def get_config(self):
         conf = AttrDict()

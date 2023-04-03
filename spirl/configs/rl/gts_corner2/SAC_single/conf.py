@@ -30,7 +30,7 @@ env_config = AttrDict(
     reward_function = corner2_spare_reward_function,
     done_function = corner2_done_function,
 
-    store_states = True,
+    # store_states = True,
     initial_velocity = 65*3.6, 
 
 )
@@ -41,7 +41,7 @@ configuration = {
     
     'data_dir': '.',
     'num_epochs': 2000,
-    'max_rollout_len': 1000,
+    'max_rollout_len': 200,
     # 'n_steps_per_epoch': 1000 ,
     # 'n_warmup_steps': 5000 ,
     'use_update_after_sampling':True,
@@ -49,8 +49,8 @@ configuration = {
     'environment': GTSEnv_Corner2_Single,
     'sampler':SamplerBatched,
 
-    'n_steps_per_epoch': 2000 ,
-    'n_warmup_steps': 2000 ,
+    'n_steps_per_epoch': 200 ,
+    'n_warmup_steps': 200 ,
 }
 
 configuration = AttrDict(configuration)
@@ -96,15 +96,15 @@ agent_config = AttrDict(
     # obs_normalizer=Normalizer,
     # obs_normalizer_params=obs_norm_params,
     clip_q_target=False,
-    batch_size=4096,
+    batch_size=256,
     log_videos=False,
 
     discount_factor = 0.98,
     fixed_alpha = 0.01,
-    update_iterations = 64 * 20,
+    update_iterations = 64,
 
     # target_entropy = 0,
-    visualize_values = True,
+    # visualize_values = True,
     
 )
 

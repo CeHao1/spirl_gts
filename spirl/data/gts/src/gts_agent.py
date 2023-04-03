@@ -5,6 +5,7 @@ from spirl.rl.agents.skill_critic.hl_inherit_agent  import HLInheritAgent
 
 from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
 
+from spirl.utils.general_utils import AttrDict
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -24,21 +25,27 @@ class GTSAgent:
 
     def _vis_replay_buffer(self, logger, step):
         """Visualizes a replay buffer."""
-        size = self.replay_buffer.size
-        states = self.replay_buffer.get().observation[:size, :2]
-        pass
+        size = self.info_replay_buffer.size
+        states = self.info_replay_buffer.get().observation[:size, :]
+        plot_gts_traj(states, logger, step, size)
 
     def add_experience(self, experience_batch):
-        self.info_replay_buffer.append(self._select_info(experience_batch['info']))
+        if 'info' in experience_batch:
+            self.info_replay_buffer.append(self._select_info(experience_batch.pop('info')))
         super().add_experience(experience_batch)
 
     def update(self, experience_batch=None):
-        self.info_replay_buffer.append(self._select_info(experience_batch['info']))
+        if 'info' in experience_batch:
+            self.info_replay_buffer.append(self._select_info(experience_batch.pop('info')))
         return super().update(experience_batch)
 
     def _select_info(self, info):
         """Selects info to be stored in replay buffer."""
-        return info
+        key_list = ['pos[0]', 'pos[2]', 'vx']
+        info_batch = AttrDict(
+            observation = np.array([[info_t[0]['state'][key] for key in key_list] for info_t in info])
+        )
+        return info_batch
 
 
 class GTSSACAgent(GTSAgent, SACAgent):
@@ -84,9 +91,9 @@ class GTSHLInerientAgent(HLInheritAgent, GTSAgent):
 
 def plot_gts_traj(states, logger, step, size):
 
-    # plot replay
+    # plot replay with velocity
     fig = plt.figure(figsize=(8,8))
-
+    plt.scatter(states[:, 0], states[:, 1], c=states[:, 2], cmap='Reds', s=1)
     # plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     # plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'ro')
 
@@ -94,14 +101,16 @@ def plot_gts_traj(states, logger, step, size):
     plt.title('replay, step ' + str(step) + ' size ' + str(size))
     # plt.xlim(GTSAgent.VIS_RANGE[0])
     # plt.ylim(GTSAgent.VIS_RANGE[1])
-    logger.log_plot(fig, "replay_vis", step)
+    logger.log_plot(fig, "velocity_vis", step)
     plt.close(fig)
 
 
     # plot density
-    dist = states[:, :2] - GTSAgent.START_POS  # TODO dist from start line 
-    dist_to_start = np.sqrt(dist[:,0]**2 + dist[:,1]**2)
-    show_index = np.where(dist_to_start > 1.0)[0]
+    # dist = states[:, :2] - GTSAgent.START_POS  # TODO dist from start line 
+    # dist_to_start = np.sqrt(dist[:,0]**2 + dist[:,1]**2)
+    # show_index = np.where(dist_to_start > 1.0)[0]
+
+    show_index = np.arange(states.shape[0])
 
     fig = plt.figure(figsize=(10,8))
     sns.histplot(x=states[show_index, 0], y=states[show_index, 1], cmap='Blues', cbar=True,

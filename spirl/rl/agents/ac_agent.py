@@ -183,18 +183,10 @@ class SACAgent(ACAgent):
 
             self._update_steps += 1
 
-        if self._hp.visualize_values:
-            with torch.no_grad():
-                self.visualize_Q(experience_batch, policy_output_next)
-
         return info
 
     def add_experience(self, experience_batch):
         """Adds experience to replay buffer."""
-        if self._hp.visualize_values:
-            # visualize_actions
-            self.visualize_actions(experience_batch)
-
         if not experience_batch:
             return  # pass if experience_batch is empty
         self.replay_buffer.append(experience_batch)
