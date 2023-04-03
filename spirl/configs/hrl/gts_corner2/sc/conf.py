@@ -21,15 +21,16 @@ from spirl.rl.components.critic import MLPCritic
 from spirl.rl.agents.skill_critic.hl_skill_agent import HLSKillAgent
 from spirl.rl.agents.skill_critic.ll_action_agent import LLActionAgent
 
+from spirl.utils.gts_utils import  corner2_done_function, corner2_spare_reward_function
+
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
     do_init = False,
     # action_standard = True,
 
-    # reward_function = eval_time_trial_reward_function,
-    # done_function = eval_time_trial_done_function,
-    standardize_observations = False,
+    reward_function = corner2_spare_reward_function,
+    done_function = corner2_done_function,
 )
 
 
