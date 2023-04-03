@@ -7,6 +7,7 @@ from spirl.rl.agents.ac_agent import SACAgent
 from spirl.utils.general_utils import ParamDict, ConstantSchedule, AttrDict
 from spirl.utils.pytorch_utils import check_shape, map2torch
 
+from spirl.data.maze.src.maze_agents import plot_maze_value
 
 class ActionPriorSACAgent(SACAgent):
     """Implements SAC with non-uniform, learned action / skill prior."""
@@ -78,7 +79,7 @@ class ActionPriorSACAgent(SACAgent):
     def _vis_hl_q(self, logger, step):
         self._vis_q(logger, step, prefix='hl')
     
-    def _vis_q(self, logger, step, prefix='hl', 
+    def _vis_q(self, logger, step, prefix='hl', plot_type='maze',
                content=['q', 'KLD', 'policy_v', 'rew', 
                         'action', 'action_nosquash', 'action_recent', 'action_nosquash_recent']):
         experience_batch = self.replay_buffer.get()
@@ -120,16 +121,19 @@ class ActionPriorSACAgent(SACAgent):
         action_sum = np.concatenate(action_sum, axis=0)
         action_nosquash_sum = np.concatenate(action_nosquash_sum, axis=0)
         
-        from spirl.data.maze.src.maze_agents import plot_maze_value
         
-        if 'q' in content:
-            plot_maze_value(q_est, states, logger, step, size, fig_name= prefix+'_q')
-        if 'KLD' in content:
-            plot_maze_value(KLD, states, logger, step, size, fig_name= prefix+'_policy KLD')
-        if 'policy_v' in content:
-            plot_maze_value(policy_v, states, logger, step, size, fig_name= prefix+'_policy_v')
-        if 'rew' in content:
-            plot_maze_value(rew, states, logger, step, size, fig_name= prefix+'_rew')
+        if plot_type == 'maze':
+            if 'q' in content:
+                plot_maze_value(q_est, states, logger, step, size, fig_name= prefix+'_q')
+            if 'KLD' in content:
+                plot_maze_value(KLD, states, logger, step, size, fig_name= prefix+'_policy KLD')
+            if 'policy_v' in content:
+                plot_maze_value(policy_v, states, logger, step, size, fig_name= prefix+'_policy_v')
+            if 'rew' in content:
+                plot_maze_value(rew, states, logger, step, size, fig_name= prefix+'_rew')
+                
+        elif plot_type == 'gts':
+            pass
         
         if 'action' in content:
             plot_action_dist(action_sum, logger, step, size, 

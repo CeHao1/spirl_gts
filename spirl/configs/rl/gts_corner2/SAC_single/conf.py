@@ -13,7 +13,7 @@ from spirl.rl.components.sampler_batched import SamplerBatched
 
 from spirl.rl.components.normalization import Normalizer
 from spirl.configs.default_data_configs.gts import data_spec
-from spirl.utils.gts_utils import singe_reward_fun_modify_done, corner2_done_function
+from spirl.utils.gts_utils import  corner2_done_function, corner2_spare_reward_function
 
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -26,10 +26,9 @@ env_config = AttrDict(
     # do_init = False,
     # action_standard = True,
 
-    reward_function = singe_reward_fun_modify_done,
+    reward_function = corner2_spare_reward_function,
     done_function = corner2_done_function,
 
-    # num_cars = 1,
     store_states = True,
     initial_velocity = 65*3.6, 
 
