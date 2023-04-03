@@ -1,17 +1,18 @@
-
 import os
 
-from spirl.models.cond_dec_spirl_mdl import TimeIndexCDSPiRLMDL
-
+# from spirl.models.skill_prior_mdl import SkillSpaceLogger
 from spirl.components.logger import Logger
+from spirl.models.closed_loop_spirl_mdl import ClSPiRLMdl
 from spirl.utils.general_utils import AttrDict
 from spirl.configs.default_data_configs.gts import data_spec
 from spirl.components.evaluator import TopOfNSequenceEvaluator
 
+
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
+
 configuration = {
-    'model': TimeIndexCDSPiRLMDL,
+    'model': ClSPiRLMdl,
     'logger': Logger,
     'data_dir': os.path.join(os.environ['DATA_DIR'], 'gts_corner2'),
     'epoch_cycles_train': 10,
@@ -22,10 +23,6 @@ configuration = {
     'batch_size':128,
 }
 configuration = AttrDict(configuration)
-
-
-weights_03 = [1, 5e-2, 2e-1] 
-model_weight = weights_03
 
 model_config = AttrDict(
     state_dim=data_spec.state_dim,
@@ -38,13 +35,12 @@ model_config = AttrDict(
     n_rollout_steps = 10,
     nz_vae = 10,
 
+    reconstruction_mse_weight = 100.,
+    kl_div_weight=5e-4,
+    # learned_prior_weight = 1e-10,
     action_dim_weights = [100.0, 1.0],
-    
-    reconstruction_mse_weight = model_weight[0],
-    kl_div_weight=model_weight[1],
-    # learned_prior_weight = model_weight[2],
+    # action_dim_weights = [1.0, 1.0],
 
-    # nll_prior_train = False,
 )
 
 # Dataset
