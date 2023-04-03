@@ -624,7 +624,7 @@ def corner2_done_function(state):
     # course > 2400 or time > 60 seconds
     return state['course_v'] >= 2400 or state['frame_count'] > 30 * 60
 
-def corner2_spare_reward_function(state):
+def corner2_spare_reward_function(state, previous_state, course_length):
     return 1 if state['course_v'] >= 2400 else 0
 
 def single_reward_function(state, previous_state, course_length, **kwargs):

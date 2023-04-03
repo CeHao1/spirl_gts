@@ -75,7 +75,7 @@ class GTSEnv_Corner2_Single(GymEnv):
             store_states = self._hp.store_states,
             standardize_observations=self._hp.standardize_observations,
             
-            disable_env_checker =  self._hp.disable_env_checker,
+            # disable_env_checker =  self._hp.disable_env_checker,
         )
 
         self.course_length = self._get_course_length()

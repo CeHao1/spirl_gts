@@ -7,8 +7,6 @@ from spirl.rl.agents.ac_agent import SACAgent
 from spirl.utils.general_utils import ParamDict, ConstantSchedule, AttrDict
 from spirl.utils.pytorch_utils import check_shape, map2torch
 
-from spirl.data.maze.src.maze_agents import plot_maze_value
-
 class ActionPriorSACAgent(SACAgent):
     """Implements SAC with non-uniform, learned action / skill prior."""
     def __init__(self, config):
@@ -123,6 +121,7 @@ class ActionPriorSACAgent(SACAgent):
         
         
         if plot_type == 'maze':
+            from spirl.data.maze.src.maze_agents import plot_maze_value
             if 'q' in content:
                 plot_maze_value(q_est, states, logger, step, size, fig_name= prefix+'_q')
             if 'KLD' in content:
