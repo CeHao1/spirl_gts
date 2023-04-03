@@ -384,7 +384,9 @@ class RLTrainer:
         # return self.n_update_steps % int((self._hp.n_steps_per_epoch / self._hp.n_steps_per_update)
                                     #    / self._hp.log_output_per_epoch) == 0 \
                     # or self.log_images_now
-        return self.n_update_steps % self._hp.log_output_interval == 0
+        # return self.n_update_steps % self._hp.log_output_interval == 0
+        
+        return self.global_step % self._hp.log_output_interval == 0
 
     @property
     def log_images_now(self):

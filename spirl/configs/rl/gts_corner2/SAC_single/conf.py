@@ -49,8 +49,11 @@ configuration = {
     'environment': GTSEnv_Corner2_Single,
     'sampler':SamplerBatched,
 
-    'n_steps_per_epoch': 200 ,
-    'n_warmup_steps': 200 ,
+    'n_steps_per_epoch': 1000 ,
+    'n_steps_per_update': 200 ,
+    'n_warmup_steps': 1000 ,
+
+    'log_output_interval': 400,
 }
 
 configuration = AttrDict(configuration)

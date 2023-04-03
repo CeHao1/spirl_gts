@@ -92,7 +92,7 @@ class GTSHLInerientAgent(HLInheritAgent, GTSAgent):
 def plot_gts_traj(states, logger, step, size):
 
     # plot replay with velocity
-    fig = plt.figure(figsize=(8,8))
+    fig = plt.figure(figsize=(10,8))
     plt.scatter(states[:, 0], states[:, 1], c=states[:, 2], cmap='Reds', s=1)
     # plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     # plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'ro')
@@ -101,6 +101,7 @@ def plot_gts_traj(states, logger, step, size):
     plt.title('replay, step ' + str(step) + ' size ' + str(size))
     # plt.xlim(GTSAgent.VIS_RANGE[0])
     # plt.ylim(GTSAgent.VIS_RANGE[1])
+    plt.colorbar()
     logger.log_plot(fig, "velocity_vis", step)
     plt.close(fig)
 
@@ -113,14 +114,15 @@ def plot_gts_traj(states, logger, step, size):
     show_index = np.arange(states.shape[0])
 
     fig = plt.figure(figsize=(10,8))
-    sns.histplot(x=states[show_index, 0], y=states[show_index, 1], cmap='Blues', cbar=True,
-                 bins=50, pthresh=0.01)
-    plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
-    plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'ro')
+    # sns.histplot(x=states[show_index, 0], y=states[show_index, 1], cmap='Blues', cbar=True,
+    #              bins=50, pthresh=0.01)
+    sns.histplot(x=states[:, 0], y=states[:, 1], cmap='Blues', cbar=True,)
+    # plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
+    # plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'ro')
     plt.axis("equal")
     plt.title('density, step ' + str(step) + ' size ' + str(size))
-    plt.xlim(GTSAgent.VIS_RANGE[0])
-    plt.ylim(GTSAgent.VIS_RANGE[1])
+    # plt.xlim(GTSAgent.VIS_RANGE[0])
+    # plt.ylim(GTSAgent.VIS_RANGE[1])
     logger.log_plot(fig, "density_vis", step)
     plt.close(fig)
 
