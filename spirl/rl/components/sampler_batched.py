@@ -63,6 +63,7 @@ class SamplerBatched:
                             done=done,
                             action=agent_output.action,
                             observation_next=obs,
+                            info=info,
                         ))
 
                         # update stored observation
@@ -222,6 +223,7 @@ class HierarchicalSamplerBached(SamplerBatched):
                                 done=done,
                                 action=agent_output.action,
                                 observation_next=obs,       # this will get updated in the next step
+                                info=info,
                             ))
 
                         # store HL experience batch if this was HL action or episode is done
@@ -233,6 +235,7 @@ class HierarchicalSamplerBached(SamplerBatched):
                                     done=done,
                                     action=self.last_hl_action,
                                     observation_next=obs,
+                                    info=info,
                                 ))
                                 hl_step += batch_length
                                 if np.any(done):

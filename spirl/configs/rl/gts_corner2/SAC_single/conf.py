@@ -7,7 +7,8 @@ from spirl.rl.components.replay_buffer import UniformReplayBuffer
 
 from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
 
-from spirl.rl.agents.ac_agent import SACAgent
+# from spirl.rl.agents.ac_agent import SACAgent
+from spirl.data.gts.src.gts_agent import GTSSACAgent
 from spirl.rl.components.sampler_batched import SamplerBatched
 
 
@@ -36,7 +37,7 @@ env_config = AttrDict(
 
 configuration = {
     'seed': 2,
-    'agent': SACAgent,
+    'agent': GTSSACAgent,
     
     'data_dir': '.',
     'num_epochs': 2000,
