@@ -47,7 +47,7 @@ class CDModelPolicy(Policy):
         else:
             init_log_sigma = self._hp.initial_log_sigma * np.ones(self.action_dim, dtype=np.float32)
 
-        self._log_sigma = torch.tensor(init_log_sigma, device=self.device, requires_grad=True)   
+        self._log_sigma = torch.tensor(init_log_sigma, device=self.device, requires_grad=False)   
 
         if 'min_log_sigma' in self._hp:
             self._min_log_sigma = torch.tensor(self._hp.min_log_sigma,device=self.device, requires_grad=False)

@@ -43,8 +43,8 @@ hl_replay_params = AttrDict(
 )
 
 ll_replay_params = AttrDict(
-    # capacity = 2e5,
-    capacity = 5e4,
+    capacity = 2e5,
+    # capacity = 5e4,
     dump_replay=False,
 )
 
@@ -165,7 +165,7 @@ agent_config = AttrDict(
     update_ll=True,
     
     # update_iterations = 256,
-    initial_train_stage = skill_critic_stages.HYBRID
+    initial_train_stage = skill_critic_stages.FIX_LL_PI
 )
 
 # Dataset - Random data
@@ -174,7 +174,6 @@ data_config.dataset_spec = data_spec
 
 # Environment
 env_config = AttrDict(
-    # reward_norm=0.05,
     screen_height=ll_model_params.prior_input_res,
     screen_width=ll_model_params.prior_input_res,
 )
