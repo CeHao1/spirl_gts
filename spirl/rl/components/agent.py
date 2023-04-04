@@ -73,10 +73,8 @@ class BaseAgent(nn.Module):
 
     def log_outputs(self, logging_stats, rollout_storage, logger, log_images, step):
         """Visualizes/logs all training outputs."""
-        # logging_stats['test_value'] = step
-        # print('!! logging_stats step ', step, logging_stats)
-        
-        logger.log_scalar_dict(logging_stats, prefix='train' if self._is_train else 'val', step=step)
+        if logging_stats is not None:
+            logger.log_scalar_dict(logging_stats, prefix='train' if self._is_train else 'val', step=step)
 
         if log_images:
             '''
@@ -399,3 +397,4 @@ class FixedIntervalTimeIndexedHierarchicalAgent(FixedIntervalHierarchicalAgent):
             one_hot_np = one_hot_np.squeeze()
 
         return np.concatenate((obs, hl_action, one_hot_np), axis=-1)
+    

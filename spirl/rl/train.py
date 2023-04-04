@@ -259,8 +259,8 @@ class RLTrainer:
                 warmup_experience_batch = mpi_gather_experience(warmup_experience_batch)
         if self.is_chef:
             self.agent.add_experience(warmup_experience_batch)
-            print("...Warmup done!")
-            self.agent.visualize(logger=self.logger, rollout_storage=None, step=self.global_step)
+            print("...Warmup done!", "self.global_step", self.global_step)
+            self.agent.log_outputs(None, None, self.logger, log_images=True, step=self.global_step)
 
     def get_config(self):
         conf = AttrDict()

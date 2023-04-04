@@ -112,8 +112,8 @@ ll_agent_config.update(AttrDict(
     critic_params=ll_critic_params,
     replay_params=ll_replay_params,
 
-    # td_schedule_params=AttrDict(p=1.),
-    fixed_alpha = 1,
+    td_schedule_params=AttrDict(p=1.),
+    # fixed_alpha = 1,
     # fixed_alpha = 1.0,
 
 ))
