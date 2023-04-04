@@ -203,8 +203,8 @@ class LLInheritAgent(ActionPriorSACAgent):
 
     # ========= vis low-level q ==========
     def _vis_ll_q(self, logger, step):
-        if not self._update_ll_policy_flag:
-            return None
+        # if not self._update_ll_policy_flag:
+        #     return None
         super()._vis_q(logger, step, prefix='ll',
                        content=['q', 'KLD', 
                         'action', 'action_nosquash', 'action_recent', 'action_nosquash_recent'])
