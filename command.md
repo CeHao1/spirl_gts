@@ -54,4 +54,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_h/sh_m1  --gpu=0 \
 
 # train LL as well
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL  --gpu=0 \
---seed=0 --prefix=nollpi_s0
+--seed=2 --prefix=log-3_s2_02
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_h/shLL  --gpu=0 \
+--seed=0 --prefix=mh_s0_01

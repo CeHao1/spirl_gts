@@ -133,6 +133,10 @@ class LLInheritAgent(ActionPriorSACAgent):
 
             # (3) ll_q_target
             ll_q_target = experience_batch.reward * self._hp.reward_scale + (1 - experience_batch.done) * self._hp.discount_factor * u_next
+            
+            if self._hp.clip_q_target:
+                ll_q_target = self._clip_q_target(ll_q_target)
+                
             ll_q_target = ll_q_target.detach()
             check_shape(ll_q_target, [self._hp.batch_size])
 

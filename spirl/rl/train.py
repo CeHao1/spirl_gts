@@ -16,7 +16,7 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'gtsC2_debug'
+WANDB_PROJECT_NAME = 'maze_LLdebug2'
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -98,8 +98,8 @@ class RLTrainer:
             'n_steps_per_epoch': 20000,       # number of env steps per epoch
             'log_output_per_epoch': 100,  # log the non-image/video outputs N times per epoch
             'log_images_per_epoch': 4,    # log images/videos N times per epoch
-            'log_image_interval': 2000,    # log images/videos every N steps
-            'log_output_interval': 200,   # log the non-image/video outputs every N steps
+            'log_image_interval': 20000,    # log images/videos every N steps
+            'log_output_interval': 2000,   # log the non-image/video outputs every N steps
             'logging_target': 'wandb',    # where to log results to
             'n_warmup_steps': 0,    # steps of warmup experience collection before training
             'use_update_after_sampling': False, # call another function
@@ -386,13 +386,14 @@ class RLTrainer:
                     # or self.log_images_now
         # return self.n_update_steps % self._hp.log_output_interval == 0
         
-        return self.global_step % self._hp.log_output_interval == 0
+        return self.global_step % self._hp.log_output_interval == 0 \
+            or self.log_images_now
 
     @property
     def log_images_now(self):
         # return self.n_update_steps % int((self._hp.n_steps_per_epoch / self._hp.n_steps_per_update)
         #                                / self._hp.log_images_per_epoch) == 0
-        return self.n_update_steps % self._hp.log_image_interval == 0 \
+        return self.global_step % self._hp.log_image_interval == 0 \
 
     @property
     def is_chef(self):
