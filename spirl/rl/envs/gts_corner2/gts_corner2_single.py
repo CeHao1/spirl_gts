@@ -8,13 +8,18 @@ from spirl.rl.components.environment import GymEnv
 from spirl.utils.general_utils import ParamDict, AttrDict
 
 from spirl.utils.gts_utils import make_env, initialize_gts
-from spirl.utils.gts_utils import single_reward_function, corner2_done_function
+from spirl.utils.gts_utils import  corner2_done_function, corner2_spare_reward_function
 
 from spirl.utils.gts_utils import CAR_CODE, COURSE_CODE, TIRE_TYPE, BOP, DEFAULT_FEATURE_KEYS
 from spirl.utils.gts_utils import start_condition_formulator
 
 
 class GTSEnv_Corner2_Single(GymEnv):
+
+    VIS_RANGE = [-10, 10]
+    START_POS = [[0, 0], [0, 0]]
+    TARGET_POS = [[0, 0], [0, 0]]
+
     def __init__(self, config):
         self._hp = self._default_hparams()
         self._hp.overwrite(self._game_hp())
@@ -26,7 +31,7 @@ class GTSEnv_Corner2_Single(GymEnv):
 
     def _default_hparams(self):
         default_dict = ParamDict({
-            'ip_address' : '192.168.1.100',
+            'ip_address' : '192.168.1.5',
             'car_name' : 'Audi TTCup',
             'course_name' : 'Tokyo Central Outer' ,
             'num_cars' : 1,
@@ -37,7 +42,7 @@ class GTSEnv_Corner2_Single(GymEnv):
     def _game_hp(self):
         game_hp = ParamDict({
             'do_init' : True,
-            'reward_function' : single_reward_function,
+            'reward_function' : corner2_spare_reward_function,
             'done_function' : corner2_done_function,
             'standardize_observations' : True,
             'store_states' : False,
@@ -70,7 +75,7 @@ class GTSEnv_Corner2_Single(GymEnv):
             store_states = self._hp.store_states,
             standardize_observations=self._hp.standardize_observations,
             
-            disable_env_checker =  self._hp.disable_env_checker,
+            # disable_env_checker =  self._hp.disable_env_checker,
         )
 
         self.course_length = self._get_course_length()

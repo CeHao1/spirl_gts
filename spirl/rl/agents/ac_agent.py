@@ -183,10 +183,6 @@ class SACAgent(ACAgent):
 
             self._update_steps += 1
 
-        if self._hp.visualize_values:
-            with torch.no_grad():
-                self.visualize_Q(experience_batch, policy_output_next)
-
         return info
 
     def add_experience(self, experience_batch):

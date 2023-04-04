@@ -29,7 +29,7 @@ class LLInheritAgent(ActionPriorSACAgent):
         self.hl_critic_targets = hl_agent.critic_targets
         self.hl_critic_opts = hl_agent.critic_opts
 
-    def update(self, experience_batch=None, vis=False):
+    def update(self, experience_batch=None):
 
         # logging
         info = AttrDict(    # losses
@@ -201,15 +201,6 @@ class LLInheritAgent(ActionPriorSACAgent):
         return self._hp.policy_params.policy_model_params.action_dim
 
 
-    # ========= vis low-level q ==========
-    def _vis_ll_q(self, logger, step):
-        # if not self._update_ll_policy_flag:
-        #     return None
-        super()._vis_q(logger, step, prefix='ll',
-                       content=['q', 'KLD', 
-                        'action', 'action_nosquash', 'action_recent', 'action_nosquash_recent'])
-
-
 class MazeLLInheritAgent(LLInheritAgent):
     def _split_obs(self, obs):
         assert obs.shape[1] == self.state_dim + self.image_dim + self.latent_dim + self.onehot_dim
@@ -229,6 +220,14 @@ class MazeLLInheritAgent(LLInheritAgent):
     def visualize(self, logger, rollout_storage, step):
         self._vis_ll_q(logger, step)
 
+    # ========= vis low-level q ==========
+    def _vis_ll_q(self, logger, step):
+        if not self._update_ll_policy_flag:
+            return None
+        super()._vis_q(logger, step, prefix='ll',
+                       content=['q', 'KLD', 
+                        'action', 'action_nosquash', 'action_recent', 'action_nosquash_recent'])
+
     @property
     def prior_input_res(self):
         return self._hp.policy_params.policy_model_params.prior_input_res
@@ -236,3 +235,5 @@ class MazeLLInheritAgent(LLInheritAgent):
     @property
     def image_dim(self):
         return self.prior_input_res**2 * 3  * self._hp.policy_params.policy_model_params.n_input_frames
+
+    

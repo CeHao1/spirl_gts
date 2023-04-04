@@ -6,16 +6,26 @@ import pandas as pd
 from spirl.utils.general_utils import ParamDict, AttrDict
 
 #  =========================== env setup utils ================================
-CAR_CODE = {'Mazda Roadster':   2148, 
-            'Mazda Demio':      3383, 
-            'Audi TTCup':       3298
+CAR_CODE = {'Mazda Roadster':   2148,
+            'Mazda Demio':      3383,
+            'Audi TTCup':       3298,
+            'MINI Cooper 05':   1370,
+            'MINI Cooper 65':   3356,
+            'Volkswagen Golf':  3403,
             }
 
-COURSE_CODE = { 'Tokyo Central Outer':      351, 
-                'Tokyo East Outer':         361, 
-                'Tokyo Central Inner':      450, 
+COURSE_CODE = { 'Tokyo Central Outer':      351,
+                'Tokyo East Outer':         361,
+                'Tokyo Central Inner':      450,
+                'Tokyo East Inner':         451,
                 'Brandas Hatch':            119,
-                'protect':                  452
+                'Brandas Hatch Indy':       346,
+                'Driving Park':             440, # best: replay_886523441.csv 50.6
+                'Autopolis Short':          898, # best: replay_1095024587.csv 95.4
+                'Red Bull Short':           846, # best: replay_1480659956.csv 67.533
+                'Lago Maggiore GP':         365,
+                
+                
             }
 
 BOP     =   {
@@ -613,6 +623,9 @@ def eval_time_trial_reward_function(state, previous_state, course_length, **kwar
 def corner2_done_function(state):
     # course > 2400 or time > 60 seconds
     return state['course_v'] >= 2400 or state['frame_count'] > 30 * 60
+
+def corner2_spare_reward_function(state, previous_state, course_length):
+    return 1 if state['course_v'] >= 2400 else 0
 
 def single_reward_function(state, previous_state, course_length, **kwargs):
     # print('state,', state.keys())

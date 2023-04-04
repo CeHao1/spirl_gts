@@ -135,14 +135,13 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
         # 2) for and update HL, LL
         # for idx in tqdm(range(self._hp.update_iterations)):
         for idx in range(self._hp.update_iterations):
-            vis = True if idx == self._hp.update_iterations -1 else False
             
             if self._hp.update_hl:
                 hl_update_outputs = self.hl_agent.update()
                 update_outputs.update(hl_update_outputs)
 
             if self._hp.update_ll:
-                ll_update_outputs = self.ll_agent.update(vis=vis)
+                ll_update_outputs = self.ll_agent.update()
                 update_outputs.update(ll_update_outputs)
 
         return update_outputs

@@ -91,6 +91,8 @@ class BaseAgent(nn.Module):
                             for rollout in rollout_storage.get()[-logger.n_logged_samples:]]
                 logger.log_videos(vids, name="rollouts", step=step)
             '''
+
+            print('## log_images is True ##')
             self.visualize(logger, rollout_storage, step)
 
     def visualize(self, logger, rollout_storage, step):

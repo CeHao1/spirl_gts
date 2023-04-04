@@ -6,7 +6,8 @@ __pycache__
 *.json
 *.ipynb
 
-data/
-experiments/
-save_rollout/
-rollout/
+data/*
+experiments/*
+save_rollout/*
+rollout/*
+sample/*

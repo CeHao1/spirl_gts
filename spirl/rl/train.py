@@ -1,3 +1,4 @@
+import matplotlib; matplotlib.use('Agg')
 import torch
 import os
 import imp
@@ -15,7 +16,7 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'maze-LLdebug'
+WANDB_PROJECT_NAME = 'gtsC2_debug'
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -68,7 +69,7 @@ class RLTrainer:
             self.sampler = self._hp.sampler(self.conf.sampler, self.env, self.agent, self.logger, self._hp.max_rollout_len)
 
         # load from checkpoint
-        self.global_step, self.n_update_steps, start_epoch = -1, -1, 0
+        self.global_step, self.n_update_steps, start_epoch = 0, 0, 0
         if args.resume or self.conf.ckpt_path is not None:
             start_epoch = self.resume(args.resume, self.conf.ckpt_path)
             self._hp.n_warmup_steps = 0     # no warmup if we reload from checkpoint!
@@ -259,6 +260,7 @@ class RLTrainer:
         if self.is_chef:
             self.agent.add_experience(warmup_experience_batch)
             print("...Warmup done!")
+            self.agent.visualize(logger=self.logger, rollout_storage=None, step=self.global_step)
 
     def get_config(self):
         conf = AttrDict()
@@ -382,7 +384,9 @@ class RLTrainer:
         # return self.n_update_steps % int((self._hp.n_steps_per_epoch / self._hp.n_steps_per_update)
                                     #    / self._hp.log_output_per_epoch) == 0 \
                     # or self.log_images_now
-        return self.n_update_steps % self._hp.log_output_interval == 0
+        # return self.n_update_steps % self._hp.log_output_interval == 0
+        
+        return self.global_step % self._hp.log_output_interval == 0
 
     @property
     def log_images_now(self):
