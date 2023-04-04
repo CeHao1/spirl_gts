@@ -76,7 +76,8 @@ for json args
     "--prefix" , "demo_test"
 ]
 
-
+python spirl/gts_demo_sampler/sample_demo.py \
+--path spirl/configs/data_collect/gts/time_trial/c2 --prefix c2
 '''
 
 if __name__ == '__main__':
