@@ -14,6 +14,7 @@ class skill_critic_stages(Enum):
 
     LL_TRAIN_PI = 4
     SC_WO_LLVAR = 5
+    FIX_LL_PI = 6
 
 class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
     def __init__(self, config):
@@ -72,12 +73,12 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             self.hl_agent.fast_assign_flags([True, True])
             self.ll_agent.fast_assign_flags([True, True])
 
-        elif stage == skill_critic_stages.LL_TRAIN_PI:
+        elif stage == skill_critic_stages.FIX_LL_PI:
         # 5) only train LL policy, without LL variance
             self.hl_agent.switch_off_deterministic_action_mode()
-            self.ll_agent.switch_on_deterministic_action_mode()
-            self.hl_agent.fast_assign_flags([False, True])
-            self.ll_agent.fast_assign_flags([True, True])
+            self.ll_agent.switch_off_deterministic_action_mode()
+            self.hl_agent.fast_assign_flags([True, True])
+            self.ll_agent.fast_assign_flags([False, True])
             
         elif stage == skill_critic_stages.SC_WO_LLVAR:
         # 6) only train LL policy, without LL variance

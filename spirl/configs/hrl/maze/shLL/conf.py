@@ -36,9 +36,15 @@ configuration = {
 configuration = AttrDict(configuration)
 
 # Replay Buffer
-replay_params = AttrDict(
+hl_replay_params = AttrDict(
     # capacity = 1e5,
     capacity = 5e4,
+    dump_replay=False,
+)
+
+ll_replay_params = AttrDict(
+    capacity = 2e5,
+    # capacity = 5e4,
     dump_replay=False,
 )
 
@@ -54,7 +60,7 @@ base_agent_params = AttrDict(
     batch_size=256,
     # batch_size=1024,
     replay=UniformReplayBuffer,
-    replay_params=replay_params,
+    # replay_params=replay_params,
     clip_q_target=False,
 )
 
@@ -103,6 +109,7 @@ ll_agent_config.update(AttrDict(
     critic=SplitObsMLPCritic,
     # obs(s + z + t) + a = 4 + 10 + 10 + 2
     critic_params=ll_critic_params,
+    replay_params=ll_replay_params,
 
     td_schedule_params=AttrDict(p=1.),
     # fixed_alpha = 0.001,
@@ -141,6 +148,8 @@ hl_agent_config.update(AttrDict(
     policy_params=hl_policy_params,
     critic=SplitObsMLPCritic,
     critic_params=hl_critic_params,
+    replay_params=hl_replay_params,
+    
     td_schedule_params=AttrDict(p=1.),
 ))
 
@@ -156,7 +165,7 @@ agent_config = AttrDict(
     update_ll=True,
     
     # update_iterations = 256,
-    initial_train_stage = skill_critic_stages.HYBRID
+    initial_train_stage = skill_critic_stages.FIX_LL_PI
 )
 
 # Dataset - Random data
@@ -165,7 +174,6 @@ data_config.dataset_spec = data_spec
 
 # Environment
 env_config = AttrDict(
-    # reward_norm=0.05,
     screen_height=ll_model_params.prior_input_res,
     screen_width=ll_model_params.prior_input_res,
 )
