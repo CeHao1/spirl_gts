@@ -47,14 +47,13 @@ python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze_bar/hierar
 
 # test new maze1 env
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh_m1  --gpu=0 \
---seed=0 --prefix=mo_s0_01ag
+--seed=0 --prefix=mo_md_s0_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_bar/sh_m1  --gpu=0 \
---seed=0 --prefix=mb_s0_01ag
+--seed=0 --prefix=mb_md_s0_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_h/sh_m1  --gpu=0 \
---seed=0 --prefix=mh_s0_01ag
-
+--seed=0 --prefix=mh_md_s0_01
 
 # train LL as well
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL  --gpu=0 \
