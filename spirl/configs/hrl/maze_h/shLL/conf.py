@@ -85,7 +85,7 @@ ll_policy_params = AttrDict(
     # initial_log_sigma=-50.,
 
     # max_divergence_range= 1000,
-    manual_log_sigma=[-1.5, -1.5],
+    manual_log_sigma=[-3, -3],
 )
 ll_policy_params.update(ll_model_params)
 
@@ -112,9 +112,9 @@ ll_agent_config.update(AttrDict(
     critic_params=ll_critic_params,
     replay_params=ll_replay_params,
 
-    td_schedule_params=AttrDict(p=1.),
+    # td_schedule_params=AttrDict(p=1.),
     # fixed_alpha = 1,
-    # fixed_alpha = 1.0,
+    fixed_alpha = 1.0,
 
 ))
 
