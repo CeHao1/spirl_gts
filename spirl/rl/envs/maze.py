@@ -78,7 +78,8 @@ class ACmMaze1(MazeEnv):
     # v6
     # TARGET_POS = np.array([13, 9])
     # TARGET_POS = np.array([9, 13]) # good and selected
-    TARGET_POS = np.array([9, 10]) # middle
+    # TARGET_POS = np.array([9, 10]) # middle
+    TARGET_POS = np.array([1, 17]) # top left
     
     START_POS = np.array([1,1]) # bottom left
     # START_POS = np.array([9,10]) # middle
