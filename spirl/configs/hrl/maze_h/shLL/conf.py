@@ -85,7 +85,7 @@ ll_policy_params = AttrDict(
     # initial_log_sigma=-50.,
 
     # max_divergence_range= 1000,
-    manual_log_sigma=[-3, -3],
+    manual_log_sigma=[-1.5, -1.5],
 )
 ll_policy_params.update(ll_model_params)
 
