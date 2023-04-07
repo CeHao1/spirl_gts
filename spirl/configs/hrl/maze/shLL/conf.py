@@ -37,15 +37,15 @@ configuration = AttrDict(configuration)
 
 # Replay Buffer
 hl_replay_params = AttrDict(
-    # capacity = 1e5,
-    capacity = 5e4,
-    dump_replay=False,
+    capacity = 1e5,
+    # capacity = 5e4,
+    # dump_replay=False,
 )
 
 ll_replay_params = AttrDict(
-    capacity = 2e5,
+    capacity = 5e5,
     # capacity = 5e4,
-    dump_replay=False,
+    # dump_replay=False,
 )
 
 # Observation Normalization
@@ -166,7 +166,8 @@ agent_config = AttrDict(
     update_ll=True,
     
     # update_iterations = 256,
-    initial_train_stage = skill_critic_stages.HYBRID
+    # initial_train_stage = skill_critic_stages.HYBRID
+    initial_train_stage = skill_critic_stages.HL_TRAIN
 )
 
 # Dataset - Random data

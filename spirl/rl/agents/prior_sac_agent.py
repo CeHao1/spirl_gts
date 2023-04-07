@@ -86,7 +86,7 @@ class ActionPriorSACAgent(SACAgent):
         obs = experience_batch.observation[:size]
         rew = experience_batch.reward[:size]
 
-        batch_size = 1024
+        batch_size = 4096
         batch_num = int(np.ceil(size / batch_size))
         q_est_sum = []
         KLD_sum = []
@@ -150,6 +150,21 @@ class ActionPriorSACAgent(SACAgent):
 
 def plot_action_dist(action, logger, step, size, fig_name='vis action', bw=0.5, xlim=None):
     fs = 16
+    
+    
+    if len(action[0]) == 2: # plot 2 d distribution
+        fig = plt.figure(figsize=(10, 8))
+        sns.histplot(x=action[-size:, 0], y=action[-size:, 1], bins=100, cmap='Reds', cbar=True)
+        plt.xlabel('dim_0', fontsize=fs)
+        plt.ylabel('dim_1', fontsize=fs)
+        plt.title('2D dist of latent variables, size ' + str(size), fontsize=fs)
+        logger.log_plot(fig, name= fig_name + '_2D', step=step)
+        plt.close(fig)
+
+    
+    if len(action[0]) == 2:
+        bw = 2
+        
     fig = plt.figure(figsize=(10, 5))
     fig.tight_layout()
     for idx in range(len(action[0])):

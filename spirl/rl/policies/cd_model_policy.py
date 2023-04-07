@@ -64,7 +64,7 @@ class CDModelPolicy(Policy):
 
         return self._get_constrainted_distribution(act)
 
-    def _get_constrainted_distribution(self, act):
+    def _get_constrainted_distribution(self, act, deterministic=False):
         act_mean = act[..., : self.net.action_size]
         act_log_std = act[..., self.net.action_size :]
         log_sigma =  act_log_std + self._log_sigma[None].repeat(act.shape[0], 1)
@@ -72,6 +72,9 @@ class CDModelPolicy(Policy):
         if 'min_log_sigma' in self._hp:
             min_log_sigma = self._min_log_sigma[None].repeat(act.shape[0], 1)
             log_sigma = torch.clamp(log_sigma, min=min_log_sigma)
+
+        if deterministic:
+            log_sigma = torch.ones_like(log_sigma) * -50
 
         return MultivariateGaussian(mu=act_mean, log_sigma=log_sigma)
 
@@ -148,7 +151,7 @@ class DecoderRegu_TimeIndexedCDMdlPolicy(TimeIndexedCDMdlPolicy):
         
         with no_batchnorm_update(self.decoder_net): 
             act = self.decoder_net.decoder(concatenate_obs).detach()
-            decoder_dist = self._get_constrainted_distribution(act)
+            decoder_dist = self._get_constrainted_distribution(act, deterministic=True)
             return self._mc_divergence(policy_output, decoder_dist), decoder_dist
 
     def _mc_divergence(self, policy_output, decoder_dist):
