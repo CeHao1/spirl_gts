@@ -151,7 +151,7 @@ class DecoderRegu_TimeIndexedCDMdlPolicy(TimeIndexedCDMdlPolicy):
         
         with no_batchnorm_update(self.decoder_net): 
             act = self.decoder_net.decoder(concatenate_obs).detach()
-            decoder_dist = self._get_constrainted_distribution(act, deterministic=True)
+            decoder_dist = self._get_constrainted_distribution(act, deterministic=False)
             return self._mc_divergence(policy_output, decoder_dist), decoder_dist
 
     def _mc_divergence(self, policy_output, decoder_dist):
