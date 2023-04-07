@@ -85,7 +85,7 @@ ll_policy_params = AttrDict(
     # initial_log_sigma=-50.,
 
     # max_divergence_range= 1000,
-    manual_log_sigma=[-4.5, -4.5],
+    manual_log_sigma=[-3, -3],
 )
 ll_policy_params.update(ll_model_params)
 
@@ -166,8 +166,8 @@ agent_config = AttrDict(
     update_ll=True,
     
     # update_iterations = 256,
-    # initial_train_stage = skill_critic_stages.HYBRID
-    initial_train_stage = skill_critic_stages.HL_TRAIN
+    initial_train_stage = skill_critic_stages.HYBRID
+    # initial_train_stage = skill_critic_stages.HL_TRAIN
 )
 
 # Dataset - Random data

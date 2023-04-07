@@ -109,6 +109,7 @@ class BaseAgent(nn.Module):
         """Provides interface to load any internal state variables (like replay buffers) from disk."""
         pass
 
+
     def sync_networks(self):
         """Syncs network parameters across workers."""
         raise NotImplementedError
@@ -329,6 +330,10 @@ class HierarchicalAgent(BaseAgent):
     def load_state_dict(self, state_dict, *args, **kwargs):
         self.hl_agent.load_state_dict(state_dict.pop('hl_agent'), *args, **kwargs)
         self.ll_agent.load_state_dict(state_dict.pop('ll_agent'), *args, **kwargs)
+        self.set_agents()
+        
+    def set_agents(self):
+        pass
 
     def save_state(self, save_dir):
         self.hl_agent.save_state(os.path.join(save_dir, 'hl_agent'))

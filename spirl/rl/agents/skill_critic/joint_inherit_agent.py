@@ -19,7 +19,7 @@ class skill_critic_stages(Enum):
 class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
     def __init__(self, config):
         super().__init__(config)
-        self.ll_agent.update_by_hl_agent(self.hl_agent)
+        self.set_agents()
         self._train_stage = None
 
         # update the trianing stage
@@ -27,6 +27,9 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             self._train_stage = self._hp.initial_train_stage
 
         self.train_stages_control(self._train_stage)
+
+    def set_agents(self):
+        self.ll_agent.update_by_hl_agent(self.hl_agent)
 
     def _default_hparams(self):
         default_dict = ParamDict({
@@ -53,7 +56,7 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             self.hl_agent.switch_off_deterministic_action_mode()
             self.ll_agent.switch_on_deterministic_action_mode()
             self.hl_agent.fast_assign_flags([True, True])
-            self.ll_agent.fast_assign_flags([False, True])
+            self.ll_agent.fast_assign_flags([False, False])
 
         elif stage == skill_critic_stages.LL_TRAIN:
         # 3) LL training stage:
