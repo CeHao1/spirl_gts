@@ -67,9 +67,9 @@ class LLInheritAgent(ActionPriorSACAgent):
         # policy
         if self._update_ll_policy_flag:
             self._perform_update(policy_loss, self.policy_opt, self.policy)
-            # info.update(AttrDict(
-            #     ll_policy_loss=policy_loss,
-            # ))
+            info.update(AttrDict(
+                ll_policy_loss=policy_loss,
+            ))
 
         # ll
         if self._update_ll_q_flag:
@@ -82,8 +82,8 @@ class LLInheritAgent(ActionPriorSACAgent):
                 ll_q_hl_next=q_hl_next.mean(), 
                 ll_q_ll_next=q_ll_next.mean(), 
                 u_next=u_next.mean(),
-                # qa_critic_loss_1=ll_critic_loss[0],
-                # qa_critic_loss_2=ll_critic_loss[1],
+                qa_critic_loss_1=ll_critic_loss[0],
+                qa_critic_loss_2=ll_critic_loss[1],
             ))
 
         # (5) soft update targets
@@ -114,7 +114,7 @@ class LLInheritAgent(ActionPriorSACAgent):
         return info
 
     # ================================ ll critic ================================
-    def _compute_ll_q_target(self, experience_batch, vis=False):
+    def _compute_ll_q_target(self, experience_batch):
         # Qa(s,z,k,a) = r + gamma * U_next
         # U_next = [1-beta] * q_ll_next + [beta] * q_hl_next
 
@@ -133,6 +133,10 @@ class LLInheritAgent(ActionPriorSACAgent):
 
             # (3) ll_q_target
             ll_q_target = experience_batch.reward * self._hp.reward_scale + (1 - experience_batch.done) * self._hp.discount_factor * u_next
+            
+            if self._hp.clip_q_target:
+                ll_q_target = self._clip_q_target(ll_q_target)
+                
             ll_q_target = ll_q_target.detach()
             check_shape(ll_q_target, [self._hp.batch_size])
 
@@ -222,8 +226,8 @@ class MazeLLInheritAgent(LLInheritAgent):
 
     # ========= vis low-level q ==========
     def _vis_ll_q(self, logger, step):
-        if not self._update_ll_policy_flag:
-            return None
+        # if not self._update_ll_policy_flag:
+        #     return None
         super()._vis_q(logger, step, prefix='ll',
                        content=['q', 'KLD', 
                         'action', 'action_nosquash', 'action_recent', 'action_nosquash_recent'])
