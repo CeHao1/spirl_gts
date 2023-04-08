@@ -65,10 +65,10 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_h/shLL  --gpu=0 \
 # in maze1
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
---seed=0 --prefix=mo_test_hybrid01
+--seed=0 --prefix=mo_topmid_HL_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
---seed=0 --prefix=mo_test_hybrid01 \
+--seed=0 --prefix=mo_alp-6_hybrid01 \
 --resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0
 
 
