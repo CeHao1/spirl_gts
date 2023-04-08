@@ -38,13 +38,13 @@ configuration = AttrDict(configuration)
 # Replay Buffer
 hl_replay_params = AttrDict(
     capacity = 1e5,
-    # capacity = 5e4,
+    # capacity = 8e4,
     dump_replay=False,
 )
 
 ll_replay_params = AttrDict(
     capacity = 5e5,
-    # capacity = 5e4,
+    # capacity = 4e5,
     dump_replay=False,
 )
 
