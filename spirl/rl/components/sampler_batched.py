@@ -41,8 +41,10 @@ class SamplerBatched:
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
+                    # reset again for gts
+                    self._episode_reset(global_step)
+
                     while step < batch_size or (self._episode_step != 0): # must complete one episode
-                    # while step < batch_size:
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
                         if agent_output.action is None:
@@ -98,10 +100,6 @@ class SamplerBatched:
 
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
-
-                        # if agent_output.action is None:
-                        #     break
-
                         agent_output = self._postprocess_agent_output(agent_output, deterministic_action=deterministic_action)
                         if render:
                             render_obs = self._env.render()
@@ -198,6 +196,9 @@ class HierarchicalSamplerBached(SamplerBatched):
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
+                    # reset again for gts
+                    self._episode_reset(global_step)
+                    
                     while env_steps < batch_size or (self._episode_step != 0): #must complete one sampling
                     # while env_steps < batch_size:
                         # perform one rollout step
@@ -274,3 +275,30 @@ class HierarchicalSamplerBached(SamplerBatched):
         super()._episode_reset(global_step)
         self.last_hl_obs, self.last_hl_action = None, None
         self.reward_since_last_hl = 0
+
+
+
+class AgentDetached_HierarchicalSamplerBached(HierarchicalSamplerBached):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._last_hl_output = None
+
+    def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True, Q=None):
+        experience_batch, env_steps = super().sample_batch(batch_size, is_train, global_step, store_ll)
+        Q.put([experience_batch, env_steps])
+
+    def sample_episode(self, is_train, render=False, deterministic_action=False, Q=None):
+        episode = super().sample_episode(is_train, render, deterministic_action)
+        Q.put(episode)
+
+    def sample_action(self, obs):
+        """Samples an action from the agent."""
+        agent_output = self._agent.get_action(obs, self._last_hl_output)
+        if agent_output.is_hl_step:
+            self._last_hl_output = AttrDict(
+                action=agent_output.hl_action,
+                dist=agent_output.hl_dist,
+                log_prob=agent_output.hl_log_prob,
+            )
+
+        return agent_output
