@@ -6,6 +6,8 @@ from spirl.train import set_seeds, make_path, datetime_str, save_config, get_exp
 from spirl.components.checkpointer import CheckpointHandler, save_cmd, save_git, get_config_path
 from spirl.gts_demo_sampler.param import get_args
 
+from tqdm import tqdm
+
 class SampleDemo:
     def __init__(self, args):
         self.args = args
@@ -14,13 +16,17 @@ class SampleDemo:
         self.conf = self.get_config()
         self._hp = self._default_hparams()
         self._hp.overwrite(self.conf.general)
+        
+        if args.ip_address: # overwrite ip address
+            self.conf.init.ip_address = args.ip_address
+            self.conf.sample.ip_address = args.ip_address
 
         self.init = self._hp.init(self.conf.init)
         self.start = self._hp.start(self.conf.start)
         self.done = self._hp.done(self.conf.done)
         self.sample = self._hp.sample(self.conf.sample)
         self.file = self._hp.file(self.conf.file)
-
+        self.file.add_prefix(args.prefix)
 
     def _default_hparams(self):
         default_dict = ParamDict({
@@ -33,7 +39,9 @@ class SampleDemo:
     def sample_rollout(self):
         if self._hp.do_init:
             self.init.init_gts()
-        for epoch_index in range(self._hp.start_num_epoch, self._hp.start_num_epoch + self._hp.num_epochs):
+        
+        iterations = tqdm(range(self._hp.start_num_epoch, self._hp.start_num_epoch + self._hp.num_epochs))
+        for epoch_index in iterations:
             print("index {}/{}".format(epoch_index, self._hp.num_epochs))
             self.sample_raw_data(epoch_index)
         
@@ -77,12 +85,14 @@ for json args
 ]
 
 python spirl/gts_demo_sampler/sample_demo.py \
---path spirl/configs/data_collect/gts/time_trial/c2 --prefix c2
+    --path spirl/configs/data_collect/gts/time_trial/c2 \
+    --ip_address '192.168.1.118' \
+    --prefix 'batch_0'
 '''
 
 if __name__ == '__main__':
     sampler = SampleDemo(args=get_args())
-    # sampler.sample_rollout()
+    sampler.sample_rollout()
     sampler.convert_rollout()
 
     # sampler.init.init_gts()
