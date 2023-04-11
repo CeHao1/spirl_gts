@@ -24,7 +24,7 @@ register(
 
 register(
     id='maze2d-mMaze1-v0',
-    entry_point='d4rl.pointmaze:MazeEnv',
+    entry_point='spirl.envs.d4rl_pointmaze:MazeEnv',
     max_episode_steps=800,
     kwargs={
         'maze_spec': maze_name_space['m_maze1'],
@@ -40,7 +40,7 @@ register(
 
 register(
     id='maze2d-mMaze2-v0',
-    entry_point='d4rl.pointmaze:MazeEnv',
+    entry_point='spirl.envs.d4rl_pointmaze:MazeEnv',
     max_episode_steps=800,
     kwargs={
         'maze_spec': maze_name_space['m_maze2'],

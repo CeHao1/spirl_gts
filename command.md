@@ -78,4 +78,4 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL  --gpu=0 \
 
 # in maze2
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh_m2  --gpu=0 \
---seed=0 --prefix=m2_ol_s0
+--seed=0 --prefix=ol_s0
