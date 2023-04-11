@@ -62,3 +62,14 @@ class ACmMaze1(MazeEnv):
         })
         return super()._default_hparams().overwrite(default_dict)
 
+class ACmMaze2(MazeEnv):  
+    # v7
+    TARGET_POS = np.array([16, 15]) # 
+    START_POS = np.array([2, 2]) #
+    VIS_RANGE = [[-1, 21], [-1, 21]]
+    
+    def _default_hparams(self):
+        default_dict = ParamDict({
+            'name': "maze2d-mMaze2-v0",
+        })
+        return super()._default_hparams().overwrite(default_dict)

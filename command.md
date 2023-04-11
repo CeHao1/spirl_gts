@@ -75,3 +75,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
 # in maze0
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL  --gpu=0 \
 --seed=0 --prefix=m0lv2_HLsLLQ_s0_02
+
+# in maze2
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh_m2  --gpu=0 \
+--seed=0 --prefix=m2_ol_s0
