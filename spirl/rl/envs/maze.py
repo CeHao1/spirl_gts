@@ -64,9 +64,9 @@ class ACmMaze1(MazeEnv):
 
 class ACmMaze2(MazeEnv):  
     # v7
-    TARGET_POS = np.array([16, 15]) # 
+    TARGET_POS = np.array([3, 10]) # 
     START_POS = np.array([2, 2]) #
-    VIS_RANGE = [[-1, 21], [-1, 21]]
+    VIS_RANGE = [[-1, 15], [-1, 18]]
     
     def _default_hparams(self):
         default_dict = ParamDict({
