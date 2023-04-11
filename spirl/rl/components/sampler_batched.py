@@ -277,6 +277,19 @@ class HierarchicalSamplerBached(SamplerBatched):
         self.reward_since_last_hl = 0
 
 
+class AgentDetached_SamplerBached(SamplerBatched):
+    def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True, Q=None):
+        experience_batch, env_steps = super().sample_batch(batch_size, is_train, global_step, store_ll)
+        Q.put([experience_batch, env_steps])
+
+    def sample_episode(self, is_train, render=False, deterministic_action=False, Q=None):
+        episode = super().sample_episode(is_train, render, deterministic_action)
+        Q.put(episode)
+
+    def sample_action(self, obs):
+        """Samples an action from the agent."""
+        agent_output = self._agent.act(obs)
+        return agent_output
 
 class AgentDetached_HierarchicalSamplerBached(HierarchicalSamplerBached):
     def __init__(self, *args, **kwargs):
@@ -293,12 +306,11 @@ class AgentDetached_HierarchicalSamplerBached(HierarchicalSamplerBached):
 
     def sample_action(self, obs):
         """Samples an action from the agent."""
-        agent_output = self._agent.get_action(obs, self._last_hl_output)
+        agent_output = self._agent.act(obs, self._last_hl_output)
         if agent_output.is_hl_step:
             self._last_hl_output = AttrDict(
                 action=agent_output.hl_action,
                 dist=agent_output.hl_dist,
                 log_prob=agent_output.hl_log_prob,
             )
-
         return agent_output

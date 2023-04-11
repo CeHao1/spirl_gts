@@ -4,7 +4,7 @@ from spirl.rl.components.sampler_batched import AgentDetached_HierarchicalSample
 from spirl.utils.general_utils import listdict2dictlist, AttrDict, ParamDict, obj2np
 import torch.multiprocessing as mp
 
-class HierarhicalSamplerWrapped:
+class SamplerWrapped:
     def __init__(self, config, env, agent, logger, max_episode_len):
         self._hp = self._default_hparams().overwrite(config)
         self._sub_samplers = [(self, config, env_i, agent, logger, max_episode_len) for env_i in env]
@@ -32,7 +32,7 @@ class HierarhicalSamplerWrapped:
         while not Q.empty():
             results.append(Q.get())
 
-        return listdict2dictlist(results)
+        return self._process_sample_batch_return(results)
 
     def sample_episode(self, is_train, render=False, deterministic_action=False, return_list=False):
         # multi processing
@@ -52,6 +52,20 @@ class HierarhicalSamplerWrapped:
         while not Q.empty():
             results.append(Q.get())
 
+        return self._process_sample_episode_return(results)
+
+    def _process_sample_batch_return(results):
+        experience_batch_list = []
+        env_steps_sum = 0
+        for result in results:
+            experience_batch, env_steps = result
+            experience_batch_list.append(experience_batch)
+            env_steps_sum += env_steps
+
+        return listdict2dictlist(experience_batch_list), env_steps_sum
+
+    def _process_sample_episode_return(results):
         return listdict2dictlist(results)
 
-
+class HierarchicalSamplerWrapped(SamplerWrapped):
+    pass
