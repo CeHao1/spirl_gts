@@ -47,11 +47,35 @@ python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze_bar/hierar
 
 # test new maze1 env
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh_m1  --gpu=0 \
---seed=1 --prefix=mo_mv6_s1_01
+--seed=0 --prefix=mo_md_s0_01
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_bar/sh_m1  --gpu=0 \
+--seed=0 --prefix=mb_md_s0_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_h/sh_m1  --gpu=0 \
---seed=0 --prefix=mh_mv6_s0_01
+--seed=0 --prefix=mh_md_s0_01
 
 # train LL as well
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL  --gpu=0 \
---seed=0 --prefix=nollpi_s0
+--seed=2 --prefix=log-3_s2_02
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_h/shLL  --gpu=0 \
+--seed=0 --prefix=mh_s0_01
+
+# in maze1
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
+--seed=0 --prefix=mo_topmid_HLsLLQ
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
+--seed=4 --prefix=mo_topmid_LLP_s4 \
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0
+
+
+# in maze0
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL  --gpu=0 \
+--seed=0 --prefix=m0lv2_HLsLLQ_s0_02
+
+# in maze2
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh_m2  --gpu=0 \
+--seed=0 --prefix=ol_s0

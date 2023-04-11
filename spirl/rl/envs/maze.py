@@ -1,6 +1,6 @@
 import numpy as np
-import d4rl
 
+import spirl.envs.d4rl_pointmaze 
 from spirl.rl.components.environment import GymEnv
 from spirl.utils.general_utils import ParamDict, AttrDict
 
@@ -32,8 +32,8 @@ class MazeEnv(GymEnv):
 class ACRandMaze0S40Env(MazeEnv):
     START_POS = np.array([10., 24.])
     # TARGET_POS = np.array([18., 8.])
-    TARGET_POS = np.array([6., 16.]) # level-1 easiest one
-    # TARGET_POS = np.array([20., 16.]) # level-2
+    # TARGET_POS = np.array([6., 16.]) # level-1 easiest one
+    TARGET_POS = np.array([20., 16.]) # level-2
 
     VIS_RANGE = [[-3, 43], [-3, 43]]
 
@@ -44,43 +44,15 @@ class ACRandMaze0S40Env(MazeEnv):
         return super()._default_hparams().overwrite(default_dict)
 
 
-class ACmMaze1(MazeEnv):
-    # v1
-    # TARGET_POS = np.array([6, 12])
-    # START_POS = np.array([1, 2])
-    # VIS_RANGE = [[-1, 12], [-1, 17]]
-    
-    # v2
-    # TARGET_POS = np.array([6, 11])
-    # START_POS = np.array([1, 2])
-    # VIS_RANGE = [[-1, 15], [-1, 17]]
-    
-    # v3
-    # TARGET_POS = np.array([18, 18])
-    # START_POS = np.array([2, 2])
-    # VIS_RANGE = [[-1, 22], [-1, 22]]
-    
-    # v4
-    # TARGET_POS = np.array([19, 16])
-    # START_POS = np.array([2, 2])
-    # VIS_RANGE = [[-1, 22], [-1, 22]]
-    
-    # v5
-    # TARGET_POS = np.array([19, 19])
-    # START_POS = np.array([2, 2])
-    # VIS_RANGE = [[-1, 22], [-1, 22]]
-    
+class ACmMaze1(MazeEnv):  
     # v7
-    # TARGET_POS = np.array([14, 11])
-    # START_POS = np.array([2, 2])
-    # VIS_RANGE = [[-1, 22], [-1, 22]]
+    # TARGET_POS = np.array([13, 9]) # right mid
+    TARGET_POS = np.array([9, 13]) # good and selected, top mid
+    # TARGET_POS = np.array([9, 10]) # center
+    # TARGET_POS = np.array([1, 17]) # top left
     
-    # v6
-    # TARGET_POS = np.array([13, 9])
-    TARGET_POS = np.array([9, 13])
-    
-    START_POS = np.array([1,1])
-    # START_POS = np.array([9,10])
+    START_POS = np.array([1,1]) # bottom left
+    # START_POS = np.array([9,10]) # middle
     
     VIS_RANGE = [[-1, 20], [-1, 21]]
     
@@ -90,3 +62,14 @@ class ACmMaze1(MazeEnv):
         })
         return super()._default_hparams().overwrite(default_dict)
 
+class ACmMaze2(MazeEnv):  
+    # v7
+    TARGET_POS = np.array([16, 15]) # 
+    START_POS = np.array([2, 2]) #
+    VIS_RANGE = [[-1, 21], [-1, 21]]
+    
+    def _default_hparams(self):
+        default_dict = ParamDict({
+            'name': "maze2d-mMaze2-v0",
+        })
+        return super()._default_hparams().overwrite(default_dict)

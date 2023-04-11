@@ -37,14 +37,14 @@ configuration = AttrDict(configuration)
 
 # Replay Buffer
 hl_replay_params = AttrDict(
-    capacity = 1e5,
-    # capacity = 8e4,
+    # capacity = 1e5,
+    capacity = 5e4,
     dump_replay=False,
 )
 
 ll_replay_params = AttrDict(
-    capacity = 5e5,
-    # capacity = 4e5,
+    capacity = 2e5,
+    # capacity = 5e4,
     dump_replay=False,
 )
 
@@ -81,7 +81,7 @@ ll_model_params = AttrDict(
 ll_policy_params = AttrDict(
     policy_model=ImageTimeIndexCDSPiRLMDL, 
     policy_model_params=ll_model_params,
-    policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/maze/hierarchical_cd"),
+    policy_model_checkpoint=os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/maze_h/hierarchical_cd"),
     # initial_log_sigma=-50.,
 
     # max_divergence_range= 1000,
@@ -112,9 +112,9 @@ ll_agent_config.update(AttrDict(
     critic_params=ll_critic_params,
     replay_params=ll_replay_params,
 
-    # td_schedule_params=AttrDict(p=10.),
+    # td_schedule_params=AttrDict(p=1.),
     # fixed_alpha = 1,
-    fixed_alpha = 1e-6,
+    fixed_alpha = 1.0,
 
 ))
 
@@ -166,8 +166,7 @@ agent_config = AttrDict(
     update_ll=True,
     
     # update_iterations = 256,
-    # initial_train_stage = skill_critic_stages.HYBRID
-    initial_train_stage = skill_critic_stages.HL_TRAIN
+    initial_train_stage = skill_critic_stages.HYBRID
 )
 
 # Dataset - Random data

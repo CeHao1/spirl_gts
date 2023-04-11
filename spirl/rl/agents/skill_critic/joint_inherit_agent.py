@@ -19,7 +19,7 @@ class skill_critic_stages(Enum):
 class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
     def __init__(self, config):
         super().__init__(config)
-        self.ll_agent.update_by_hl_agent(self.hl_agent)
+        self.set_agents()
         self._train_stage = None
 
         # update the trianing stage
@@ -27,6 +27,9 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             self._train_stage = self._hp.initial_train_stage
 
         self.train_stages_control(self._train_stage)
+
+    def set_agents(self):
+        self.ll_agent.update_by_hl_agent(self.hl_agent)
 
     def _default_hparams(self):
         default_dict = ParamDict({
@@ -53,7 +56,7 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             self.hl_agent.switch_off_deterministic_action_mode()
             self.ll_agent.switch_on_deterministic_action_mode()
             self.hl_agent.fast_assign_flags([True, True])
-            self.ll_agent.fast_assign_flags([False, False])
+            self.ll_agent.fast_assign_flags([False, True])
 
         elif stage == skill_critic_stages.LL_TRAIN:
         # 3) LL training stage:
@@ -61,7 +64,7 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             # update: HL Q, LL Q, LL Pi
             self.hl_agent.switch_on_deterministic_action_mode()
             self.ll_agent.switch_off_deterministic_action_mode()
-            self.hl_agent.fast_assign_flags([False, False])
+            self.hl_agent.fast_assign_flags([False, True])
             self.ll_agent.fast_assign_flags([True, True])
 
         elif stage == skill_critic_stages.HYBRID:
@@ -145,16 +148,3 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
                 update_outputs.update(ll_update_outputs)
 
         return update_outputs
-
-
-    def offline(self):
-        vis = True
-        hl_experience_batch = self.hl_agent._sample_experience()
-        ll_experience_batch = self.ll_agent._sample_experience()
-        
-        self.hl_agent.visualize_actions(hl_experience_batch)
-        self.ll_agent.visualize_actions(ll_experience_batch)
-        self.ll_agent.visualize_gradients(ll_experience_batch)
-        
-        hl_update_outputs = self.hl_agent.update()
-        ll_update_outputs = self.ll_agent.update(vis=vis)
