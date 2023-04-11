@@ -1,6 +1,6 @@
 import numpy as np
 
-
+import spirl.envs.d4rl_pointmaze 
 from spirl.rl.components.environment import GymEnv
 from spirl.utils.general_utils import ParamDict, AttrDict
 
@@ -44,38 +44,8 @@ class ACRandMaze0S40Env(MazeEnv):
         return super()._default_hparams().overwrite(default_dict)
 
 
-class ACmMaze1(MazeEnv):
-    # v1
-    # TARGET_POS = np.array([6, 12])
-    # START_POS = np.array([1, 2])
-    # VIS_RANGE = [[-1, 12], [-1, 17]]
-    
-    # v2
-    # TARGET_POS = np.array([6, 11])
-    # START_POS = np.array([1, 2])
-    # VIS_RANGE = [[-1, 15], [-1, 17]]
-    
-    # v3
-    # TARGET_POS = np.array([18, 18])
-    # START_POS = np.array([2, 2])
-    # VIS_RANGE = [[-1, 22], [-1, 22]]
-    
-    # v4
-    # TARGET_POS = np.array([19, 16])
-    # START_POS = np.array([2, 2])
-    # VIS_RANGE = [[-1, 22], [-1, 22]]
-    
-    # v5
-    # TARGET_POS = np.array([19, 19])
-    # START_POS = np.array([2, 2])
-    # VIS_RANGE = [[-1, 22], [-1, 22]]
-    
+class ACmMaze1(MazeEnv):  
     # v7
-    # TARGET_POS = np.array([14, 11])
-    # START_POS = np.array([2, 2])
-    # VIS_RANGE = [[-1, 22], [-1, 22]]
-    
-    # v6
     # TARGET_POS = np.array([13, 9]) # right mid
     TARGET_POS = np.array([9, 13]) # good and selected, top mid
     # TARGET_POS = np.array([9, 10]) # center
