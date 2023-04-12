@@ -60,5 +60,5 @@ configuration = AttrDict(
 
     do_init = do_init,
     start_num_epoch = 0,
-    num_epochs = 2500,
+    num_epochs = 5000,
 )
