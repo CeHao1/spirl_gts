@@ -73,10 +73,8 @@ class BaseAgent(nn.Module):
 
     def log_outputs(self, logging_stats, rollout_storage, logger, log_images, step):
         """Visualizes/logs all training outputs."""
-        # logging_stats['test_value'] = step
-        # print('!! logging_stats step ', step, logging_stats)
-        
-        logger.log_scalar_dict(logging_stats, prefix='train' if self._is_train else 'val', step=step)
+        if logging_stats is not None:
+            logger.log_scalar_dict(logging_stats, prefix='train' if self._is_train else 'val', step=step)
 
         if log_images:
             '''
@@ -110,6 +108,7 @@ class BaseAgent(nn.Module):
     def load_state(self, save_dir):
         """Provides interface to load any internal state variables (like replay buffers) from disk."""
         pass
+
 
     def sync_networks(self):
         """Syncs network parameters across workers."""
@@ -267,7 +266,7 @@ class HierarchicalAgent(BaseAgent):
         })
         return super()._default_hparams().overwrite(default_dict)
 
-    def act(self, obs): 
+    def act(self, obs, last_hl_output=None): 
         """Output dict contains is_hl_step in case high-level action was performed during this action."""
         obs_input = obs[None] if len(obs.shape) == 1 else obs    # need batch input for agents
         output = AttrDict()
@@ -279,6 +278,8 @@ class HierarchicalAgent(BaseAgent):
                 self._last_hl_output.action = self._last_hl_output.action[None]  # add batch dim if necessary
                 self._last_hl_output.log_prob = self._last_hl_output.log_prob[None]
         else:
+            if last_hl_output is not None:
+                self._last_hl_output = last_hl_output
             output.is_hl_step = False
         output.update(prefix_dict(self._last_hl_output, 'hl_'))
 
@@ -331,6 +332,10 @@ class HierarchicalAgent(BaseAgent):
     def load_state_dict(self, state_dict, *args, **kwargs):
         self.hl_agent.load_state_dict(state_dict.pop('hl_agent'), *args, **kwargs)
         self.ll_agent.load_state_dict(state_dict.pop('ll_agent'), *args, **kwargs)
+        self.set_agents()
+        
+    def set_agents(self):
+        pass
 
     def save_state(self, save_dir):
         self.hl_agent.save_state(os.path.join(save_dir, 'hl_agent'))
@@ -399,3 +404,4 @@ class FixedIntervalTimeIndexedHierarchicalAgent(FixedIntervalHierarchicalAgent):
             one_hot_np = one_hot_np.squeeze()
 
         return np.concatenate((obs, hl_action, one_hot_np), axis=-1)
+    

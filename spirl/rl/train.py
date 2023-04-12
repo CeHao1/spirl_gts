@@ -16,7 +16,7 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'gtsC2_debug'
+WANDB_PROJECT_NAME = 'maze_LLdebug2'
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -71,8 +71,9 @@ class RLTrainer:
         # load from checkpoint
         self.global_step, self.n_update_steps, start_epoch = 0, 0, 0
         if args.resume or self.conf.ckpt_path is not None:
-            start_epoch = self.resume(args.resume, self.conf.ckpt_path)
-            self._hp.n_warmup_steps = 0     # no warmup if we reload from checkpoint!
+            start_epoch = self.resume(args.resume, self.conf.ckpt_path, args.resume_load_replay_buffer)
+            if not self.args.resume_warm_start:
+                self._hp.n_warmup_steps = 0     # no warmup if we reload from checkpoint!
 
         # start training/evaluation
         if args.mode == 'train':
@@ -98,8 +99,8 @@ class RLTrainer:
             'n_steps_per_epoch': 20000,       # number of env steps per epoch
             'log_output_per_epoch': 100,  # log the non-image/video outputs N times per epoch
             'log_images_per_epoch': 4,    # log images/videos N times per epoch
-            'log_image_interval': 2000,    # log images/videos every N steps
-            'log_output_interval': 200,   # log the non-image/video outputs every N steps
+            'log_image_interval': 20000,    # log images/videos every N steps
+            'log_output_interval': 2000,   # log the non-image/video outputs every N steps
             'logging_target': 'wandb',    # where to log results to
             'n_warmup_steps': 0,    # steps of warmup experience collection before training
             'use_update_after_sampling': False, # call another function
@@ -259,8 +260,8 @@ class RLTrainer:
                 warmup_experience_batch = mpi_gather_experience(warmup_experience_batch)
         if self.is_chef:
             self.agent.add_experience(warmup_experience_batch)
-            print("...Warmup done!")
-            self.agent.visualize(logger=self.logger, rollout_storage=None, step=self.global_step)
+            print("...Warmup done!", "self.global_step", self.global_step)
+            self.agent.log_outputs(None, None, self.logger, log_images=True, step=self.global_step)
 
     def get_config(self):
         conf = AttrDict()
@@ -343,7 +344,7 @@ class RLTrainer:
         if self.args.gpu != -1:
             os.environ["CUDA_VISIBLE_DEVICES"] = str(self.args.gpu)
 
-    def resume(self, ckpt, path=None):
+    def resume(self, ckpt, path=None, load_replay_buffer=True):
         path = os.path.join(self._hp.exp_path, 'weights') if path is None else os.path.join(path, 'weights')
         assert ckpt is not None  # need to specify resume epoch for loading checkpoint
         weights_file = CheckpointHandler.get_resume_ckpt_file(ckpt, path)
@@ -351,7 +352,8 @@ class RLTrainer:
         self.global_step, start_epoch, _ = \
             CheckpointHandler.load_weights(weights_file, self.agent,
                                            load_step=True, strict=self.args.strict_weight_loading)
-        self.agent.load_state(self._hp.exp_path)
+        if load_replay_buffer:
+            self.agent.load_state(self._hp.exp_path)
         self.agent.to(self.device)
         return start_epoch
 
@@ -386,13 +388,14 @@ class RLTrainer:
                     # or self.log_images_now
         # return self.n_update_steps % self._hp.log_output_interval == 0
         
-        return self.global_step % self._hp.log_output_interval == 0
+        return self.global_step % self._hp.log_output_interval == 0 \
+            or self.log_images_now
 
     @property
     def log_images_now(self):
         # return self.n_update_steps % int((self._hp.n_steps_per_epoch / self._hp.n_steps_per_update)
         #                                / self._hp.log_images_per_epoch) == 0
-        return self.n_update_steps % self._hp.log_image_interval == 0 \
+        return self.global_step % self._hp.log_image_interval == 0 \
 
     @property
     def is_chef(self):

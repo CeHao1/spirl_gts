@@ -27,6 +27,10 @@ def get_args():
                         help='will set CUDA_VISIBLE_DEVICES to selected value')
     parser.add_argument('--strict_weight_loading', default=True, type=int,
                         help='if True, uses strict weight loading function')
+    parser.add_argument('--resume_load_replay_buffer', default=True, type=int, 
+                        help='if True, loads replay buffer from checkpoint')
+    parser.add_argument('--resume_warm_start', default=True, type=int,
+                        help='if True, resumes warm start from checkpoint')
     parser.add_argument('--deterministic', default=False, type=int,
                         help='if True, sets fixed seeds for torch and numpy')
     parser.add_argument('--deterministic_action', action='store_true',

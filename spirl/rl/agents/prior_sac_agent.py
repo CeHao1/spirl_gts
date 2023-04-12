@@ -86,7 +86,7 @@ class ActionPriorSACAgent(SACAgent):
         obs = experience_batch.observation[:size]
         rew = experience_batch.reward[:size]
 
-        batch_size = 1024
+        batch_size = 4096
         batch_num = int(np.ceil(size / batch_size))
         q_est_sum = []
         KLD_sum = []
@@ -150,19 +150,47 @@ class ActionPriorSACAgent(SACAgent):
 
 def plot_action_dist(action, logger, step, size, fig_name='vis action', bw=0.5, xlim=None):
     fs = 16
-    fig = plt.figure(figsize=(10, 5))
-    fig.tight_layout()
-    for idx in range(len(action[0])):
-        sns.kdeplot(action[-size:, idx], fill=True, label='dim_' + str(idx), cut=0, bw_adjust=bw)
-    # plt.legend(bbox_to_anchor=(1, 1), loc='upper left', fontsize=fs)
-    plt.legend(loc='upper left', fontsize=14, framealpha=0.5)
-    plt.ylabel('Density', fontsize=fs)
-    plt.title('distribution of latent variables, size ' + str(size), fontsize=fs)
-    plt.grid()
-    if xlim is not None:
-        plt.xlim(xlim)
-    logger.log_plot(fig, name= fig_name, step=step)
-    plt.close(fig)
+    
+    
+    if len(action[0]) == 2: # plot 2 d distribution
+        fig = plt.figure(figsize=(10, 8))
+        sns.histplot(x=action[-size:, 0], y=action[-size:, 1], bins=50, cmap='Reds', cbar=True)
+        plt.xlabel('dim_0', fontsize=fs)
+        plt.ylabel('dim_1', fontsize=fs)
+        plt.title('2D dist of latent variables, size ' + str(size), fontsize=fs)
+        logger.log_plot(fig, name= fig_name + '_2D', step=step)
+        plt.close(fig)
+
+    
+        fig = plt.figure(figsize=(10, 5))
+        fig.tight_layout()
+        for idx in range(len(action[0])):
+            sns.histplot(action[-size:, idx], bins=50, label='dim_' + str(idx), alpha=0.5)
+        plt.legend(loc='upper left', fontsize=14, framealpha=0.5)
+        plt.ylabel('Density', fontsize=fs)
+        plt.title('distribution of latent variables, size ' + str(size), fontsize=fs)
+        plt.grid()
+        if xlim is not None:
+            plt.xlim(xlim)
+        logger.log_plot(fig, name= fig_name, step=step)
+        plt.close(fig)
+    
+    else:
+        
+        
+        fig = plt.figure(figsize=(10, 5))
+        fig.tight_layout()
+        for idx in range(len(action[0])):
+            sns.kdeplot(action[-size:, idx], fill=True, label='dim_' + str(idx), cut=0, bw_adjust=bw)
+        # plt.legend(bbox_to_anchor=(1, 1), loc='upper left', fontsize=fs)
+        plt.legend(loc='upper left', fontsize=14, framealpha=0.5)
+        plt.ylabel('Density', fontsize=fs)
+        plt.title('distribution of latent variables, size ' + str(size), fontsize=fs)
+        plt.grid()
+        if xlim is not None:
+            plt.xlim(xlim)
+        logger.log_plot(fig, name= fig_name, step=step)
+        plt.close(fig)
 
 class RandActScheduledActionPriorSACAgent(ActionPriorSACAgent):
     """Adds scheduled call to random action (aka prior execution) -> used if downstream policy trained from scratch."""
