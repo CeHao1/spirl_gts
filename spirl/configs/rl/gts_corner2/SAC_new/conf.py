@@ -1,4 +1,5 @@
 import os
+import copy
 
 from spirl.utils.general_utils import AttrDict
 from spirl.rl.policies.mlp_policies import MLPPolicy
@@ -59,12 +60,12 @@ sub_env_config = AttrDict(
     initial_velocity = 65*3.6, 
 )
 
-ip_address_list = ['192.168.1.112']
+ip_address_list = ['192.168.1.112', '192.168.1.110']
 
 sub_env_config_list = []
 for ip in ip_address_list:
     sub_env_config.update({'ip_address': ip})
-    sub_env_config_list.append(sub_env_config)
+    sub_env_config_list.append(copy.deepcopy(sub_env_config))
 
 env_config = AttrDict(
     env_class = GTSEnv_Corner2_Single,
