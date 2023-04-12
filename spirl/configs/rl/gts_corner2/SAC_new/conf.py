@@ -6,11 +6,12 @@ from spirl.rl.components.critic import MLPCritic
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 
 from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
+from spirl.rl.envs.env_list import EnvList
 
 # from spirl.rl.agents.ac_agent import SACAgent
 from spirl.data.gts.src.gts_agent import GTSSACAgent
 from spirl.rl.components.sampler_wrap import SamplerWrapped
-from spirl.rl.components.sampler_batched import SamplerBatched
+from spirl.rl.components.sampler_batched import AgentDetached_SamplerBached
 
 
 from spirl.rl.components.normalization import Normalizer
@@ -22,25 +23,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 notes = 'non-hierarchical RL experiments in gts env'
 
-# Environment
-sub_env_config = AttrDict(
-    reward_norm=1.,
-    do_init = False,
-    reward_function = corner2_spare_reward_function,
-    done_function = corner2_done_function,
-    initial_velocity = 65*3.6, 
-)
 
-ip_address_list = ['192.168.1.115']
-
-sub_env_config_list = []
-for ip in ip_address_list:
-    sub_env_config.update({'ip_address': ip})
-    sub_env_config_list.append(sub_env_config)
-
-env_config = AttrDict(
-    sub_env_config = sub_env_config_list
-)
 
 
 configuration = {
@@ -54,7 +37,7 @@ configuration = {
     # 'n_warmup_steps': 5000 ,
     'use_update_after_sampling':True,
 
-    'environment': GTSEnv_Corner2_Single,
+    'environment': EnvList,
     'sampler':SamplerWrapped,
 
     'n_steps_per_epoch': 1000 ,
@@ -66,10 +49,31 @@ configuration = {
 
 configuration = AttrDict(configuration)
 
+
+# Environment
+sub_env_config = AttrDict(
+    reward_norm=1.,
+    do_init = False,
+    reward_function = corner2_spare_reward_function,
+    done_function = corner2_done_function,
+    initial_velocity = 65*3.6, 
+)
+
+ip_address_list = ['192.168.1.112']
+
+sub_env_config_list = []
+for ip in ip_address_list:
+    sub_env_config.update({'ip_address': ip})
+    sub_env_config_list.append(sub_env_config)
+
+env_config = AttrDict(
+    env_class = GTSEnv_Corner2_Single,
+    sub_env_configs = sub_env_config_list
+)
+
 # sampler
 sampler_config = AttrDict(
-    sub_sampler = SamplerBatched,
-
+    sub_sampler = AgentDetached_SamplerBached,
 )
 
 # Policy

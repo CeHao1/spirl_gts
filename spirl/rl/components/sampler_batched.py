@@ -279,7 +279,7 @@ class HierarchicalSamplerBached(SamplerBatched):
 
 class AgentDetached_SamplerBached(SamplerBatched):
     def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True, Q=None):
-        experience_batch, env_steps = super().sample_batch(batch_size, is_train, global_step, store_ll)
+        experience_batch, env_steps = super().sample_batch(batch_size, is_train, global_step)
         Q.put([experience_batch, env_steps])
 
     def sample_episode(self, is_train, render=False, deterministic_action=False, Q=None):
@@ -297,7 +297,7 @@ class AgentDetached_HierarchicalSamplerBached(HierarchicalSamplerBached):
         self._last_hl_output = None
 
     def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True, Q=None):
-        experience_batch, env_steps = super().sample_batch(batch_size, is_train, global_step, store_ll)
+        experience_batch, env_steps = super().sample_batch(batch_size, is_train, global_step)
         Q.put([experience_batch, env_steps])
 
     def sample_episode(self, is_train, render=False, deterministic_action=False, Q=None):
