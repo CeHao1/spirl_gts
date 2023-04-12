@@ -452,7 +452,6 @@ def map_dict(fn, d):
     """takes a dictionary and applies the function to every element"""
     return type(d)(map(lambda kv: (kv[0], fn(kv[1])), d.items()))
 
-
 def listdict2dictlist(LD):
     """ Converts a list of dicts to a dict of lists """
     
@@ -465,6 +464,14 @@ def dictlist2listdict(DL):
     " Converts a dict of lists to a list of dicts "
     return [dict(zip(DL,t)) for t in zip(*DL.values())]
 
+def reshape_dict_list(d): # reshape the first two dimensions of a dict of lists
+    for key in d:
+        d[key] = np.array([inner for outer in d[key] for inner in outer])
+        
+def batch_listdict2dictlist(DL):
+    DL = listdict2dictlist(DL)
+    reshape_dict_list(DL)
+    return DL
 
 def joinListDictList(LDL):
     """Joins a list of dictionaries that contain lists."""

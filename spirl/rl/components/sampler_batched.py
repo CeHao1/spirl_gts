@@ -2,7 +2,7 @@ import numpy as np
 import contextlib
 from collections import deque
 
-from spirl.utils.general_utils import listdict2dictlist, AttrDict, ParamDict, obj2np
+from spirl.utils.general_utils import listdict2dictlist, batch_listdict2dictlist, AttrDict, ParamDict, obj2np
 from spirl.modules.variational_inference import MultivariateGaussian
 from spirl.rl.utils.reward_fcns import sparse_threshold
 
@@ -85,7 +85,7 @@ class SamplerBatched:
                                     exp = True
                             self._episode_reset(global_step)
 
-        return listdict2dictlist(experience_batch), step
+        return batch_listdict2dictlist(experience_batch), step
 
     def sample_episode(self, is_train, render=False, deterministic_action=False):
         """Samples one episode from the environment."""
@@ -131,7 +131,7 @@ class SamplerBatched:
         for exp in episode[-1].done:# make sure episode is marked as done at final time step
             exp = True
 
-        return listdict2dictlist(episode)
+        return batch_listdict2dictlist(episode)
 
     def get_episode_info(self):
         episode_info = AttrDict(episode_reward=self._episode_reward,
@@ -267,8 +267,8 @@ class HierarchicalSamplerBached(SamplerBatched):
                             print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
                             self._episode_reset(global_step)
         return AttrDict(
-            hl_batch=listdict2dictlist(hl_experience_batch),
-            ll_batch=listdict2dictlist(ll_experience_batch[:-1]),   # last element does not have updated obs_next!
+            hl_batch=batch_listdict2dictlist(hl_experience_batch),
+            ll_batch=batch_listdict2dictlist(ll_experience_batch[:-1]),   # last element does not have updated obs_next!
         ), env_steps
 
     def _episode_reset(self, global_step=None):
@@ -277,32 +277,19 @@ class HierarchicalSamplerBached(SamplerBatched):
         self.reward_since_last_hl = 0
 
 
-class AgentDetached_SamplerBached(SamplerBatched):
-    def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True, Q=None):
-        experience_batch, env_steps = super().sample_batch(batch_size, is_train, global_step)
-        Q.put([experience_batch, env_steps])
-
-    def sample_episode(self, is_train, render=False, deterministic_action=False, Q=None):
-        episode = super().sample_episode(is_train, render, deterministic_action)
-        Q.put(episode)
-
-    def sample_action(self, obs):
-        """Samples an action from the agent."""
-        agent_output = self._agent.act(obs)
-        return agent_output
 
 class AgentDetached_HierarchicalSamplerBached(HierarchicalSamplerBached):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._last_hl_output = None
 
-    def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True, Q=None):
-        experience_batch, env_steps = super().sample_batch(batch_size, is_train, global_step)
-        Q.put([experience_batch, env_steps])
+    # def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True, Q=None):
+    #     experience_batch, env_steps = super().sample_batch(batch_size, is_train, global_step)
+    #     Q.put([experience_batch, env_steps])
 
-    def sample_episode(self, is_train, render=False, deterministic_action=False, Q=None):
-        episode = super().sample_episode(is_train, render, deterministic_action)
-        Q.put(episode)
+    # def sample_episode(self, is_train, render=False, deterministic_action=False, Q=None):
+    #     episode = super().sample_episode(is_train, render, deterministic_action)
+    #     Q.put(episode)
 
     def sample_action(self, obs):
         """Samples an action from the agent."""
