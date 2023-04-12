@@ -137,7 +137,7 @@ def str2int(str):
 def dummy_context():
     yield
 
-
+'''
 def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
     assert optimizer_type is not None  # need to set optimizer type!
 
@@ -154,6 +154,41 @@ def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
             super().step(*args, **kwargs)
 
     return ClipGradOptimizer(*args, **kwargs)
+'''
+
+# this if fixed by chatgpt, so great!
+# now it can use multiprocessing
+class ClipGradOptimizer:
+    def __init__(self, optimizer, gradient_clip=None):
+        self.optimizer = optimizer
+        self.gradient_clip = gradient_clip
+
+    def step(self, *args, **kwargs):
+        if self.gradient_clip is not None:
+            params = np.concatenate([group['params'] for group in self.optimizer.param_groups])
+            torch.nn.utils.clip_grad_norm_(params, self.gradient_clip)
+
+        self.optimizer.step(*args, **kwargs)
+
+class ClippedOptimizer(ClipGradOptimizer):
+    def __init__(self, optimizer_type, *args, gradient_clip=None, **kwargs):
+        optimizer = optimizer_type(*args, **kwargs)
+        super().__init__(optimizer, gradient_clip)
+        self.defaults = optimizer.defaults
+        self.state = optimizer.state
+        self.param_groups = optimizer.param_groups
+
+def make_clip_grad_optimizer(optimizer_type):
+    def create_optimizer(*args, **kwargs):
+        return ClippedOptimizer(optimizer_type, *args, **kwargs)
+
+    return create_optimizer
+
+def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
+    assert optimizer_type is not None  # need to set optimizer type!
+
+    create_optimizer = make_clip_grad_optimizer(optimizer_type)
+    return create_optimizer(*args, **kwargs)
 
 
 class optional:

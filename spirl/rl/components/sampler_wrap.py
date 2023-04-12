@@ -2,8 +2,8 @@
 from spirl.rl.components.sampler_batched import AgentDetached_HierarchicalSamplerBached
 
 from spirl.utils.general_utils import listdict2dictlist, AttrDict, ParamDict, obj2np
-# import torch.multiprocessing as mp
-import multiprocessing as mp
+import torch.multiprocessing as mp
+# import multiprocessing as mp
 
 class SamplerWrapped:
     def __init__(self, config, env, agent, logger, max_episode_len):
@@ -20,8 +20,11 @@ class SamplerWrapped:
         for rank in range(len(self._sub_samplers)):
             self._sub_samplers[rank].init(is_train)
 
+
     def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True):
+        
         # multi processing
+        mp.set_start_method('spawn')
         Q = mp.Queue()
 
         processes = []
@@ -39,6 +42,8 @@ class SamplerWrapped:
             results.append(Q.get())
 
         return self._process_sample_batch_return(results)
+        
+        
 
     def sample_episode(self, is_train, render=False, deterministic_action=False, return_list=False):
         # multi processing
@@ -59,6 +64,7 @@ class SamplerWrapped:
             results.append(Q.get())
 
         return self._process_sample_episode_return(results)
+        
 
     def _process_sample_batch_return(self, results):
         experience_batch_list = []
