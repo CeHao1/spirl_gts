@@ -13,6 +13,7 @@ import functools
 import itertools
 
 from functools import partial, reduce
+from torch.optim import Adam, RAdam, RMSprop, SGD
 import collections
 from collections import OrderedDict
 
@@ -137,6 +138,63 @@ def str2int(str):
 def dummy_context():
     yield
 
+
+class ClipGradOptimizer:     
+
+    def step(self, *args, **kwargs):
+        if self.gradient_clip is not None:
+            params = np.concatenate([group['params'] for group in self.param_groups])
+            torch.nn.utils.clip_grad_norm_(params, self.gradient_clip)
+  
+class Adam_ClipGradOptimizer(Adam, ClipGradOptimizer):
+    def __init__(self, *args, gradient_clip=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.gradient_clip = gradient_clip
+        
+    def step(self, *args, **kwargs):
+        ClipGradOptimizer.step(self, *args, **kwargs)
+        super().step(*args, **kwargs)
+
+class RADAM_ClipGradOptimizer(RAdam, ClipGradOptimizer):
+    def __init__(self, *args, gradient_clip=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.gradient_clip = gradient_clip
+        
+    def step(self, *args, **kwargs):
+        ClipGradOptimizer.step(self, *args, **kwargs)
+        super().step(*args, **kwargs)
+
+class RMSprop_ClipGradOptimizer(RMSprop, ClipGradOptimizer):
+    def __init__(self, *args, gradient_clip=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.gradient_clip = gradient_clip
+        
+    def step(self, *args, **kwargs):
+        ClipGradOptimizer.step(self, *args, **kwargs)
+        super().step(*args, **kwargs)
+
+class SGD_ClipGradOptimizer(SGD, ClipGradOptimizer):
+    def __init__(self, *args, gradient_clip=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.gradient_clip = gradient_clip
+        
+    def step(self, *args, **kwargs):
+        ClipGradOptimizer.step(self, *args, **kwargs)
+        super().step(*args, **kwargs)
+
+def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
+    assert optimizer_type is not None  # need to set optimizer type!
+    if optimizer_type == Adam:
+        return Adam_ClipGradOptimizer(*args, **kwargs)
+    elif optimizer_type == RAdam:
+        return RADAM_ClipGradOptimizer(*args, **kwargs)
+    elif optimizer_type == RMSprop:
+        return RMSprop_ClipGradOptimizer(*args, **kwargs)
+    elif optimizer_type == SGD:
+        return SGD_ClipGradOptimizer(*args, **kwargs)
+    else:
+        raise NotImplementedError
+
 '''
 def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
     assert optimizer_type is not None  # need to set optimizer type!
@@ -156,6 +214,7 @@ def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
     return ClipGradOptimizer(*args, **kwargs)
 '''
 
+'''
 # this if fixed by chatgpt, so great!
 # now it can use multiprocessing
 class ClipGradOptimizer:
@@ -189,7 +248,7 @@ def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
 
     create_optimizer = make_clip_grad_optimizer(optimizer_type)
     return create_optimizer(*args, **kwargs)
-
+'''
 
 class optional:
     """ A function decorator that returns the first argument to the function if yes=False
