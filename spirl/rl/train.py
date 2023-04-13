@@ -135,7 +135,7 @@ class RLTrainer:
                     'state_dict': self.agent.state_dict(),
                 }, os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name(epoch))
                 self.agent.save_state(self._hp.exp_path)
-                self.val() # do not do val in train
+                # self.val() # do not do val in train
 
     def train_epoch(self, epoch):
         """Run inner training loop."""

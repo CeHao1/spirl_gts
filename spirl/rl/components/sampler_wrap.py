@@ -39,10 +39,10 @@ class SamplerWrapped:
             
         return self._process_sample_batch_return(results)
 
-    def sample_episode(self, is_train, render=False, deterministic_action=False, return_list=False):
+    def sample_episode(self, is_train, render=False, deterministic_action=False):
         # multi processing
         with mp.Pool(processes=self.num_envs) as pool:
-            results = [pool.apply_async(self._sub_samplers[i].sample_episode, (is_train, render, deterministic_action, return_list)) for i in range(self.num_envs)]
+            results = [pool.apply_async(self._sub_samplers[i].sample_episode, (is_train, render, deterministic_action)) for i in range(self.num_envs)]
             results = [p.get() for p in results]
 
         return self._process_sample_episode_return(results)
