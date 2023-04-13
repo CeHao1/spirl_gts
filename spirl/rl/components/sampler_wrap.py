@@ -39,7 +39,7 @@ class SamplerWrapped:
             results = [p.get() for p in results]
             
         # init the logger again
-        self._logger.init_wandb()
+        # self._logger.init_wandb()
         
         return self._process_sample_batch_return(results)
 
@@ -50,7 +50,7 @@ class SamplerWrapped:
             results = [p.get() for p in results]
 
         # init the logger again
-        self._logger.init_wandb()
+        # self._logger.init_wandb()
 
         return self._process_sample_episode_return(results)
         

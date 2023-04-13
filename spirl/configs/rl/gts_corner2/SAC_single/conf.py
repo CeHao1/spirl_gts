@@ -32,7 +32,7 @@ env_config = AttrDict(
 
     # store_states = True,
     initial_velocity = 65*3.6, 
-    ip_address = '192.168.1.115'
+    ip_address = '192.168.1.112'
 
 )
 
@@ -50,11 +50,20 @@ configuration = {
     'environment': GTSEnv_Corner2_Single,
     'sampler':SamplerBatched,
 
-    'n_steps_per_epoch': 1000 ,
-    'n_steps_per_update': 200 ,
-    'n_warmup_steps': 1000 ,
+    # 'n_steps_per_epoch': 1000 ,
+    # 'n_steps_per_update': 200 ,
+    # 'n_warmup_steps': 1000 ,
 
-    'log_output_interval': 1000,
+    # 'log_output_interval': 1000,
+    
+    
+    'log_output_interval': 400,
+    'log_image_interval' : 400,
+    
+    # debug
+    'n_steps_per_epoch': 800 ,
+    'n_steps_per_update': 400 ,
+    'n_warmup_steps': 200 ,
 }
 
 configuration = AttrDict(configuration)

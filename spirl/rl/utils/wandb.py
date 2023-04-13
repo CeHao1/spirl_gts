@@ -31,15 +31,7 @@ class WandBLogger:
             notes=conf.notes if 'notes' in conf else ''
         )
         self.init_wandb()
-        # wandb.init(
-        #     resume=exp_name,
-        #     project=project_name,
-        #     config=filtered_config,
-        #     dir=path,
-        #     entity=entity,
-        #     notes=conf.notes if 'notes' in conf else ''
-        # )
-        
+
     def init_wandb(self):
         wandb.init(**self.init_config)
 
@@ -63,10 +55,16 @@ class WandBLogger:
     def log_plot(self, fig, name, step=None):
         """Logs matplotlib graph to WandB.
         fig is a matplotlib figure handle."""
+        if wandb.run is None:
+            self.init_wandb()
         img = wandb.Image(fig)
         wandb.log({name: img}) if step is None else wandb.log({name: img}, step=step)
+        print('@@@ LOGGING PLOT: ', name)
+        wandb.finish()
+        wandb.join()
+        print('@@@2 LOGGING PLOT: ', name, 'DONE')
 
-    @property
+    @property   
     def n_logged_samples(self):
         # TODO(karl) put this functionality in a base logger class + give it default parameters and config
         return self.N_LOGGED_SAMPLES
