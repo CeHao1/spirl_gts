@@ -37,9 +37,6 @@ class SamplerWrapped:
             
             results = [pool.apply_async(self._sub_samplers[i].sample_batch, (batch_size_every, is_train, global_step)) for i in range(self.num_envs)]
             results = [p.get() for p in results]
-            
-        # init the logger again
-        # self._logger.init_wandb()
         
         return self._process_sample_batch_return(results)
 
@@ -48,9 +45,6 @@ class SamplerWrapped:
         with mp.Pool(processes=self.num_envs) as pool:
             results = [pool.apply_async(self._sub_samplers[i].sample_episode, (is_train, render, deterministic_action)) for i in range(self.num_envs)]
             results = [p.get() for p in results]
-
-        # init the logger again
-        # self._logger.init_wandb()
 
         return self._process_sample_episode_return(results)
         
@@ -69,4 +63,16 @@ class SamplerWrapped:
         return batch_listdict2dictlist(results)
 
 class HierarchicalSamplerWrapped(SamplerWrapped):
-    pass
+    def _process_sample_batch_return(self, results):
+        hl_experience_batch_list = []
+        ll_experience_batch_list = []
+        env_steps_sum = 0
+        for result in results:
+            experience_batch, env_steps = result
+            hl_experience_batch_list.append(experience_batch.hl_batch)
+            ll_experience_batch_list.append(experience_batch.ll_batch)
+            env_steps_sum += env_steps
+        
+        return AttrDict(hl_batch = batch_listdict2dictlist(hl_experience_batch_list),
+                        ll_batch = batch_listdict2dictlist(ll_experience_batch_list)), \
+                env_steps_sum

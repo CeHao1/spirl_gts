@@ -43,7 +43,7 @@ configuration = AttrDict(    {
     
     'data_dir': '.',
     'num_epochs': 2000,
-    'max_rollout_len': 400,
+    'max_rollout_len': 600,
     # 'n_steps_per_epoch': 10000,
     # 'n_steps_per_update': 1000,
     # 'n_warmup_steps': 160000,
