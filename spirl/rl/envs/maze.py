@@ -63,8 +63,10 @@ class ACmMaze1(MazeEnv):
         return super()._default_hparams().overwrite(default_dict)
 
 class ACmMaze2(MazeEnv):  
-    # v7
-    TARGET_POS = np.array([3, 10]) # 
+    # 
+    TARGET_POS = np.array([3, 10]) # selected
+    TARGET_POS = np.array([12, 5]) # 
+    
     START_POS = np.array([2, 2]) #
     VIS_RANGE = [[-1, 15], [-1, 18]]
     

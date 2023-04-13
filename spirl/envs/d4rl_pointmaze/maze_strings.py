@@ -32,17 +32,17 @@ M_MAZE2_V1 = \
 "##################\\"+\
 "#OOOO####OOOOOOOO#\\"+\
 "#OOOOO##OOOOOOOOO#\\"+\
-"#OOOOOO#OOOOOO#OO#\\"+\
-"##OOOOO#OOOOOO#OO#\\"+\
-"###OOOO##OOOO##OO#\\"+\
-"####OOO########OO#\\"+\
-"#OOOOOO#OOOOOOOOO#\\"+\
-"#OOOOO###OOOOOOO##\\"+\
-"#OO#######OO######\\"+\
-"#OOOOO###OOOO##OO#\\"+\
-"#OOOOOO#OOOOO#OOO#\\"+\
-"##OOOOOOOOOOOOOOO#\\"+\
-"###OOOOOOOOOOOOO##\\"+\
+"#OOOOO##OOOOOO#OO#\\"+\
+"##OOOO##OOOOOO#OO#\\"+\
+"###OOO###OOOO##OO#\\"+\
+"####OO#########OO#\\"+\
+"#OOOOO##OOOOOOOOO#\\"+\
+"#OOOOO###OOOOOOOO#\\"+\
+"#OO#######OOOOO###\\"+\
+"#OOOOO###OOOOO####\\"+\
+"##OOOOO#OOOOO#####\\"+\
+"###OOOOOOOOO######\\"+\
+"####OOOOOOO#######\\"+\
 "##################"
 
 
