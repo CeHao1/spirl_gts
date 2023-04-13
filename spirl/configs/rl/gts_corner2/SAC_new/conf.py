@@ -12,7 +12,7 @@ from spirl.rl.envs.env_list import EnvList
 # from spirl.rl.agents.ac_agent import SACAgent
 from spirl.data.gts.src.gts_agent import GTSSACAgent
 from spirl.rl.components.sampler_wrap import SamplerWrapped
-from spirl.rl.components.sampler_batched import AgentDetached_SamplerBached, SamplerBatched
+from spirl.rl.components.sampler_batched import SamplerBatched
 
 
 from spirl.rl.components.normalization import Normalizer
@@ -36,7 +36,7 @@ configuration = {
     'max_rollout_len': 200,
     # 'n_steps_per_epoch': 1000 ,
     # 'n_warmup_steps': 5000 ,
-    'use_update_after_sampling':True,
+    # 'use_update_after_sampling':True,
 
     'environment': EnvList,
     'sampler':SamplerWrapped,
@@ -48,9 +48,9 @@ configuration = {
     'log_output_interval': 1000,
     
     # debug
-    'n_steps_per_epoch': 1000 ,
+    'n_steps_per_epoch': 400 ,
     'n_steps_per_update': 200 ,
-    'n_warmup_steps': 200 ,
+    'n_warmup_steps': 400 ,
 }
 
 configuration = AttrDict(configuration)

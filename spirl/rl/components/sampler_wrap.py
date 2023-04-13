@@ -8,8 +8,15 @@ import torch.multiprocessing as mp
 class SamplerWrapped:
     def __init__(self, config, env, agent, logger, max_episode_len):
         self._hp = self._default_hparams().overwrite(config)
-        self._sub_samplers = [self._hp.sub_sampler(config, env_i, agent, logger, max_episode_len) for env_i in env]
+        
+        # if only set logger for the master sampler
+        self._sub_samplers = []
+        for i in range(len(env)):
+            logger_i = logger if i==0 else None
+            self._sub_samplers.append(self._hp.sub_sampler(config, env[i], agent, logger_i, max_episode_len))
         self.num_envs = len(self._sub_samplers)
+        
+        mp.set_start_method('spawn')
     
     def _default_hparams(self):
         return ParamDict({
@@ -22,8 +29,6 @@ class SamplerWrapped:
 
 
     def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True):
-        mp.set_start_method('spawn')
-        
         # modify batch_size
         import math
         batch_size_every = math.ceil(batch_size / self.num_envs)
@@ -36,8 +41,6 @@ class SamplerWrapped:
 
     def sample_episode(self, is_train, render=False, deterministic_action=False, return_list=False):
         # multi processing
-        mp.set_start_method('spawn')
-        
         with mp.Pool(processes=self.num_envs) as pool:
             results = [pool.apply_async(self._sub_samplers[i].sample_episode, (is_train, render, deterministic_action, return_list)) for i in range(self.num_envs)]
             results = [p.get() for p in results]

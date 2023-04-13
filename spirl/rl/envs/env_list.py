@@ -18,3 +18,6 @@ class EnvList(BaseEnvironment):
     
     def __getitem__(self, idx):
         return self._envs[idx]
+    
+    def __len__(self):
+        return len(self._envs)

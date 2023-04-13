@@ -43,7 +43,7 @@ class GTSAgent:
         """Selects info to be stored in replay buffer."""
         key_list = ['pos[0]', 'pos[2]', 'vx']
         info_batch = AttrDict(
-            observation = np.array([[info_t[0]['state'][key] for key in key_list] for info_t in info])
+            observation = np.array([[info_t['state'][key] for key in key_list] for info_t in info])
         )
         return info_batch
 
