@@ -45,12 +45,13 @@ configuration = {
     # 'n_steps_per_update': 200 ,
     # 'n_warmup_steps': 1000 ,
 
-    'log_output_interval': 1000,
+    'log_output_interval': 400,
+    'log_image_interval' : 400,
     
     # debug
-    'n_steps_per_epoch': 400 ,
-    'n_steps_per_update': 200 ,
-    'n_warmup_steps': 400 ,
+    'n_steps_per_epoch': 800 ,
+    'n_steps_per_update': 400 ,
+    'n_warmup_steps': 800 ,
 }
 
 configuration = AttrDict(configuration)

@@ -8,6 +8,7 @@ import torch.multiprocessing as mp
 class SamplerWrapped:
     def __init__(self, config, env, agent, logger, max_episode_len):
         self._hp = self._default_hparams().overwrite(config)
+        self._logger = logger
         
         # if only set logger for the master sampler
         self._sub_samplers = []
@@ -37,6 +38,9 @@ class SamplerWrapped:
             results = [pool.apply_async(self._sub_samplers[i].sample_batch, (batch_size_every, is_train, global_step)) for i in range(self.num_envs)]
             results = [p.get() for p in results]
             
+        # init the logger again
+        self._logger.init_wandb()
+        
         return self._process_sample_batch_return(results)
 
     def sample_episode(self, is_train, render=False, deterministic_action=False):
@@ -44,6 +48,9 @@ class SamplerWrapped:
         with mp.Pool(processes=self.num_envs) as pool:
             results = [pool.apply_async(self._sub_samplers[i].sample_episode, (is_train, render, deterministic_action)) for i in range(self.num_envs)]
             results = [p.get() for p in results]
+
+        # init the logger again
+        self._logger.init_wandb()
 
         return self._process_sample_episode_return(results)
         

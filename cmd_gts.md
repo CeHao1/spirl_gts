@@ -32,5 +32,5 @@ python3 spirl/train.py --path=spirl/configs/skill_prior_learning/gts_corner2/hie
 
 
 # train RL
-python3 spirl/rl/train.py --path=spirl/configs/rl/gts_corner2/SAC_single --seed=0 --gpu=0 \
---prefix=sac_test_01
+python3 spirl/rl/train.py --path=spirl/configs/rl/gts_corner2/SAC_new --seed=0 --gpu=0 \
+--prefix=sac_new_t01
