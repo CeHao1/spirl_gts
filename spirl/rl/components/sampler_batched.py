@@ -182,7 +182,7 @@ class SamplerBatched:
         return agent_output
 
 
-class HierarchicalSamplerBached(SamplerBatched):
+class HierarchicalSamplerBatched(SamplerBatched):
     """Collects experience batches by rolling out a hierarchical agent. Aggregates low-level batches into HL batch."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -277,19 +277,10 @@ class HierarchicalSamplerBached(SamplerBatched):
         self.reward_since_last_hl = 0
 
 
-
-class AgentDetached_HierarchicalSamplerBached(HierarchicalSamplerBached):
+class AgentDetached_HierarchicalSamplerBatched(HierarchicalSamplerBatched):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._last_hl_output = None
-
-    # def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True, Q=None):
-    #     experience_batch, env_steps = super().sample_batch(batch_size, is_train, global_step)
-    #     Q.put([experience_batch, env_steps])
-
-    # def sample_episode(self, is_train, render=False, deterministic_action=False, Q=None):
-    #     episode = super().sample_episode(is_train, render, deterministic_action)
-    #     Q.put(episode)
 
     def sample_action(self, obs):
         """Samples an action from the agent."""

@@ -1,5 +1,5 @@
 
-from spirl.rl.components.sampler_batched import AgentDetached_HierarchicalSamplerBached
+from spirl.rl.components.sampler_batched import AgentDetached_HierarchicalSamplerBatched
 
 from spirl.utils.general_utils import listdict2dictlist, batch_listdict2dictlist, AttrDict, ParamDict, obj2np
 import torch.multiprocessing as mp
@@ -20,7 +20,7 @@ class SamplerWrapped:
     
     def _default_hparams(self):
         return ParamDict({
-            'sub_sampler': AgentDetached_HierarchicalSamplerBached,
+            'sub_sampler': AgentDetached_HierarchicalSamplerBatched,
         })
 
     def init(self, is_train):

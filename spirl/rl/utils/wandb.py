@@ -3,7 +3,7 @@ import inspect
 import numpy as np
 
 from spirl.utils.general_utils import flatten_dict, prefix_dict
-
+from spirl.utils.general_utils import AttrDict
 
 class WandBLogger:
     """Logs to WandB."""
@@ -22,7 +22,7 @@ class WandBLogger:
         flat_config = flatten_dict(conf)
         filtered_config = {k: v for k, v in flat_config.items() if (k not in exclude and not inspect.isclass(v))}
         print("INIT WANDB")
-        wandb.init(
+        self.init_config = AttrDict(
             resume=exp_name,
             project=project_name,
             config=filtered_config,
@@ -30,8 +30,22 @@ class WandBLogger:
             entity=entity,
             notes=conf.notes if 'notes' in conf else ''
         )
+        self.init_wandb()
+        # wandb.init(
+        #     resume=exp_name,
+        #     project=project_name,
+        #     config=filtered_config,
+        #     dir=path,
+        #     entity=entity,
+        #     notes=conf.notes if 'notes' in conf else ''
+        # )
+        
+    def init_wandb(self):
+        wandb.init(**self.init_config)
 
     def log_scalar_dict(self, d, prefix='', step=None):
+        if wandb.run is None:
+            self.init_wandb() 
         """Logs all entries from a dict of scalars. Optionally can prefix all keys in dict before logging."""
         if prefix: d = prefix_dict(d, prefix + '_')
         wandb.log(d) if step is None else wandb.log(d, step=step)
