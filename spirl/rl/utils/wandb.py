@@ -59,8 +59,8 @@ class WandBLogger:
             self.init_wandb()
         img = wandb.Image(fig)
         wandb.log({name: img}) if step is None else wandb.log({name: img}, step=step)
-        wandb.finish()
-        wandb.join()
+        # wandb.finish()
+        # wandb.join()
 
 
     @property   

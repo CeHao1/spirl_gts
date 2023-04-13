@@ -1,7 +1,8 @@
 
 from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
-from spirl.rl.agents.skill_critic.hl_inherit_agent  import HLInheritAgent
+from spirl.rl.agents.skill_critic.hl_inherit_agent import HLInheritAgent
+from spirl.rl.agents.skill_critic.ll_inherit_agent import LLInheritAgent
 
 from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
 
@@ -63,14 +64,14 @@ class GTSActionPriorSACAgent(ActionPriorSACAgent, GTSAgent):
         self._vis_hl_q(logger, step)
 
     def add_experience(self, experience_batch):
-        self.info_replay_buffer.append(self._select_info(experience_batch['info']))
+        self.info_replay_buffer.append(self._select_info(experience_batch.pop('info')))
         super().add_experience(experience_batch)
 
     def _vis_hl_q(self, logger, step):
         """Visualizes high-level Q function."""
         self._vis_q(logger, step, plot_type='gts')
 
-class GTSHLInerientAgent(HLInheritAgent, GTSAgent):
+class GTSHLInheritAgent(HLInheritAgent, GTSAgent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.info_replay_buffer = self._hp.replay(self._hp.replay_params)
@@ -80,14 +81,31 @@ class GTSHLInerientAgent(HLInheritAgent, GTSAgent):
         self._vis_hl_q(logger, step)
 
     def add_experience(self, experience_batch):
-        self.info_replay_buffer.append(self._select_info(experience_batch['info']))
+        self.info_replay_buffer.append(self._select_info(experience_batch.pop('info')))
         super().add_experience(experience_batch)
 
     def _vis_hl_q(self, logger, step):
         """Visualizes high-level Q function."""
-        self._vis_q(logger, step, plot_type='gts')
+        self._vis_q(logger, step, prefix='hl', plot_type='gts')
 
+class GTSLLInheritAgent(LLInheritAgent, GTSAgent):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.info_replay_buffer = self._hp.replay(self._hp.replay_params)
 
+    def visualize(self, logger, rollout_storage, step):
+        GTSAgent.visualize(self, logger, rollout_storage, step)
+        self._vis_ll_q(logger, step)
+
+    def add_experience(self, experience_batch):
+        self.info_replay_buffer.append(self._select_info(experience_batch.pop('info')))
+        super().add_experience(experience_batch)
+
+    def _vis_ll_q(self, logger, step):
+        """Visualizes high-level Q function."""
+        self._vis_q(logger, step, prefix='ll', plot_type='gts',
+                    content=['q', 'KLD', 'action', 'action_nosquash', 'action_recent', 'action_nosquash_recent'])
+    
 
 def plot_gts_traj(states, logger, step, size):
 
