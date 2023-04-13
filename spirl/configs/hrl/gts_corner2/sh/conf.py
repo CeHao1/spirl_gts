@@ -9,7 +9,7 @@ from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.configs.default_data_configs.gts import data_spec
 
 from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
-from spirl.rl.components.sampler_batched import HierarchicalSamplerBached
+from spirl.rl.components.sampler_batched import HierarchicalSamplerBatched
 
 
 from spirl.rl.agents.skill_critic.joint_inherit_agent import JointInheritAgent, skill_critic_stages
@@ -31,6 +31,8 @@ env_config = AttrDict(
 
     reward_function = corner2_spare_reward_function,
     done_function = corner2_done_function,
+    
+    ip_address = '192.168.1.112',
 )
 
 
@@ -45,7 +47,7 @@ configuration = AttrDict(    {
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Corner2_Single,
-    'sampler':HierarchicalSamplerBached,
+    'sampler':HierarchicalSamplerBatched,
 
 } )
 
