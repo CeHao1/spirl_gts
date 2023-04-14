@@ -1,7 +1,8 @@
 
 from spirl.rl.components.sampler_batched import AgentDetached_HierarchicalSamplerBatched
 
-from spirl.utils.general_utils import listdict2dictlist, batch_listdict2dictlist, AttrDict, ParamDict, obj2np
+from spirl.utils.general_utils import listdict2dictlist, batch_listdict2dictlist, listdict_mean
+from spirl.utils.general_utils import AttrDict, ParamDict, obj2np
 import torch.multiprocessing as mp
 # import multiprocessing as mp
 
@@ -11,10 +12,10 @@ class SamplerWrapped:
         self._logger = logger
         
         # if only set logger for the master sampler
-        self._sub_samplers = []
-        for i in range(len(env)):
-            logger_i = logger if i==0 else None
-            self._sub_samplers.append(self._hp.sub_sampler(config, env[i], agent, logger_i, max_episode_len))
+        self._sub_samplers = [self._hp.sub_sampler(config, env_i, agent, logger, max_episode_len) for env_i in env]
+        # for i in range(len(env)):
+        #     logger_i = logger if i==0 else None
+        #     self._sub_samplers.append(self._hp.sub_sampler(config, env[i], agent, logger_i, max_episode_len))
         self.num_envs = len(self._sub_samplers)
         
         mp.set_start_method('spawn')
@@ -38,7 +39,13 @@ class SamplerWrapped:
             results = [pool.apply_async(self._sub_samplers[i].sample_batch, (batch_size_every, is_train, global_step)) for i in range(self.num_envs)]
             results = [p.get() for p in results]
         
-        return self._process_sample_batch_return(results)
+        experience_batch, env_step, episode_info = self._process_sample_batch_return(results)
+        
+        if global_step is not None:
+            self._logger.log_scalar_dict(episode_info, prefix='train' if is_train else 'val', 
+                                         step=global_step)
+        
+        return experience_batch, env_step
 
     def sample_episode(self, is_train, render=False, deterministic_action=False):
         # multi processing
@@ -51,13 +58,16 @@ class SamplerWrapped:
 
     def _process_sample_batch_return(self, results):
         experience_batch_list = []
+        episode_info_list = []
         env_steps_sum = 0
         for result in results:
-            experience_batch, env_steps = result
+            experience_batch, env_steps, episode_info = result
             experience_batch_list.append(experience_batch)
+            episode_info_list.append(episode_info)
             env_steps_sum += env_steps
 
-        return batch_listdict2dictlist(experience_batch_list), env_steps_sum
+        episode_info = listdict_mean(episode_info_list)
+        return batch_listdict2dictlist(experience_batch_list), env_steps_sum, episode_info
 
     def _process_sample_episode_return(self, results):
         return batch_listdict2dictlist(results)

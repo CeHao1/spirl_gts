@@ -518,6 +518,9 @@ def listdict2dictlist(LD):
     keys = reduce(lambda x,y: x & y, (map(lambda d: d.keys(), LD)))
     return AttrDict({k: [dic[k] for dic in LD] for k in keys})
 
+def listdict_mean(LD):
+    """ Computes the mean of a list of dictionaries """
+    return type(LD[0])({k: np.mean([dic[k] for dic in LD]) for k in LD[0].keys()})
 
 def dictlist2listdict(DL):
     " Converts a dict of lists to a list of dicts "

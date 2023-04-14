@@ -38,7 +38,6 @@ class SamplerBatched:
         """Samples an experience batch of the required size."""
         experience_batch = []
         step = 0
-        self._init_batch_episode_info()
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
@@ -86,7 +85,6 @@ class SamplerBatched:
                                     exp = True
                             self._episode_reset(global_step)
 
-        self._summary_batch_episode_info(global_step)
         return batch_listdict2dictlist(experience_batch), step
 
     def sample_episode(self, is_train, render=False, deterministic_action=False):
@@ -97,9 +95,6 @@ class SamplerBatched:
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
                     while not np.any(done):
-                    #  and self._episode_step < self._max_episode_len:
-
-
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
                         agent_output = self._postprocess_agent_output(agent_output, deterministic_action=deterministic_action)
@@ -143,47 +138,19 @@ class SamplerBatched:
             episode_info.update(self._env.get_episode_info())
         return episode_info
 
-    def _init_batch_episode_info(self):
-        self._batch_episode_info = []
-        
-    def _append_batch_episode_info(self, episode_info):
-        self._batch_episode_info.append(episode_info)
-        
-    def _summary_batch_episode_info(self, global_step=None):
-        if global_step is not None and self._logger is not None:
-            # episode_info = AttrDict()
-            episode_info = {}
-            for key in self._batch_episode_info[0].keys():
-                episode_info[key] = np.mean([info[key] for info in self._batch_episode_info])
-            self.summary_batch_episode_info = episode_info
-            
-            self._logger.log_scalar_dict(episode_info,
-                                         prefix='train' if self._agent._is_train else 'val',
-                                         step=global_step)
-            
-    # def test_log(self, logger, global_step, prefix=''):
-    #     if global_step is not None :
-    #         self._logger.log_scalar_dict(self.summary_batch_episode_info,
-    #                                      prefix=prefix+'_IN test',
-    #                                      step=global_step)
-            
-    #         logger.log_scalar_dict(self.summary_batch_episode_info,
-    #                                      prefix=prefix+'_Out test',
-    #                                      step=global_step)
-            
-    #         print('stop here')
-
     def _episode_reset(self, global_step=None):
         """Resets sampler at the end of an episode."""
-        if global_step is not None and self._logger is not None:    # logger is none in non-master threads
-        #     self._logger.log_scalar_dict(self.get_episode_info(),
-        #                                  prefix='train' if self._agent._is_train else 'val',
-        #                                  step=global_step)
-        
-            self._append_batch_episode_info(self.get_episode_info())
+        self._log_episode_info(global_step)
         self._episode_step, self._episode_reward = 0, 0.
         self._obs = self._postprocess_obs(self._select_one_agent_id(self._reset_env()))
         self._agent.reset()
+        
+    def _log_episode_info(self, global_step):
+        """Logs episode info."""
+        if self._logger is not None and global_step is not None:
+            self._logger.log_scalar_dict(self.get_episode_info(),
+                                         prefix='train' if self._agent._is_train else 'val',
+                                         step=global_step)
 
     def _reset_env(self):
         return self._env.reset()
@@ -308,6 +275,31 @@ class HierarchicalSamplerBatched(SamplerBatched):
         self.last_hl_obs, self.last_hl_action = None, None
         self.reward_since_last_hl = 0
 
+
+class AgentDetached_SampleBatched(SamplerBatched):
+    
+    def sample_batch(self, batch_size, is_train=True, global_step=None):
+        self._init_batch_episode_info()
+        experience_batch, env_step = super().sample_batch(batch_size, is_train, global_step)
+        episode_info = self._summary_batch_episode_info(global_step)
+        return [experience_batch, env_step, episode_info]
+    
+    def _log_episode_info(self, global_step):
+        if global_step is not None:
+            self._append_batch_episode_info(self.get_episode_info())
+    
+    def _init_batch_episode_info(self):
+        self._batch_episode_info = []
+        
+    def _append_batch_episode_info(self, episode_info):
+        self._batch_episode_info.append(episode_info)
+        
+    def _summary_batch_episode_info(self, global_step=None):
+        episode_info = AttrDict()
+        if global_step is not None and self._logger is not None:
+            for key in self._batch_episode_info[0].keys():
+                episode_info[key] = np.mean([info[key] for info in self._batch_episode_info])
+        return episode_info
 
 class AgentDetached_HierarchicalSamplerBatched(HierarchicalSamplerBatched):
     def __init__(self, *args, **kwargs):

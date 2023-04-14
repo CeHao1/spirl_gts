@@ -12,7 +12,7 @@ from spirl.rl.envs.env_list import EnvList
 # from spirl.rl.agents.ac_agent import SACAgent
 from spirl.data.gts.src.gts_agent import GTSSACAgent
 from spirl.rl.components.sampler_wrap import SamplerWrapped
-from spirl.rl.components.sampler_batched import SamplerBatched
+from spirl.rl.components.sampler_batched import AgentDetached_SampleBatched
 
 
 from spirl.rl.components.normalization import Normalizer
@@ -51,7 +51,7 @@ configuration = {
     # debug
     'n_steps_per_epoch': 800 ,
     'n_steps_per_update': 400 ,
-    'n_warmup_steps': 800 ,
+    'n_warmup_steps': 400 ,
 }
 
 configuration = AttrDict(configuration)
@@ -80,7 +80,7 @@ env_config = AttrDict(
 
 # sampler
 sampler_config = AttrDict(
-    sub_sampler = SamplerBatched,
+    sub_sampler = AgentDetached_SampleBatched,
 )
 
 # Policy

@@ -36,8 +36,8 @@ class WandBLogger:
         wandb.init(**self.init_config)
 
     def log_scalar_dict(self, d, prefix='', step=None):
-        if wandb.run is None:
-            self.init_wandb() 
+        # if wandb.run is None:
+        #     self.init_wandb() 
         """Logs all entries from a dict of scalars. Optionally can prefix all keys in dict before logging."""
         if prefix: d = prefix_dict(d, prefix + '_')
         wandb.log(d) if step is None else wandb.log(d, step=step)
@@ -55,16 +55,12 @@ class WandBLogger:
     def log_plot(self, fig, name, step=None):
         """Logs matplotlib graph to WandB.
         fig is a matplotlib figure handle."""
-        if wandb.run is None:
-            self.init_wandb()
         img = wandb.Image(fig)
         wandb.log({name: img}) if step is None else wandb.log({name: img}, step=step)
         
-    def finish(self):
-        wandb.finish()
-        # wandb.join()
+    def wait(self):
+        wandb.join()
         self.init_wandb()
-
 
     @property   
     def n_logged_samples(self):
