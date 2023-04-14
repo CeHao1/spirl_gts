@@ -57,8 +57,8 @@ configuration = {
     # 'log_output_interval': 1000,
     
     
-    'log_output_interval': 400,
-    'log_image_interval' : 400,
+    'log_output_interval': 200,
+    'log_image_interval' : 200,
     
     # debug
     'n_steps_per_epoch': 800 ,

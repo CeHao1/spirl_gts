@@ -93,7 +93,6 @@ class BaseAgent(nn.Module):
 
             print('## log_images is True ##')
             self.visualize(logger, rollout_storage, step)
-            logger.finish()
 
     def visualize(self, logger, rollout_storage, step):
         """Optionally allows to further visualize the internal state of agent (e.g. replay buffer etc.)"""

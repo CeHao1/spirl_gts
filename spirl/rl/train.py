@@ -157,7 +157,7 @@ class RLTrainer:
                     if self.use_multiple_workers:
                         experience_batch = mpi_gather_experience(experience_batch)
                     self.global_step += mpi_sum(env_steps)
-
+            
                 # update policy
                 with timers['update'].time():
                     if self.is_chef:

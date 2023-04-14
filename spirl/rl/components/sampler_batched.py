@@ -38,6 +38,7 @@ class SamplerBatched:
         """Samples an experience batch of the required size."""
         experience_batch = []
         step = 0
+        self._init_batch_episode_info()
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
@@ -81,10 +82,11 @@ class SamplerBatched:
                             if self._episode_step >= self._max_episode_len:
                                 print(f'restart, step {self._episode_step} exceed max episode len {self._max_episode_len}')
                             if not np.all(done):    # force done to be True for timeout
-                                for exp in experience_batch[-1]:
-                                    exp.done = True
+                                for exp in experience_batch[-1].done:
+                                    exp = True
                             self._episode_reset(global_step)
 
+        self._summary_batch_episode_info(global_step)
         return batch_listdict2dictlist(experience_batch), step
 
     def sample_episode(self, is_train, render=False, deterministic_action=False):
@@ -135,17 +137,50 @@ class SamplerBatched:
 
     def get_episode_info(self):
         episode_info = AttrDict(episode_reward=self._episode_reward,
-                                episode_length=self._episode_step,)
+                                episode_length=self._episode_step,
+                                episode_success=np.clip(self._episode_reward, 0, 1))
         if hasattr(self._env, "get_episode_info"):
             episode_info.update(self._env.get_episode_info())
         return episode_info
 
+    def _init_batch_episode_info(self):
+        self._batch_episode_info = []
+        
+    def _append_batch_episode_info(self, episode_info):
+        self._batch_episode_info.append(episode_info)
+        
+    def _summary_batch_episode_info(self, global_step=None):
+        if global_step is not None and self._logger is not None:
+            # episode_info = AttrDict()
+            episode_info = {}
+            for key in self._batch_episode_info[0].keys():
+                episode_info[key] = np.mean([info[key] for info in self._batch_episode_info])
+            self.summary_batch_episode_info = episode_info
+            
+            self._logger.log_scalar_dict(episode_info,
+                                         prefix='train' if self._agent._is_train else 'val',
+                                         step=global_step)
+            
+    # def test_log(self, logger, global_step, prefix=''):
+    #     if global_step is not None :
+    #         self._logger.log_scalar_dict(self.summary_batch_episode_info,
+    #                                      prefix=prefix+'_IN test',
+    #                                      step=global_step)
+            
+    #         logger.log_scalar_dict(self.summary_batch_episode_info,
+    #                                      prefix=prefix+'_Out test',
+    #                                      step=global_step)
+            
+    #         print('stop here')
+
     def _episode_reset(self, global_step=None):
         """Resets sampler at the end of an episode."""
         if global_step is not None and self._logger is not None:    # logger is none in non-master threads
-            self._logger.log_scalar_dict(self.get_episode_info(),
-                                         prefix='train' if self._agent._is_train else 'val',
-                                         step=global_step)
+        #     self._logger.log_scalar_dict(self.get_episode_info(),
+        #                                  prefix='train' if self._agent._is_train else 'val',
+        #                                  step=global_step)
+        
+            self._append_batch_episode_info(self.get_episode_info())
         self._episode_step, self._episode_reward = 0, 0.
         self._obs = self._postprocess_obs(self._select_one_agent_id(self._reset_env()))
         self._agent.reset()
@@ -256,11 +291,11 @@ class HierarchicalSamplerBatched(SamplerBatched):
                         # reset if episode ends
                         if np.any(done) or self._episode_step >= self._max_episode_len:
                             if not np.all(done):    # force done to be True for timeout
-                                for exp in ll_experience_batch[-1]:
-                                    exp.done = True
+                                for exp in ll_experience_batch[-1].done:
+                                    exp = True
                                 if hl_experience_batch:   # can potentially be empty 
-                                    for exp in hl_experience_batch[-1]:
-                                        exp.done = True
+                                    for exp in hl_experience_batch[-1].done:
+                                        exp = True
                             print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
                             self._episode_reset(global_step)
         return AttrDict(
