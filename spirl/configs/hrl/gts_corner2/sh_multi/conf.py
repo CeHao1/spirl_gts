@@ -12,7 +12,7 @@ configuration.update(AttrDict(
     
     max_rollout_len = 200,
     n_steps_per_epoch= 10000,
-    n_steps_per_update= 400,
+    n_steps_per_update= 800,
     n_warmup_steps = 400,
 ))
 

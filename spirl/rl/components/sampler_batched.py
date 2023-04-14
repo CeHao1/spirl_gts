@@ -316,3 +316,24 @@ class AgentDetached_HierarchicalSamplerBatched(HierarchicalSamplerBatched):
                 log_prob=agent_output.hl_log_prob,
             )
         return agent_output
+    
+    def sample_batch(self, batch_size, is_train=True, global_step=None):
+        return AgentDetached_SampleBatched.sample_batch(self, batch_size, is_train, global_step)
+        
+    def _log_episode_info(self, global_step):
+        AgentDetached_SampleBatched._log_episode_info(self, global_step)
+
+    def _init_batch_episode_info(self):
+        AgentDetached_SampleBatched._init_batch_episode_info(self)
+
+    def _append_batch_episode_info(self, episode_info):
+        AgentDetached_SampleBatched._append_batch_episode_info(self, episode_info)
+
+    def _summary_batch_episode_info(self, global_step=None):
+        return AgentDetached_SampleBatched._summary_batch_episode_info(self, global_step)
+    
+    def _episode_reset(self, global_step=None):
+        super()._episode_reset(global_step)
+        self._last_hl_output = None
+
+    

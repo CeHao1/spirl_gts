@@ -10,12 +10,7 @@ class SamplerWrapped:
     def __init__(self, config, env, agent, logger, max_episode_len):
         self._hp = self._default_hparams().overwrite(config)
         self._logger = logger
-        
-        # if only set logger for the master sampler
         self._sub_samplers = [self._hp.sub_sampler(config, env_i, agent, logger, max_episode_len) for env_i in env]
-        # for i in range(len(env)):
-        #     logger_i = logger if i==0 else None
-        #     self._sub_samplers.append(self._hp.sub_sampler(config, env[i], agent, logger_i, max_episode_len))
         self.num_envs = len(self._sub_samplers)
         
         mp.set_start_method('spawn')
@@ -28,7 +23,6 @@ class SamplerWrapped:
     def init(self, is_train):
         for rank in range(self.num_envs):
             self._sub_samplers[rank].init(is_train)
-
 
     def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True):
         # modify batch_size
@@ -54,7 +48,6 @@ class SamplerWrapped:
             results = [p.get() for p in results]
 
         return self._process_sample_episode_return(results)
-        
 
     def _process_sample_batch_return(self, results):
         experience_batch_list = []
@@ -76,13 +69,16 @@ class HierarchicalSamplerWrapped(SamplerWrapped):
     def _process_sample_batch_return(self, results):
         hl_experience_batch_list = []
         ll_experience_batch_list = []
+        episode_info_list = []
         env_steps_sum = 0
         for result in results:
-            experience_batch, env_steps = result
+            experience_batch, env_steps, episode_info = result
             hl_experience_batch_list.append(experience_batch.hl_batch)
             ll_experience_batch_list.append(experience_batch.ll_batch)
+            episode_info_list.append(episode_info)
             env_steps_sum += env_steps
         
+        episode_info = listdict_mean(episode_info_list)
         return AttrDict(hl_batch = batch_listdict2dictlist(hl_experience_batch_list),
                         ll_batch = batch_listdict2dictlist(ll_experience_batch_list)), \
-                env_steps_sum
+                env_steps_sum, episode_info
