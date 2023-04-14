@@ -32,7 +32,7 @@ env_config = AttrDict(
 
     # store_states = True,
     initial_velocity = 65*3.6, 
-    ip_address = '192.168.1.112'
+    ip_address = '192.168.1.104'
 
 )
 
@@ -45,7 +45,7 @@ configuration = {
     'max_rollout_len': 200,
     # 'n_steps_per_epoch': 1000 ,
     # 'n_warmup_steps': 5000 ,
-    'use_update_after_sampling':True,
+    # 'use_update_after_sampling':True,
 
     'environment': GTSEnv_Corner2_Single,
     'sampler':SamplerBatched,
