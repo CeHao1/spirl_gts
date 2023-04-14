@@ -77,12 +77,15 @@ class ActionPriorSACAgent(SACAgent):
     def _vis_hl_q(self, logger, step):
         self._vis_q(logger, step, prefix='hl')
     
-    def _vis_q(self, logger, step, prefix='hl', plot_type='maze',
+    def _vis_q(self, logger, step, prefix='hl', plot_type='maze', external_states=None,
                content=['q', 'KLD', 'policy_v', 'rew', 
                         'action', 'action_nosquash', 'action_recent', 'action_nosquash_recent']):
         experience_batch = self.replay_buffer.get()
         size = self.replay_buffer.size
-        states = experience_batch.observation[:size, :2]
+        if external_states is not None:
+            states = external_states
+        else:
+            states = experience_batch.observation[:size, :2]
         obs = experience_batch.observation[:size]
         rew = experience_batch.reward[:size]
 
@@ -120,7 +123,7 @@ class ActionPriorSACAgent(SACAgent):
         action_nosquash_sum = np.concatenate(action_nosquash_sum, axis=0)
         
         
-        if plot_type == 'maze' or plot_type == 'gts':
+        if plot_type == 'maze':
             from spirl.data.maze.src.maze_agents import plot_maze_value
             if 'q' in content:
                 plot_maze_value(q_est, states, logger, step, size, fig_name= prefix+'_q')
@@ -131,9 +134,17 @@ class ActionPriorSACAgent(SACAgent):
             if 'rew' in content:
                 plot_maze_value(rew, states, logger, step, size, fig_name= prefix+'_rew')
                 
-        # elif plot_type == 'gts':
-        #     pass
-        
+        elif plot_type == 'gts':
+            from spirl.data.gts.src.gts_agents import plot_gts_value
+            if 'q' in content:
+                plot_gts_value(q_est, states, logger, step, size, fig_name= prefix+'_q')
+            if 'KLD' in content:
+                plot_gts_value(KLD, states, logger, step, size, fig_name= prefix+'_policy KLD')
+            if 'policy_v' in content:
+                plot_gts_value(policy_v, states, logger, step, size, fig_name= prefix+'_policy_v')
+            if 'rew' in content:
+                plot_gts_value(rew, states, logger, step, size, fig_name= prefix+'_rew')
+            
         if 'action' in content:
             plot_action_dist(action_sum, logger, step, size, 
                          fig_name=prefix+'_vis squash,action')

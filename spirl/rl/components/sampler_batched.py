@@ -318,7 +318,10 @@ class AgentDetached_HierarchicalSamplerBatched(HierarchicalSamplerBatched):
         return agent_output
     
     def sample_batch(self, batch_size, is_train=True, global_step=None):
-        return AgentDetached_SampleBatched.sample_batch(self, batch_size, is_train, global_step)
+        self._init_batch_episode_info()
+        experience_batch, env_step = super().sample_batch(batch_size, is_train, global_step)
+        episode_info = self._summary_batch_episode_info(global_step)
+        return [experience_batch, env_step, episode_info]
         
     def _log_episode_info(self, global_step):
         AgentDetached_SampleBatched._log_episode_info(self, global_step)

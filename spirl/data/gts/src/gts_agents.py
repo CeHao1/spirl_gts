@@ -86,7 +86,9 @@ class GTSHLInheritAgent(HLInheritAgent, GTSAgent):
 
     def _vis_hl_q(self, logger, step):
         """Visualizes high-level Q function."""
-        self._vis_q(logger, step, prefix='hl', plot_type='gts')
+        size = self.info_replay_buffer.size
+        states = self.info_replay_buffer.get().observation[:size, :]
+        self._vis_q(logger, step, prefix='hl', plot_type='gts', external_states=states)
 
 class GTSLLInheritAgent(LLInheritAgent, GTSAgent):
     def __init__(self, *args, **kwargs):
@@ -103,7 +105,9 @@ class GTSLLInheritAgent(LLInheritAgent, GTSAgent):
 
     def _vis_ll_q(self, logger, step):
         """Visualizes high-level Q function."""
-        self._vis_q(logger, step, prefix='ll', plot_type='gts',
+        size = self.info_replay_buffer.size
+        states = self.info_replay_buffer.get().observation[:size, :]
+        self._vis_q(logger, step, prefix='ll', plot_type='gts', external_states=states,
                     content=['q', 'KLD', 'action', 'action_nosquash', 'action_recent', 'action_nosquash_recent'])
     
 

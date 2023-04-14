@@ -20,7 +20,7 @@ from spirl.rl.components.critic import MLPCritic
 
 # from spirl.rl.agents.skill_critic.hl_inherit_agent import HLInheritAgent
 # from spirl.rl.agents.skill_critic.ll_inherit_agent import LLInheritAgent
-from spirl.data.gts.src.gts_agent import GTSHLInheritAgent, GTSLLInheritAgent
+from spirl.data.gts.src.gts_agents import GTSHLInheritAgent, GTSLLInheritAgent
 
 from spirl.utils.gts_utils import  corner2_done_function, corner2_spare_reward_function
 

@@ -10,7 +10,7 @@ from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
 from spirl.rl.envs.env_list import EnvList
 
 # from spirl.rl.agents.ac_agent import SACAgent
-from spirl.data.gts.src.gts_agent import GTSSACAgent
+from spirl.data.gts.src.gts_agents import GTSSACAgent
 from spirl.rl.components.sampler_wrap import SamplerWrapped
 from spirl.rl.components.sampler_batched import AgentDetached_SampleBatched
 

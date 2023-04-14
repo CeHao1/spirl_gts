@@ -3,7 +3,7 @@ from spirl.configs.hrl.gts_corner2.sh.conf import *
 
 from spirl.rl.envs.env_list import EnvList
 from spirl.rl.components.sampler_wrap import HierarchicalSamplerWrapped
-from spirl.rl.components.sampler_batched import HierarchicalSamplerBatched
+from spirl.rl.components.sampler_batched import AgentDetached_HierarchicalSamplerBatched
 
 
 configuration.update(AttrDict(
@@ -25,7 +25,7 @@ sub_env_config = AttrDict(
     initial_velocity = 65*3.6, 
 )
 
-ip_address_list = ['192.168.1.112', '192.168.1.110']
+ip_address_list = ['192.168.1.104', '192.168.1.106']
 
 sub_env_config_list = []
 for ip in ip_address_list:
@@ -39,5 +39,5 @@ env_config = AttrDict(
 
 # sampler
 sampler_config = AttrDict(
-    sub_sampler = HierarchicalSamplerBatched,
+    sub_sampler = AgentDetached_HierarchicalSamplerBatched,
 )
