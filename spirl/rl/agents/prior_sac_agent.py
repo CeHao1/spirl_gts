@@ -120,7 +120,7 @@ class ActionPriorSACAgent(SACAgent):
         action_nosquash_sum = np.concatenate(action_nosquash_sum, axis=0)
         
         
-        if plot_type == 'maze':
+        if plot_type == 'maze' or plot_type == 'gts':
             from spirl.data.maze.src.maze_agents import plot_maze_value
             if 'q' in content:
                 plot_maze_value(q_est, states, logger, step, size, fig_name= prefix+'_q')
@@ -131,8 +131,8 @@ class ActionPriorSACAgent(SACAgent):
             if 'rew' in content:
                 plot_maze_value(rew, states, logger, step, size, fig_name= prefix+'_rew')
                 
-        elif plot_type == 'gts':
-            pass
+        # elif plot_type == 'gts':
+        #     pass
         
         if 'action' in content:
             plot_action_dist(action_sum, logger, step, size, 

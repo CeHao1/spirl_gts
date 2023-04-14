@@ -33,7 +33,7 @@ env_config = AttrDict(
     reward_function = corner2_spare_reward_function,
     done_function = corner2_done_function,
     
-    ip_address = '192.168.1.112',
+    ip_address = '192.168.1.104',
 )
 
 
@@ -43,7 +43,7 @@ configuration = AttrDict(    {
     
     'data_dir': '.',
     'num_epochs': 2000,
-    'max_rollout_len': 600,
+    'max_rollout_len': 200,
     # 'n_steps_per_epoch': 10000,
     # 'n_steps_per_update': 1000,
     # 'n_warmup_steps': 160000,
@@ -55,6 +55,8 @@ configuration = AttrDict(    {
     'n_steps_per_epoch': 10000,
     'n_steps_per_update': 400,
     'n_warmup_steps': 200,
+    'log_output_interval': 200,
+    'log_image_interval': 200,
 
 } )
 
@@ -73,7 +75,7 @@ obs_norm_params = AttrDict(
 
 base_agent_params = AttrDict(
     # batch_size=256,
-    batch_size=64,
+    batch_size=32,
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,

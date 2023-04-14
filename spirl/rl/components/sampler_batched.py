@@ -43,8 +43,8 @@ class SamplerBatched:
                 with self._agent.rollout_mode():
                     # reset again for gts
                     self._episode_reset(global_step)
-
-                    while step < batch_size or (self._episode_step != 0): # must complete one episode
+                    # while step < batch_size or (self._episode_step != 0): # must complete one episode
+                    while step < batch_size:
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
                         if agent_output.action is None:
@@ -198,8 +198,8 @@ class HierarchicalSamplerBatched(SamplerBatched):
                     # reset again for gts
                     self._episode_reset(global_step)
                     
-                    while env_steps < batch_size or (self._episode_step != 0): #must complete one sampling
-                    # while env_steps < batch_size:
+                    # while env_steps < batch_size or (self._episode_step != 0): #must complete one sampling
+                    while env_steps < batch_size:
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
                         agent_output = self._postprocess_agent_output(agent_output)

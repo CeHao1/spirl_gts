@@ -69,7 +69,7 @@ class GTSActionPriorSACAgent(ActionPriorSACAgent, GTSAgent):
 
     def _vis_hl_q(self, logger, step):
         """Visualizes high-level Q function."""
-        self._vis_q(logger, step, plot_type='gts')
+        self._vis_q(logger, step, prefix='hl', plot_type='gts')
 
 class GTSHLInheritAgent(HLInheritAgent, GTSAgent):
     def __init__(self, *args, **kwargs):
@@ -148,12 +148,12 @@ def plot_gts_traj(states, logger, step, size):
 def plot_gts_value(q, states, logger, step, size, fig_name='vis'):
     fig = plt.figure(figsize=(10,8))
     plt.scatter(states[:, 0], states[:, 1], s=5, c=q, cmap='Oranges')
-    plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
-    plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'ro')
+    # plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
+    # plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'ro')
     plt.axis("equal")
     plt.title(fig_name + ' step ' + str(step) + ' size ' + str(size))
-    plt.xlim(GTSAgent.VIS_RANGE[0])
-    plt.ylim(GTSAgent.VIS_RANGE[1])
+    # plt.xlim(GTSAgent.VIS_RANGE[0])
+    # plt.ylim(GTSAgent.VIS_RANGE[1])
     plt.colorbar()
     logger.log_plot(fig, fig_name, step)
     plt.close(fig)
