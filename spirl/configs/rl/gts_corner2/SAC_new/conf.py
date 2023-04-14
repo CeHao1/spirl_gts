@@ -60,13 +60,13 @@ configuration = AttrDict(configuration)
 # Environment
 sub_env_config = AttrDict(
     reward_norm=1.,
-    do_init = False,
+    # do_init = False,
     reward_function = corner2_spare_reward_function,
     done_function = corner2_done_function,
     initial_velocity = 65*3.6, 
 )
 
-ip_address_list = ['192.168.1.112', '192.168.1.110']
+ip_address_list = ['192.168.1.104', '192.168.1.106']
 
 sub_env_config_list = []
 for ip in ip_address_list:

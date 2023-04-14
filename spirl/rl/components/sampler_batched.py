@@ -81,8 +81,8 @@ class SamplerBatched:
                             if self._episode_step >= self._max_episode_len:
                                 print(f'restart, step {self._episode_step} exceed max episode len {self._max_episode_len}')
                             if not np.all(done):    # force done to be True for timeout
-                                for exp in experience_batch[-1].done:
-                                    exp = True
+                                for exp in experience_batch[-1]:
+                                    exp.done = True
                             self._episode_reset(global_step)
 
         return batch_listdict2dictlist(experience_batch), step
@@ -159,19 +159,16 @@ class SamplerBatched:
         return obs
 
     def _select_agent_id(self, obs, reward, done, info):
-        # print('before ', obs.shape, reward.shape, done.shape, info.shape)
         if self._hp.select_agent_id:
             obs = obs[self._hp.select_agent_id]
             reward = reward[self._hp.select_agent_id]
             done = done[self._hp.select_agent_id]
             info = info[self._hp.select_agent_id]
-        # print('after ', obs.shape, reward.shape, done.shape, info.shape)
         return obs, reward, done, info
 
     def _postprocess_obs(self, obs):
         """Optionally post-process observation."""
         return obs
-        # return obs[0][None]
 
     def _postprocess_agent_output(self, agent_output, deterministic_action=False):
         """Optionally post-process / store agent output."""
@@ -259,11 +256,11 @@ class HierarchicalSamplerBatched(SamplerBatched):
                         # reset if episode ends
                         if np.any(done) or self._episode_step >= self._max_episode_len:
                             if not np.all(done):    # force done to be True for timeout
-                                for exp in ll_experience_batch[-1].done:
-                                    exp = True
+                                for exp in ll_experience_batch[-1]:
+                                    exp.done = True
                                 if hl_experience_batch:   # can potentially be empty 
-                                    for exp in hl_experience_batch[-1].done:
-                                        exp = True
+                                    for exp in hl_experience_batch[-1]:
+                                        exp.done = True
                             print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
                             self._episode_reset(global_step)
         return AttrDict(

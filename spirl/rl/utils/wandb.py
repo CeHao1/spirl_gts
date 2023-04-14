@@ -62,7 +62,7 @@ class WandBLogger:
         
     def finish(self):
         wandb.finish()
-        wandb.join()
+        # wandb.join()
         self.init_wandb()
 
 
