@@ -263,7 +263,7 @@ class HierarchicalSamplerBatched(SamplerBatched):
                                 if hl_experience_batch:   # can potentially be empty 
                                     for exp in hl_experience_batch[-1].done:
                                         exp = True
-                            print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
+                            print('!! done reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
                             self._episode_reset(global_step)
         return AttrDict(
             hl_batch=batch_listdict2dictlist(hl_experience_batch),

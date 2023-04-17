@@ -28,6 +28,7 @@ class SamplerWrapped:
         # modify batch_size
         import math
         batch_size_every = math.ceil(batch_size / self.num_envs)
+        print('$$batch_size_every', batch_size_every)
         with mp.Pool(processes=self.num_envs) as pool:
             
             results = [pool.apply_async(self._sub_samplers[i].sample_batch, (batch_size_every, is_train, global_step)) for i in range(self.num_envs)]

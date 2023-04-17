@@ -74,8 +74,8 @@ obs_norm_params = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    # batch_size=256,
-    batch_size=32,
+    batch_size=256,
+    # batch_size=32,
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -189,11 +189,11 @@ agent_config = AttrDict(
     ll_agent_params=ll_agent_config,
     hl_interval=ll_model_params.n_rollout_steps,
 
-    update_ll=True,
-    log_video_caption=False,
+    # update_ll=False,
+    # log_video_caption=False,
 
-    # update_iterations = 64,
-    update_iterations = 32,
+    update_iterations = 64,
+    # update_iterations = 32,
     discount_factor = 0.98 ,
 
     initial_train_stage = skill_critic_stages.HL_TRAIN
