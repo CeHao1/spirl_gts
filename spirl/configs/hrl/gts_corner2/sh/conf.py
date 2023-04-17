@@ -194,7 +194,7 @@ agent_config = AttrDict(
 
     update_iterations = 64,
     # update_iterations = 32,
-    discount_factor = 0.98 ,
+    # discount_factor = 0.98 ,
 
     initial_train_stage = skill_critic_stages.HL_TRAIN
     # initial_train_stage = skill_critic_stages.LL_TRAIN_PI

@@ -520,7 +520,11 @@ def listdict2dictlist(LD):
 
 def listdict_mean(LD):
     """ Computes the mean of a list of dictionaries """
-    return type(LD[0])({k: np.mean([dic[k] for dic in LD]) for k in LD[0].keys()})
+    return_dict = {}
+    for key in LD[0]:
+        return_dict[key] = np.mean([dic[key] for dic in LD])
+        print('@@ list', key,  [dic[key] for dic in LD], 'mean"', return_dict[key])
+    return return_dict
 
 def dictlist2listdict(DL):
     " Converts a dict of lists to a list of dicts "

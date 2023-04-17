@@ -17,7 +17,7 @@ from spirl.utils.gts_utils import start_condition_formulator
 class GTSEnv_Corner2_Single(GymEnv):
 
     VIS_RANGE = [-10, 10]
-    START_POS = [-420, 109]
+    START_POS = [-420, -109]
     TARGET_POS = [416, 499]
 
     def __init__(self, config):

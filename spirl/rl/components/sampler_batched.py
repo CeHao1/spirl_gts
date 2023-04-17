@@ -42,7 +42,7 @@ class SamplerBatched:
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
                     # reset again for gts
-                    self._episode_reset(global_step)
+                    self._episode_reset(global_step, log_episode_info=False)
                     # while step < batch_size or (self._episode_step != 0): # must complete one episode
                     while step < batch_size:
                         # perform one rollout step
@@ -138,9 +138,10 @@ class SamplerBatched:
             episode_info.update(self._env.get_episode_info())
         return episode_info
 
-    def _episode_reset(self, global_step=None):
+    def _episode_reset(self, global_step=None, log_episode_info=True):
         """Resets sampler at the end of an episode."""
-        self._log_episode_info(global_step)
+        if log_episode_info:
+            self._log_episode_info(global_step)
         self._episode_step, self._episode_reward = 0, 0.
         self._obs = self._postprocess_obs(self._select_one_agent_id(self._reset_env()))
         self._agent.reset()
@@ -196,7 +197,7 @@ class HierarchicalSamplerBatched(SamplerBatched):
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
                     # reset again for gts
-                    self._episode_reset(global_step)
+                    self._episode_reset(global_step, log_episode_info=False)
                     
                     # while env_steps < batch_size or (self._episode_step != 0): #must complete one sampling
                     while env_steps < batch_size:
@@ -270,8 +271,8 @@ class HierarchicalSamplerBatched(SamplerBatched):
             ll_batch=batch_listdict2dictlist(ll_experience_batch[:-1]),   # last element does not have updated obs_next!
         ), env_steps
 
-    def _episode_reset(self, global_step=None):
-        super()._episode_reset(global_step)
+    def _episode_reset(self, global_step=None, log_episode_info=True):
+        super()._episode_reset(global_step, log_episode_info)
         self.last_hl_obs, self.last_hl_action = None, None
         self.reward_since_last_hl = 0
 
@@ -335,8 +336,8 @@ class AgentDetached_HierarchicalSamplerBatched(HierarchicalSamplerBatched):
     def _summary_batch_episode_info(self, global_step=None):
         return AgentDetached_SampleBatched._summary_batch_episode_info(self, global_step)
     
-    def _episode_reset(self, global_step=None):
-        super()._episode_reset(global_step)
+    def _episode_reset(self, global_step=None, log_episode_info=True):
+        super()._episode_reset(global_step, log_episode_info)
         self._last_hl_output = None
 
     

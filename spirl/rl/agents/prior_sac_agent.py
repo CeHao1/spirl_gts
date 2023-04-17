@@ -134,6 +134,19 @@ class ActionPriorSACAgent(SACAgent):
             if 'rew' in content:
                 plot_maze_value(rew, states, logger, step, size, fig_name= prefix+'_rew')
                 
+            if 'action' in content:
+                plot_action_dist(action_sum, logger, step, size, 
+                         fig_name=prefix+'_vis squash,action')
+            if 'action_nosquash' in content:
+                plot_action_dist(action_sum, logger, step, size=int(1e4), 
+                            fig_name=prefix+'_vis squash, recent 10k,action')
+            if 'action_recent' in content:
+                plot_action_dist(action_nosquash_sum, logger, step, size, 
+                            fig_name=prefix+'_vis nosquash, action', xlim=[-4.5, 4.5])
+            if 'action_nosquash_recent' in content:
+                plot_action_dist(action_nosquash_sum, logger, step, size=int(1e4), 
+                            fig_name=prefix+'_vis nosquash, recent 10k, action', xlim=[-4.5, 4.5])
+                
         elif plot_type == 'gts':
             from spirl.data.gts.src.gts_agents import plot_gts_value
             if 'q' in content:
@@ -145,18 +158,18 @@ class ActionPriorSACAgent(SACAgent):
             if 'rew' in content:
                 plot_gts_value(rew, states, logger, step, size, fig_name= prefix+'_rew')
             
-        if 'action' in content:
-            plot_action_dist(action_sum, logger, step, size, 
+            if 'action' in content:
+                plot_action_dist(action_sum, logger, step, size, 
                          fig_name=prefix+'_vis squash,action')
-        if 'action_nosquash' in content:
-            plot_action_dist(action_sum, logger, step, size=int(1e4), 
-                         fig_name=prefix+'_vis squash, recent 10k,action')
-        if 'action_recent' in content:
-            plot_action_dist(action_nosquash_sum, logger, step, size, 
-                         fig_name=prefix+'_vis nosquash, action', xlim=[-4.5, 4.5])
-        if 'action_nosquash_recent' in content:
-            plot_action_dist(action_nosquash_sum, logger, step, size=int(1e4), 
-                         fig_name=prefix+'_vis nosquash, recent 10k, action', xlim=[-4.5, 4.5])
+            if 'action_nosquash' in content:
+                plot_action_dist(action_sum, logger, step, size=int(1e4), 
+                            fig_name=prefix+'_vis squash, recent 10k,action')
+            if 'action_recent' in content:
+                plot_action_dist(action_nosquash_sum, logger, step, size, 
+                            fig_name=prefix+'_vis nosquash, action', xlim=[-4.5, 4.5])
+            if 'action_nosquash_recent' in content:
+                plot_action_dist(action_nosquash_sum, logger, step, size=int(1e4), 
+                            fig_name=prefix+'_vis nosquash, recent 10k, action', xlim=[-4.5, 4.5])
 
 
 def plot_action_dist(action, logger, step, size, fig_name='vis action', bw=0.5, xlim=None):
