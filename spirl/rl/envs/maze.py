@@ -64,11 +64,11 @@ class ACmMaze1(MazeEnv):
 
 class ACmMaze2(MazeEnv):  
     # 
-    TARGET_POS = np.array([3, 10]) # selected
-    TARGET_POS = np.array([12, 5]) # 
+    # TARGET_POS = np.array([3, 10]) # selected
+    TARGET_POS = np.array([5, 1]) # 
     
-    START_POS = np.array([2, 2]) #
-    VIS_RANGE = [[-1, 15], [-1, 18]]
+    START_POS = np.array([1,1]) #
+    VIS_RANGE = [[-1, 19], [-1, 18]]
     
     def _default_hparams(self):
         default_dict = ParamDict({
