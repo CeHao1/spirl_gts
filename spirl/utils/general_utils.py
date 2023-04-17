@@ -523,7 +523,7 @@ def listdict_mean(LD):
     return_dict = {}
     for key in LD[0]:
         return_dict[key] = np.mean([dic[key] for dic in LD])
-        print('@@ list', key,  [dic[key] for dic in LD], 'mean"', return_dict[key])
+        # print('@@ list', key,  [dic[key] for dic in LD], 'mean"', return_dict[key])
     return return_dict
 
 def dictlist2listdict(DL):
