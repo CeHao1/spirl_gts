@@ -8,10 +8,10 @@ from spirl.rl.agents.skill_critic.hl_skill_agent import HLSKillAgent
 from spirl.rl.agents.skill_critic.hl_inherit_agent  import HLInheritAgent
 from spirl.rl.agents.skill_space_agent import SkillSpaceAgent, ACSkillSpaceAgent
 
-from spirl.rl.envs.maze import ACRandMaze0S40Env, ACmMaze1
+from spirl.rl.envs.maze import ACRandMaze0S40Env, ACmMaze1, ACmMaze2
 
 class MazeAgent:
-    chosen_maze = ACmMaze1
+    chosen_maze = ACmMaze2
     START_POS = chosen_maze.START_POS
     TARGET_POS = chosen_maze.TARGET_POS
     VIS_RANGE = chosen_maze.VIS_RANGE

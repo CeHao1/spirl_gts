@@ -65,13 +65,21 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_h/shLL  --gpu=0 \
 # in maze1
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
---seed=0 --prefix=mo_topmid_HL_01
+--seed=0 --prefix=mo_topmid_HLsLLQ
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
---seed=0 --prefix=mo_alp-6_hybrid01 \
+--seed=4 --prefix=mo_topmid_LLP_s4 \
 --resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0
 
 
+# in maze0
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL  --gpu=0 \
+--seed=0 --prefix=m0lv2_HLsLLQ_s0_02
 
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_h/shLL_m1  --gpu=0 \
---seed=1 --prefix=mh_m1_s1_01
+# in maze2
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
+--seed=1 --prefix=HLsLLQ_s1
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
+--seed=0 --prefix=easy_LL2 \
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0

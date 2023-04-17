@@ -56,7 +56,7 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             self.hl_agent.switch_off_deterministic_action_mode()
             self.ll_agent.switch_on_deterministic_action_mode()
             self.hl_agent.fast_assign_flags([True, True])
-            self.ll_agent.fast_assign_flags([False, False])
+            self.ll_agent.fast_assign_flags([False, True])
 
         elif stage == skill_critic_stages.LL_TRAIN:
         # 3) LL training stage:
