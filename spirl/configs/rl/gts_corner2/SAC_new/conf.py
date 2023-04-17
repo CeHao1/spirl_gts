@@ -1,4 +1,5 @@
 import os
+import copy
 
 from spirl.utils.general_utils import AttrDict
 from spirl.rl.policies.mlp_policies import MLPPolicy
@@ -6,10 +7,12 @@ from spirl.rl.components.critic import MLPCritic
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 
 from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
+from spirl.rl.envs.env_list import EnvList
 
 # from spirl.rl.agents.ac_agent import SACAgent
 from spirl.data.gts.src.gts_agents import GTSSACAgent
-from spirl.rl.components.sampler_batched import SamplerBatched
+from spirl.rl.components.sampler_wrap import SamplerWrapped
+from spirl.rl.components.sampler_batched import AgentDetached_SampleBatched
 
 
 from spirl.rl.components.normalization import Normalizer
@@ -21,20 +24,8 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 notes = 'non-hierarchical RL experiments in gts env'
 
-# Environment
-env_config = AttrDict(
-    reward_norm=1.,
-    do_init = False,
-    # action_standard = True,
 
-    reward_function = corner2_spare_reward_function,
-    done_function = corner2_done_function,
 
-    # store_states = True,
-    initial_velocity = 65*3.6, 
-    ip_address = '192.168.1.104'
-
-)
 
 configuration = {
     'seed': 2,
@@ -47,27 +38,50 @@ configuration = {
     # 'n_warmup_steps': 5000 ,
     # 'use_update_after_sampling':True,
 
-    'environment': GTSEnv_Corner2_Single,
-    'sampler':SamplerBatched,
+    'environment': EnvList,
+    'sampler':SamplerWrapped,
 
     # 'n_steps_per_epoch': 1000 ,
     # 'n_steps_per_update': 200 ,
     # 'n_warmup_steps': 1000 ,
 
-    # 'log_output_interval': 1000,
-    
-    
-    'log_output_interval': 200,
-    'log_image_interval' : 200,
+    'log_output_interval': 400,
+    'log_image_interval' : 400,
     
     # debug
     'n_steps_per_epoch': 800 ,
     'n_steps_per_update': 400 ,
-    'n_warmup_steps': 200 ,
+    'n_warmup_steps': 400 ,
 }
 
 configuration = AttrDict(configuration)
 
+
+# Environment
+sub_env_config = AttrDict(
+    reward_norm=1.,
+    # do_init = False,
+    reward_function = corner2_spare_reward_function,
+    done_function = corner2_done_function,
+    initial_velocity = 65*3.6, 
+)
+
+ip_address_list = ['192.168.1.104', '192.168.1.106']
+
+sub_env_config_list = []
+for ip in ip_address_list:
+    sub_env_config.update({'ip_address': ip})
+    sub_env_config_list.append(copy.deepcopy(sub_env_config))
+
+env_config = AttrDict(
+    env_class = GTSEnv_Corner2_Single,
+    sub_env_configs = sub_env_config_list
+)
+
+# sampler
+sampler_config = AttrDict(
+    sub_sampler = AgentDetached_SampleBatched,
+)
 
 # Policy
 policy_params = AttrDict(

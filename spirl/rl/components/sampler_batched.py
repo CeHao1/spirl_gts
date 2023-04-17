@@ -2,7 +2,7 @@ import numpy as np
 import contextlib
 from collections import deque
 
-from spirl.utils.general_utils import listdict2dictlist, AttrDict, ParamDict, obj2np
+from spirl.utils.general_utils import listdict2dictlist, batch_listdict2dictlist, AttrDict, ParamDict, obj2np
 from spirl.modules.variational_inference import MultivariateGaussian
 from spirl.rl.utils.reward_fcns import sparse_threshold
 
@@ -41,8 +41,10 @@ class SamplerBatched:
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
-                    while step < batch_size or (self._episode_step != 0): # must complete one episode
-                    # while step < batch_size:
+                    # reset again for gts
+                    self._episode_reset(global_step)
+                    # while step < batch_size or (self._episode_step != 0): # must complete one episode
+                    while step < batch_size:
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
                         if agent_output.action is None:
@@ -83,7 +85,7 @@ class SamplerBatched:
                                     exp = True
                             self._episode_reset(global_step)
 
-        return listdict2dictlist(experience_batch), step
+        return batch_listdict2dictlist(experience_batch), step
 
     def sample_episode(self, is_train, render=False, deterministic_action=False):
         """Samples one episode from the environment."""
@@ -93,15 +95,8 @@ class SamplerBatched:
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
                     while not np.any(done):
-                    #  and self._episode_step < self._max_episode_len:
-
-
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
-
-                        # if agent_output.action is None:
-                        #     break
-
                         agent_output = self._postprocess_agent_output(agent_output, deterministic_action=deterministic_action)
                         if render:
                             render_obs = self._env.render()
@@ -133,24 +128,29 @@ class SamplerBatched:
         for exp in episode[-1].done:# make sure episode is marked as done at final time step
             exp = True
 
-        return listdict2dictlist(episode)
+        return batch_listdict2dictlist(episode)
 
     def get_episode_info(self):
         episode_info = AttrDict(episode_reward=self._episode_reward,
-                                episode_length=self._episode_step,)
+                                episode_length=self._episode_step,
+                                episode_success=np.clip(self._episode_reward, 0, 1))
         if hasattr(self._env, "get_episode_info"):
             episode_info.update(self._env.get_episode_info())
         return episode_info
 
     def _episode_reset(self, global_step=None):
         """Resets sampler at the end of an episode."""
-        if global_step is not None and self._logger is not None:    # logger is none in non-master threads
-            self._logger.log_scalar_dict(self.get_episode_info(),
-                                         prefix='train' if self._agent._is_train else 'val',
-                                         step=global_step)
+        self._log_episode_info(global_step)
         self._episode_step, self._episode_reward = 0, 0.
         self._obs = self._postprocess_obs(self._select_one_agent_id(self._reset_env()))
         self._agent.reset()
+        
+    def _log_episode_info(self, global_step):
+        """Logs episode info."""
+        if self._logger is not None and global_step is not None:
+            self._logger.log_scalar_dict(self.get_episode_info(),
+                                         prefix='train' if self._agent._is_train else 'val',
+                                         step=global_step)
 
     def _reset_env(self):
         return self._env.reset()
@@ -161,19 +161,16 @@ class SamplerBatched:
         return obs
 
     def _select_agent_id(self, obs, reward, done, info):
-        # print('before ', obs.shape, reward.shape, done.shape, info.shape)
         if self._hp.select_agent_id:
             obs = obs[self._hp.select_agent_id]
             reward = reward[self._hp.select_agent_id]
             done = done[self._hp.select_agent_id]
             info = info[self._hp.select_agent_id]
-        # print('after ', obs.shape, reward.shape, done.shape, info.shape)
         return obs, reward, done, info
 
     def _postprocess_obs(self, obs):
         """Optionally post-process observation."""
         return obs
-        # return obs[0][None]
 
     def _postprocess_agent_output(self, agent_output, deterministic_action=False):
         """Optionally post-process / store agent output."""
@@ -184,7 +181,7 @@ class SamplerBatched:
         return agent_output
 
 
-class HierarchicalSamplerBached(SamplerBatched):
+class HierarchicalSamplerBatched(SamplerBatched):
     """Collects experience batches by rolling out a hierarchical agent. Aggregates low-level batches into HL batch."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -198,8 +195,11 @@ class HierarchicalSamplerBached(SamplerBatched):
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
-                    while env_steps < batch_size or (self._episode_step != 0): #must complete one sampling
-                    # while env_steps < batch_size:
+                    # reset again for gts
+                    self._episode_reset(global_step)
+                    
+                    # while env_steps < batch_size or (self._episode_step != 0): #must complete one sampling
+                    while env_steps < batch_size:
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
                         agent_output = self._postprocess_agent_output(agent_output)
@@ -266,11 +266,77 @@ class HierarchicalSamplerBached(SamplerBatched):
                             print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
                             self._episode_reset(global_step)
         return AttrDict(
-            hl_batch=listdict2dictlist(hl_experience_batch),
-            ll_batch=listdict2dictlist(ll_experience_batch[:-1]),   # last element does not have updated obs_next!
+            hl_batch=batch_listdict2dictlist(hl_experience_batch),
+            ll_batch=batch_listdict2dictlist(ll_experience_batch[:-1]),   # last element does not have updated obs_next!
         ), env_steps
 
     def _episode_reset(self, global_step=None):
         super()._episode_reset(global_step)
         self.last_hl_obs, self.last_hl_action = None, None
         self.reward_since_last_hl = 0
+
+
+class AgentDetached_SampleBatched(SamplerBatched):
+    
+    def sample_batch(self, batch_size, is_train=True, global_step=None):
+        self._init_batch_episode_info()
+        experience_batch, env_step = super().sample_batch(batch_size, is_train, global_step)
+        episode_info = self._summary_batch_episode_info(global_step)
+        return [experience_batch, env_step, episode_info]
+    
+    def _log_episode_info(self, global_step):
+        if global_step is not None:
+            self._append_batch_episode_info(self.get_episode_info())
+    
+    def _init_batch_episode_info(self):
+        self._batch_episode_info = []
+        
+    def _append_batch_episode_info(self, episode_info):
+        self._batch_episode_info.append(episode_info)
+        
+    def _summary_batch_episode_info(self, global_step=None):
+        episode_info = AttrDict()
+        if global_step is not None and self._logger is not None:
+            for key in self._batch_episode_info[0].keys():
+                episode_info[key] = np.mean([info[key] for info in self._batch_episode_info])
+        return episode_info
+
+class AgentDetached_HierarchicalSamplerBatched(HierarchicalSamplerBatched):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._last_hl_output = None
+
+    def sample_action(self, obs):
+        """Samples an action from the agent."""
+        agent_output = self._agent.act(obs, self._last_hl_output)
+        if agent_output.is_hl_step:
+            self._last_hl_output = AttrDict(
+                action=agent_output.hl_action,
+                dist=agent_output.hl_dist,
+                log_prob=agent_output.hl_log_prob,
+            )
+        return agent_output
+    
+    def sample_batch(self, batch_size, is_train=True, global_step=None):
+        self._init_batch_episode_info()
+        experience_batch, env_step = super().sample_batch(batch_size, is_train, global_step)
+        episode_info = self._summary_batch_episode_info(global_step)
+        return [experience_batch, env_step, episode_info]
+        
+    def _log_episode_info(self, global_step):
+        AgentDetached_SampleBatched._log_episode_info(self, global_step)
+
+    def _init_batch_episode_info(self):
+        AgentDetached_SampleBatched._init_batch_episode_info(self)
+
+    def _append_batch_episode_info(self, episode_info):
+        AgentDetached_SampleBatched._append_batch_episode_info(self, episode_info)
+
+    def _summary_batch_episode_info(self, global_step=None):
+        return AgentDetached_SampleBatched._summary_batch_episode_info(self, global_step)
+    
+    def _episode_reset(self, global_step=None):
+        super()._episode_reset(global_step)
+        self._last_hl_output = None
+
+    

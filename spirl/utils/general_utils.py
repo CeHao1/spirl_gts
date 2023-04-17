@@ -13,6 +13,7 @@ import functools
 import itertools
 
 from functools import partial, reduce
+from torch.optim import Adam, RAdam, RMSprop, SGD
 import collections
 from collections import OrderedDict
 
@@ -138,6 +139,63 @@ def dummy_context():
     yield
 
 
+class ClipGradOptimizer:     
+
+    def step(self, *args, **kwargs):
+        if self.gradient_clip is not None:
+            params = np.concatenate([group['params'] for group in self.param_groups])
+            torch.nn.utils.clip_grad_norm_(params, self.gradient_clip)
+  
+class Adam_ClipGradOptimizer(Adam, ClipGradOptimizer):
+    def __init__(self, *args, gradient_clip=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.gradient_clip = gradient_clip
+        
+    def step(self, *args, **kwargs):
+        ClipGradOptimizer.step(self, *args, **kwargs)
+        super().step(*args, **kwargs)
+
+class RADAM_ClipGradOptimizer(RAdam, ClipGradOptimizer):
+    def __init__(self, *args, gradient_clip=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.gradient_clip = gradient_clip
+        
+    def step(self, *args, **kwargs):
+        ClipGradOptimizer.step(self, *args, **kwargs)
+        super().step(*args, **kwargs)
+
+class RMSprop_ClipGradOptimizer(RMSprop, ClipGradOptimizer):
+    def __init__(self, *args, gradient_clip=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.gradient_clip = gradient_clip
+        
+    def step(self, *args, **kwargs):
+        ClipGradOptimizer.step(self, *args, **kwargs)
+        super().step(*args, **kwargs)
+
+class SGD_ClipGradOptimizer(SGD, ClipGradOptimizer):
+    def __init__(self, *args, gradient_clip=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.gradient_clip = gradient_clip
+        
+    def step(self, *args, **kwargs):
+        ClipGradOptimizer.step(self, *args, **kwargs)
+        super().step(*args, **kwargs)
+
+def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
+    assert optimizer_type is not None  # need to set optimizer type!
+    if optimizer_type == Adam:
+        return Adam_ClipGradOptimizer(*args, **kwargs)
+    elif optimizer_type == RAdam:
+        return RADAM_ClipGradOptimizer(*args, **kwargs)
+    elif optimizer_type == RMSprop:
+        return RMSprop_ClipGradOptimizer(*args, **kwargs)
+    elif optimizer_type == SGD:
+        return SGD_ClipGradOptimizer(*args, **kwargs)
+    else:
+        raise NotImplementedError
+
+'''
 def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
     assert optimizer_type is not None  # need to set optimizer type!
 
@@ -154,7 +212,43 @@ def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
             super().step(*args, **kwargs)
 
     return ClipGradOptimizer(*args, **kwargs)
+'''
 
+'''
+# this if fixed by chatgpt, so great!
+# now it can use multiprocessing
+class ClipGradOptimizer:
+    def __init__(self, optimizer, gradient_clip=None):
+        self.optimizer = optimizer
+        self.gradient_clip = gradient_clip
+
+    def step(self, *args, **kwargs):
+        if self.gradient_clip is not None:
+            params = np.concatenate([group['params'] for group in self.optimizer.param_groups])
+            torch.nn.utils.clip_grad_norm_(params, self.gradient_clip)
+
+        self.optimizer.step(*args, **kwargs)
+
+class ClippedOptimizer(ClipGradOptimizer):
+    def __init__(self, optimizer_type, *args, gradient_clip=None, **kwargs):
+        optimizer = optimizer_type(*args, **kwargs)
+        super().__init__(optimizer, gradient_clip)
+        self.defaults = optimizer.defaults
+        self.state = optimizer.state
+        self.param_groups = optimizer.param_groups
+
+def make_clip_grad_optimizer(optimizer_type):
+    def create_optimizer(*args, **kwargs):
+        return ClippedOptimizer(optimizer_type, *args, **kwargs)
+
+    return create_optimizer
+
+def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
+    assert optimizer_type is not None  # need to set optimizer type!
+
+    create_optimizer = make_clip_grad_optimizer(optimizer_type)
+    return create_optimizer(*args, **kwargs)
+'''
 
 class optional:
     """ A function decorator that returns the first argument to the function if yes=False
@@ -417,7 +511,6 @@ def map_dict(fn, d):
     """takes a dictionary and applies the function to every element"""
     return type(d)(map(lambda kv: (kv[0], fn(kv[1])), d.items()))
 
-
 def listdict2dictlist(LD):
     """ Converts a list of dicts to a dict of lists """
     
@@ -425,11 +518,22 @@ def listdict2dictlist(LD):
     keys = reduce(lambda x,y: x & y, (map(lambda d: d.keys(), LD)))
     return AttrDict({k: [dic[k] for dic in LD] for k in keys})
 
+def listdict_mean(LD):
+    """ Computes the mean of a list of dictionaries """
+    return type(LD[0])({k: np.mean([dic[k] for dic in LD]) for k in LD[0].keys()})
 
 def dictlist2listdict(DL):
     " Converts a dict of lists to a list of dicts "
     return [dict(zip(DL,t)) for t in zip(*DL.values())]
 
+def reshape_dict_list(d): # reshape the first two dimensions of a dict of lists
+    for key in d:
+        d[key] = np.array([inner for outer in d[key] for inner in outer])
+        
+def batch_listdict2dictlist(DL):
+    DL = listdict2dictlist(DL)
+    reshape_dict_list(DL)
+    return DL
 
 def joinListDictList(LDL):
     """Joins a list of dictionaries that contain lists."""

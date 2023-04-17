@@ -16,7 +16,7 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'maze_vis'
+WANDB_PROJECT_NAME = 'gts_c2_RL'
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -135,7 +135,7 @@ class RLTrainer:
                     'state_dict': self.agent.state_dict(),
                 }, os.path.join(self._hp.exp_path, 'weights'), CheckpointHandler.get_ckpt_name(epoch))
                 self.agent.save_state(self._hp.exp_path)
-                self.val() # do not do val in train
+                # self.val() # do not do val in train
 
     def train_epoch(self, epoch):
         """Run inner training loop."""
@@ -157,7 +157,7 @@ class RLTrainer:
                     if self.use_multiple_workers:
                         experience_batch = mpi_gather_experience(experience_batch)
                     self.global_step += mpi_sum(env_steps)
-
+            
                 # update policy
                 with timers['update'].time():
                     if self.is_chef:

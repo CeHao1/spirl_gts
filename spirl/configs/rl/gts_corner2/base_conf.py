@@ -8,7 +8,7 @@ from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
 
 # from spirl.rl.agents.ac_agent import SACAgent
-from spirl.data.gts.src.gts_agent import GTSSACAgent
+from spirl.data.gts.src.gts_agents import GTSSACAgent
 from spirl.rl.components.sampler_batched import SamplerBatched
 
 

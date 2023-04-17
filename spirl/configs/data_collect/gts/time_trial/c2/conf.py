@@ -14,7 +14,7 @@ do_init = True
 
 # configs to initialize the gts
 init_config = AttrDict(
-    ip_address = '192.168.1.5',
+    ip_address = '192.168.1.118',
     num_cars = 1,
     car_name = 'Audi TTCup',
     course_name = 'Tokyo Central Outer',
@@ -45,6 +45,11 @@ sample_config = AttrDict(
     # store_states = True,
 )
 
+# configs to save and convert the 
+file_config = AttrDict(
+    save_car_id = [0]
+)
+
 # configuration of each module
 configuration = AttrDict(
     init = BaseInit,
@@ -55,5 +60,5 @@ configuration = AttrDict(
 
     do_init = do_init,
     start_num_epoch = 0,
-    num_epochs = 3000,
+    num_epochs = 5000,
 )

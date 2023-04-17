@@ -1,7 +1,7 @@
 import imp
 from spirl.rl.components.agent import HierarchicalAgent, FixedIntervalHierarchicalAgent, FixedIntervalTimeIndexedHierarchicalAgent
 
-from spirl.utils.general_utils import ParamDict, get_clipped_optimizer, AttrDict, prefix_dict, map_dict
+from spirl.utils.general_utils import ParamDict, AttrDict, prefix_dict, map_dict
 
 from enum import Enum
 from tqdm import tqdm

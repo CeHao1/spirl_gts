@@ -12,7 +12,7 @@ from spirl.models.skill_prior_mdl import SkillPriorMdl
 from spirl.configs.default_data_configs.gts import data_spec
 
 from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
-from spirl.rl.components.sampler_batched import HierarchicalSamplerBached
+from spirl.rl.components.sampler_batched import HierarchicalSamplerBatched
 
 from spirl.utils.gts_utils import  corner2_done_function, corner2_spare_reward_function
 
@@ -43,7 +43,7 @@ configuration = {
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Corner2_Single,
-    'sampler':HierarchicalSamplerBached,
+    'sampler':HierarchicalSamplerBatched,
 
 
     # 'n_steps_per_epoch': 200,
