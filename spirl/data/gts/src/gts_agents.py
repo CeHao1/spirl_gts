@@ -1,7 +1,8 @@
 
 from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
-from spirl.rl.agents.skill_critic.hl_inherit_agent  import HLInheritAgent
+from spirl.rl.agents.skill_critic.hl_inherit_agent import HLInheritAgent
+from spirl.rl.agents.skill_critic.ll_inherit_agent import LLInheritAgent
 
 from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
 
@@ -43,7 +44,7 @@ class GTSAgent:
         """Selects info to be stored in replay buffer."""
         key_list = ['pos[0]', 'pos[2]', 'vx']
         info_batch = AttrDict(
-            observation = np.array([[info_t[0]['state'][key] for key in key_list] for info_t in info])
+            observation = np.array([[info_t['state'][key] for key in key_list] for info_t in info])
         )
         return info_batch
 
@@ -63,14 +64,14 @@ class GTSActionPriorSACAgent(ActionPriorSACAgent, GTSAgent):
         self._vis_hl_q(logger, step)
 
     def add_experience(self, experience_batch):
-        self.info_replay_buffer.append(self._select_info(experience_batch['info']))
+        self.info_replay_buffer.append(self._select_info(experience_batch.pop('info')))
         super().add_experience(experience_batch)
 
     def _vis_hl_q(self, logger, step):
         """Visualizes high-level Q function."""
-        self._vis_q(logger, step, plot_type='gts')
+        self._vis_q(logger, step, prefix='hl', plot_type='gts')
 
-class GTSHLInerientAgent(HLInheritAgent, GTSAgent):
+class GTSHLInheritAgent(HLInheritAgent, GTSAgent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.info_replay_buffer = self._hp.replay(self._hp.replay_params)
@@ -80,14 +81,35 @@ class GTSHLInerientAgent(HLInheritAgent, GTSAgent):
         self._vis_hl_q(logger, step)
 
     def add_experience(self, experience_batch):
-        self.info_replay_buffer.append(self._select_info(experience_batch['info']))
+        self.info_replay_buffer.append(self._select_info(experience_batch.pop('info')))
         super().add_experience(experience_batch)
 
     def _vis_hl_q(self, logger, step):
         """Visualizes high-level Q function."""
-        self._vis_q(logger, step, plot_type='gts')
+        size = self.info_replay_buffer.size
+        states = self.info_replay_buffer.get().observation[:size, :]
+        self._vis_q(logger, step, prefix='hl', plot_type='gts', external_states=states)
 
+class GTSLLInheritAgent(LLInheritAgent, GTSAgent):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.info_replay_buffer = self._hp.replay(self._hp.replay_params)
 
+    def visualize(self, logger, rollout_storage, step):
+        GTSAgent.visualize(self, logger, rollout_storage, step)
+        self._vis_ll_q(logger, step)
+
+    def add_experience(self, experience_batch):
+        self.info_replay_buffer.append(self._select_info(experience_batch.pop('info')))
+        super().add_experience(experience_batch)
+
+    def _vis_ll_q(self, logger, step):
+        """Visualizes high-level Q function."""
+        size = self.info_replay_buffer.size
+        states = self.info_replay_buffer.get().observation[:size, :]
+        self._vis_q(logger, step, prefix='ll', plot_type='gts', external_states=states,
+                    content=['q', 'KLD', 'action', 'action_nosquash', 'action_recent', 'action_nosquash_recent'])
+    
 
 def plot_gts_traj(states, logger, step, size):
 
@@ -130,12 +152,12 @@ def plot_gts_traj(states, logger, step, size):
 def plot_gts_value(q, states, logger, step, size, fig_name='vis'):
     fig = plt.figure(figsize=(10,8))
     plt.scatter(states[:, 0], states[:, 1], s=5, c=q, cmap='Oranges')
-    plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
-    plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'ro')
+    # plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
+    # plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'ro')
     plt.axis("equal")
     plt.title(fig_name + ' step ' + str(step) + ' size ' + str(size))
-    plt.xlim(GTSAgent.VIS_RANGE[0])
-    plt.ylim(GTSAgent.VIS_RANGE[1])
+    # plt.xlim(GTSAgent.VIS_RANGE[0])
+    # plt.ylim(GTSAgent.VIS_RANGE[1])
     plt.colorbar()
     logger.log_plot(fig, fig_name, step)
     plt.close(fig)

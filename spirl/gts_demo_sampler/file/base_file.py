@@ -23,6 +23,12 @@ class BaseFile:
         })
         return default_dict 
 
+    def add_prefix(self, prefix):
+        if prefix is None:
+            return
+        self._hp.raw_data_dir = os.path.join(self._hp.raw_data_dir, prefix)
+        self._hp.rollout_dir = os.path.join(self._hp.rollout_dir, prefix)
+
     def save_raw_data(self, raw_data_list, file_name):
         make_dir(self._hp.raw_data_dir)
 

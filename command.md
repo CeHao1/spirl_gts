@@ -77,5 +77,9 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL  --gpu=0 \
 --seed=0 --prefix=m0lv2_HLsLLQ_s0_02
 
 # in maze2
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh_m2  --gpu=0 \
---seed=0 --prefix=ol_s0
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
+--seed=1 --prefix=HLsLLQ_s1
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
+--seed=0 --prefix=easy_LL2 \
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0

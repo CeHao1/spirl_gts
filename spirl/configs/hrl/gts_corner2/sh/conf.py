@@ -9,7 +9,7 @@ from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.configs.default_data_configs.gts import data_spec
 
 from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
-from spirl.rl.components.sampler_batched import HierarchicalSamplerBached
+from spirl.rl.components.sampler_batched import HierarchicalSamplerBatched
 
 
 from spirl.rl.agents.skill_critic.joint_inherit_agent import JointInheritAgent, skill_critic_stages
@@ -18,8 +18,9 @@ from spirl.rl.policies.cd_model_policy import DecoderRegu_TimeIndexedCDMdlPolicy
 from spirl.rl.policies.prior_policies import LearnedPriorAugmentedPIPolicy
 from spirl.rl.components.critic import MLPCritic
 
-from spirl.rl.agents.skill_critic.hl_inherit_agent import HLInheritAgent
-from spirl.rl.agents.skill_critic.ll_inherit_agent import LLInheritAgent
+# from spirl.rl.agents.skill_critic.hl_inherit_agent import HLInheritAgent
+# from spirl.rl.agents.skill_critic.ll_inherit_agent import LLInheritAgent
+from spirl.data.gts.src.gts_agents import GTSHLInheritAgent, GTSLLInheritAgent
 
 from spirl.utils.gts_utils import  corner2_done_function, corner2_spare_reward_function
 
@@ -31,21 +32,31 @@ env_config = AttrDict(
 
     reward_function = corner2_spare_reward_function,
     done_function = corner2_done_function,
+    
+    ip_address = '192.168.1.104',
 )
 
 
 configuration = AttrDict(    {
+    'seed': 2,
     'agent': JointInheritAgent,
     
     'data_dir': '.',
     'num_epochs': 2000,
-    'max_rollout_len': 10000,
-    'n_steps_per_epoch': 10000,
-    'n_warmup_steps': 160000,
-    'use_update_after_sampling':True,
+    'max_rollout_len': 200,
+    # 'n_steps_per_epoch': 10000,
+    # 'n_steps_per_update': 1000,
+    # 'n_warmup_steps': 160000,
+    # 'use_update_after_sampling':True,
 
     'environment': GTSEnv_Corner2_Single,
-    'sampler':HierarchicalSamplerBached,
+    'sampler':HierarchicalSamplerBatched,
+    
+    'n_steps_per_epoch': 10000,
+    'n_steps_per_update': 400,
+    'n_warmup_steps': 200,
+    'log_output_interval': 200,
+    'log_image_interval': 200,
 
 } )
 
@@ -63,7 +74,8 @@ obs_norm_params = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    batch_size=256,
+    # batch_size=256,
+    batch_size=32,
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -80,8 +92,8 @@ ll_model_params = AttrDict(
     nz_enc=128,
     nz_mid=128,
     n_processing_layers=5,
-    nz_vae = 6,
-    n_rollout_steps=4,
+    nz_vae = 10,
+    n_rollout_steps=10,
 
     cond_decode = True,
 )
@@ -143,7 +155,7 @@ hl_policy_params = AttrDict(
 
 # critic
 hl_critic_params = AttrDict(
-    action_dim=hl_policy_params.action_dim + hl_policy_params.prior_model_params.n_rollout_steps,
+    action_dim=hl_policy_params.action_dim,
     input_dim=hl_policy_params.input_dim,
     output_dim=1,
     n_layers=5,  # number of policy network layer
@@ -171,23 +183,23 @@ hl_agent_config.update(AttrDict(
 ))
 # ================== joint agent ===================
 agent_config = AttrDict(
-    hl_agent=HLInheritAgent,
+    hl_agent=GTSHLInheritAgent,
     hl_agent_params=hl_agent_config,
-    ll_agent=LLInheritAgent,
+    ll_agent=GTSLLInheritAgent,
     ll_agent_params=ll_agent_config,
     hl_interval=ll_model_params.n_rollout_steps,
 
     update_ll=True,
     log_video_caption=False,
 
-    update_iterations = 1280,
-    # update_iterations = 32,
+    # update_iterations = 64,
+    update_iterations = 32,
     discount_factor = 0.98 ,
 
-    # initial_train_stage = skill_critic_stages.HL_TRAIN
+    initial_train_stage = skill_critic_stages.HL_TRAIN
     # initial_train_stage = skill_critic_stages.LL_TRAIN_PI
     
-    initial_train_stage = skill_critic_stages.HYBRID
+    # initial_train_stage = skill_critic_stages.HYBRID
     # initial_train_stage = skill_critic_stages.SC_WO_LLVAR
     
 )

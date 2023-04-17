@@ -10,7 +10,7 @@ from spirl.configs.default_data_configs.gts import data_spec
 
 
 from spirl.rl.envs.gts_multi import GTSEnv_Multi
-from spirl.rl.components.sampler_batched import HierarchicalSamplerBached
+from spirl.rl.components.sampler_batched import HierarchicalSamplerBatched
 
 from spirl.rl.components.critic import MLPCritic
 from spirl.rl.components.agent import FixedIntervalTimeIndexedHierarchicalAgent
@@ -43,7 +43,7 @@ configuration = AttrDict(    {
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Multi,
-    'sampler':HierarchicalSamplerBached,
+    'sampler':HierarchicalSamplerBatched,
 } )
 
 sampler_config = AttrDict(

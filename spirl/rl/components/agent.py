@@ -73,6 +73,7 @@ class BaseAgent(nn.Module):
 
     def log_outputs(self, logging_stats, rollout_storage, logger, log_images, step):
         """Visualizes/logs all training outputs."""
+        
         if logging_stats is not None:
             logger.log_scalar_dict(logging_stats, prefix='train' if self._is_train else 'val', step=step)
 
@@ -266,7 +267,7 @@ class HierarchicalAgent(BaseAgent):
         })
         return super()._default_hparams().overwrite(default_dict)
 
-    def act(self, obs): 
+    def act(self, obs, last_hl_output=None): 
         """Output dict contains is_hl_step in case high-level action was performed during this action."""
         obs_input = obs[None] if len(obs.shape) == 1 else obs    # need batch input for agents
         output = AttrDict()
@@ -278,6 +279,8 @@ class HierarchicalAgent(BaseAgent):
                 self._last_hl_output.action = self._last_hl_output.action[None]  # add batch dim if necessary
                 self._last_hl_output.log_prob = self._last_hl_output.log_prob[None]
         else:
+            if last_hl_output is not None:
+                self._last_hl_output = last_hl_output
             output.is_hl_step = False
         output.update(prefix_dict(self._last_hl_output, 'hl_'))
 

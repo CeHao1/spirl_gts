@@ -11,7 +11,7 @@ from spirl.configs.default_data_configs.gts import data_spec
 
 from spirl.rl.envs.gts_multi import GTSEnv_Multi
 from spirl.rl.envs.gts_raw import GTSEnv_Raw
-from spirl.rl.components.sampler_batched import HierarchicalSamplerBached
+from spirl.rl.components.sampler_batched import HierarchicalSamplerBatched
 
 
 from spirl.rl.agents.skill_critic.joint_agent import JointAgent, skill_critic_stages
@@ -47,7 +47,7 @@ configuration = AttrDict(    {
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Raw,
-    'sampler':HierarchicalSamplerBached,
+    'sampler':HierarchicalSamplerBatched,
 
     # 'n_steps_per_epoch': 200,
     # 'n_warmup_steps': 200,

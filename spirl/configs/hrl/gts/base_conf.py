@@ -13,7 +13,7 @@ from spirl.configs.default_data_configs.gts import data_spec
 
 from spirl.rl.envs.gts_multi import GTSEnv_Multi
 from spirl.rl.components.sampler_multi import HierarchicalSamplerMulti
-from spirl.rl.components.sampler_batched import SamplerBatched, HierarchicalSamplerBached
+from spirl.rl.components.sampler_batched import SamplerBatched, HierarchicalSamplerBatched
 
 from spirl.rl.envs.gts import GTSEnv_Base
 from spirl.rl.components.sampler import HierarchicalSampler
@@ -49,7 +49,7 @@ configuration = {
 
     # 'environment':GTSEnv_Base,
     # 'sampler':HierarchicalSampler,
-    'sampler':HierarchicalSamplerBached,
+    'sampler':HierarchicalSamplerBatched,
 
 
     # 'n_steps_per_epoch': 200,

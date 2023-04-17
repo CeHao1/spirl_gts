@@ -9,7 +9,7 @@ from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.configs.default_data_configs.gts import data_spec
 
 from spirl.rl.envs.gts_corner2.gts_corner2_single import GTSEnv_Corner2_Single
-from spirl.rl.components.sampler_batched import HierarchicalSamplerBached
+from spirl.rl.components.sampler_batched import HierarchicalSamplerBatched
 
 
 from spirl.rl.agents.skill_critic.joint_agent import JointAgent, skill_critic_stages
@@ -46,7 +46,7 @@ configuration = AttrDict(    {
     'use_update_after_sampling':True,
 
     'environment': GTSEnv_Corner2_Single,
-    'sampler':HierarchicalSamplerBached,
+    'sampler':HierarchicalSamplerBatched,
 
 } )
 
