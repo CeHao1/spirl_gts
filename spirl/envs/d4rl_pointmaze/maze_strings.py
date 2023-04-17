@@ -29,26 +29,21 @@ M_MAZE_V7= \
         "####################"
 
 M_MAZE2_V1 = \
-        "####################\\"+\
-        "#OOOOOOO#OOOOOOOOOO#\\"+\
-        "#OOOOOOO#OOOO###OOO#\\"+\
-        "#OOOOOO###OOOO#OOOO#\\"+\
-        "#OOOOOOOOOOOOO#OOOO#\\"+\
-        "#OOOOOO###OOOO#OOOO#\\"+\
-        "#OOOOOOO#OOOOO#OOOO#\\"+\
-        "#OOOOOOO#OOOOO#OOOO#\\"+\
-        "#OOOOOOO#OOOOO#OOOO#\\"+\
-        "#OOOO#O#############\\"+\
-        "######O#O#OOOOOOOOO#\\"+\
-        "#OOOO#O#O#OOOOOOOOO#\\"+\
-        "#OOOOOOOO#OOOOO#O#O#\\"+\
-        "#OOOOOOOO#OO####O###\\"+\
-        "#OOOOOOOO#OO#OO#O#O#\\"+\
-        "#OO#OOOOO#OO#OOOOOO#\\"+\
-        "#OO#######OO#OOOOOO#\\"+\
-        "#OO#OOOOOOOO#OOOOOO#\\"+\
-        "#OOOOOOOOOOO#OOOOOO#\\"+\
-        "####################"
+"##################\\"+\
+"#OOOO####OOOOOOOO#\\"+\
+"#OOOOO##OOOOOOOOO#\\"+\
+"#OOOOO##OOOOOO#OO#\\"+\
+"##OOOO##OOOOOO#OO#\\"+\
+"###OOO###OOOO##OO#\\"+\
+"####OO#########OO#\\"+\
+"#OOOOO##OOOOOOOOO#\\"+\
+"#OOOOO###OOOOOOOO#\\"+\
+"#OO#######OOOOO###\\"+\
+"#OOOOO###OOOOO####\\"+\
+"##OOOOO#OOOOO#####\\"+\
+"###OOOOOOOOO######\\"+\
+"####OOOOOOO#######\\"+\
+"##################"
 
 
 maze_name_space= {
