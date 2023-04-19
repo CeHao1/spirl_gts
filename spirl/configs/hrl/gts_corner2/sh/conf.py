@@ -106,8 +106,8 @@ ll_policy_params = AttrDict(
                 "skill_prior_learning/gts_corner2/hierarchical_cd"),
 
     
-    manual_log_sigma=[0, 0],
-    # min_log_sigma = [-3, -1.2],
+    # manual_log_sigma=[0, 0],
+    # min_log_sigma = [1, 1],
 )
 ll_policy_params.update(ll_model_params)
 
@@ -129,8 +129,7 @@ ll_agent_config.update(AttrDict(
     critic=MLPCritic,                
     critic_params=ll_critic_params,
 
-    fixed_alpha = 0.001,
-    visualize_values = True,
+    fixed_alpha = 1e-6,
 ))
 
 # ================= high level ====================

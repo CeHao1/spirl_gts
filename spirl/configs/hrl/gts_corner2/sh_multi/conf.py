@@ -6,12 +6,15 @@ from spirl.rl.components.sampler_wrap import HierarchicalSamplerWrapped
 from spirl.rl.components.sampler_batched import AgentDetached_HierarchicalSamplerBatched
 
 ip_address_list = \
-                [   '192.168.1.103', 
-                    '192.168.1.104',
-                    '192.168.1.113', 
-                    '192.168.1.117',
-                    '192.168.1.121', 
-                    '192.168.1.101']
+                [ '192.168.1.105',
+                 '192.168.1.100',
+                 '192.168.1.106',
+                 '192.168.1.110',
+                 '192.168.1.107',
+                 '192.168.1.101',
+                 '192.168.1.108',
+                 '192.168.1.109',
+                 ]
                 
 num_of_sampler = len(ip_address_list)
 
@@ -32,7 +35,7 @@ configuration.update(AttrDict(
 # Environment
 sub_env_config = AttrDict(
     reward_norm=1.,
-    do_init = False,
+    # do_init = False,
     reward_function = corner2_spare_reward_function,
     done_function = corner2_done_function,
     initial_velocity = 65*3.6, 
@@ -54,5 +57,7 @@ sampler_config = AttrDict(
     sub_sampler = AgentDetached_HierarchicalSamplerBatched,
 )
 
-agent_config.update_iterations = num_of_sampler * 128
-initial_train_stage = skill_critic_stages.HL_TRAIN
+# agent_config.update_iterations = num_of_sampler * 256
+# agent_config.initial_train_stage = skill_critic_stages.HYBRID
+
+ll_policy_params.manual_log_sigma = [-5, -5]
