@@ -22,7 +22,8 @@ from spirl.rl.components.critic import MLPCritic
 # from spirl.rl.agents.skill_critic.ll_inherit_agent import LLInheritAgent
 from spirl.data.gts.src.gts_agents import GTSHLInheritAgent, GTSLLInheritAgent
 
-from spirl.utils.gts_utils import  corner2_done_function, corner2_spare_reward_function
+from spirl.utils.gts_utils import  corner2_done_function, corner2_spare_reward_function, \
+    single_reward_function
 
 # Environment
 env_config = AttrDict(
@@ -31,6 +32,7 @@ env_config = AttrDict(
     # action_standard = True,
 
     reward_function = corner2_spare_reward_function,
+    # reward_function = single_reward_function,
     done_function = corner2_done_function,
     
     ip_address = '192.168.1.104',
