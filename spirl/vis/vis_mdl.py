@@ -31,7 +31,7 @@ class MDLVisualizer(ModelTrainer):
                                 model_class=self._hp.model,
                                 n_repeat=self._hp.epoch_cycles_train,
                                 dataset_size=-1)
-        self.model, self.loader = self.build_vizer(train_params, 'viz')
+        self.model, self.loader = self.build_vizer(train_params, 'train')
         self.optimizer = self.get_optimizer_class()(filter(lambda p: p.requires_grad, self.model.parameters()), lr=self._hp.lr)
         
         print('conf.ckpt_path', conf.ckpt_path)
@@ -42,9 +42,9 @@ class MDLVisualizer(ModelTrainer):
         # self.model.switch_to_prior()
         print('get model and data')
         # self.show_value_distribution()
-        self.show_one_value()
-        
-        
+        # self.show_one_value()
+        self.show_demo_distribution()
+           
 
     def build_vizer(self, params, phase):
 
@@ -57,7 +57,6 @@ class MDLVisualizer(ModelTrainer):
         loader = self.get_dataset(self.args, model, self.conf.data, phase, params.n_repeat, params.dataset_size)
         return model, loader
 
-
     def show_one_value(self):
         for idx in range(20):
             plots(*self.get_data())
@@ -66,6 +65,7 @@ class MDLVisualizer(ModelTrainer):
         # for idx in tqdm(range(10)):
         output = self.get_data(all_data=True)
         plot_z_mean_var(output)
+        
 
     def get_data(self, all_data=False):
         # sample_batched = self.loader.dataset[0]
@@ -248,6 +248,7 @@ def plots_distribution(input, output, out_prior):
     plt.legend(fontsize=20)
     plt.show()
 
+    
 
 
 def to_numpy(t):

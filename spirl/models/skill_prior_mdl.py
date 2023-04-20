@@ -163,10 +163,10 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
                                             inputs=inputs)
 
         # prior reconstruction
-        # output.prior_reconstruction = self.decode(output.q_hat.sample(),
-        #                                     cond_inputs=self._learned_prior_input(inputs),
-        #                                     steps=self._hp.n_rollout_steps,
-        #                                     inputs=inputs)
+        output.prior_reconstruction = self.decode(output.q_hat.sample(),
+                                            cond_inputs=self._learned_prior_input(inputs),
+                                            steps=self._hp.n_rollout_steps,
+                                            inputs=inputs)
 
         return output
 

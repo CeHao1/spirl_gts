@@ -195,8 +195,8 @@ def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
     else:
         raise NotImplementedError
 
-'''
-def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
+
+def get_clipped_optimizer_prior(*args, optimizer_type=None, **kwargs):
     assert optimizer_type is not None  # need to set optimizer type!
 
     class ClipGradOptimizer(optimizer_type):
@@ -212,7 +212,7 @@ def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
             super().step(*args, **kwargs)
 
     return ClipGradOptimizer(*args, **kwargs)
-'''
+
 
 '''
 # this if fixed by chatgpt, so great!
