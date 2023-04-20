@@ -37,10 +37,10 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/sh --seed=0 --gpu
 
 ### HRL multi
 python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/sh_multi --seed=0 --gpu=0 \
---prefix=HLDense_02
+--prefix=HLVarDense_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/sh_multi  --gpu=0 \
---seed=0 --prefix=HYB_35 \
+--seed=0 --prefix=HLLLVar_41 \
 --resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0
 
 

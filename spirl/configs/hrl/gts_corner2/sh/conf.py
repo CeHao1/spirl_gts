@@ -131,7 +131,7 @@ ll_agent_config.update(AttrDict(
     critic=MLPCritic,                
     critic_params=ll_critic_params,
 
-    fixed_alpha = 1e-6,
+    # fixed_alpha = 1e-6,
 ))
 
 # ================= high level ====================
