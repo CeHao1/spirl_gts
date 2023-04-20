@@ -34,8 +34,8 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/sh --seed=0 --gpu
 
 ### HRL multi
 python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/sh_multi --seed=0 --gpu=0 \
---prefix=temp
+--prefix=HLsLLQ_s0_31
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/sh_multi  --gpu=0 \
---seed=0 --prefix=LLQ_s0_21 \
+--seed=0 --prefix=HYB_35 \
 --resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0

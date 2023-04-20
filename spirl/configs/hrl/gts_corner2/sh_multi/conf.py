@@ -35,7 +35,7 @@ configuration.update(AttrDict(
 # Environment
 sub_env_config = AttrDict(
     reward_norm=1.,
-    # do_init = False,
+    do_init = False,
     reward_function = corner2_spare_reward_function,
     done_function = corner2_done_function,
     initial_velocity = 65*3.6, 
@@ -57,7 +57,10 @@ sampler_config = AttrDict(
     sub_sampler = AgentDetached_HierarchicalSamplerBatched,
 )
 
-# agent_config.update_iterations = num_of_sampler * 256
-# agent_config.initial_train_stage = skill_critic_stages.HYBRID
+# agent_config.update_iterations = num_of_sampler * 128
+agent_config.update_iterations = num_of_sampler * 64
 
-ll_policy_params.manual_log_sigma = [-5, -5]
+agent_config.initial_train_stage = skill_critic_stages.HYBRID
+# agent_config.initial_train_stage = skill_critic_stages.LL_TRAIN
+ll_policy_params.manual_log_sigma = [-3, -2]
+ll_agent_config.fixed_alpha = 0.05
