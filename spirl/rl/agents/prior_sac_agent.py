@@ -177,10 +177,10 @@ class ActionPriorSACAgent(SACAgent):
                             fig_name=prefix+'_vis squash, recent 10k,action')
             if 'action_recent' in content:
                 plot_action_dist(action_nosquash_sum, logger, step, size, 
-                            fig_name=prefix+'_vis nosquash, action', xlim=[-4.5, 4.5])
+                            fig_name=prefix+'_vis nosquash, action')
             if 'action_nosquash_recent' in content:
                 plot_action_dist(action_nosquash_sum, logger, step, size=int(1e4), 
-                            fig_name=prefix+'_vis nosquash, recent 10k, action', xlim=[-4.5, 4.5])
+                            fig_name=prefix+'_vis nosquash, recent 10k, action')
 
             
 
@@ -212,7 +212,6 @@ def plot_action_dist(action, logger, step, size, fig_name='vis action', bw=0.5, 
         plt.close(fig)
     
     else:
-        
         
         fig = plt.figure(figsize=(10, 5))
         fig.tight_layout()

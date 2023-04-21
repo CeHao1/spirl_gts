@@ -114,8 +114,8 @@ class GTSLLInheritAgent(LLInheritAgent, GTSAgent):
 def plot_gts_traj(states, logger, step, size):
 
     # plot replay with velocity
-    fig = plt.figure(figsize=(10,8))
-    plt.scatter(states[:, 0], states[:, 1], c=states[:, 2], cmap='Reds', s=0.5)
+    fig = plt.figure(figsize=(14,8))
+    plt.scatter(states[:, 0], states[:, 1], c=states[:, 2], cmap='Reds', s=0.1)
     plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
     plt.axis("equal")
@@ -128,7 +128,7 @@ def plot_gts_traj(states, logger, step, size):
 
 
     # plot replay with density
-    fig = plt.figure(figsize=(10,8))
+    fig = plt.figure(figsize=(14,8))
     sns.histplot(x=states[:, 0], y=states[:, 1], cmap='Blues', cbar=True,)
     plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
@@ -140,8 +140,8 @@ def plot_gts_traj(states, logger, step, size):
     plt.close(fig)
 
     # plot replay hit wall
-    fig = plt.figure(figsize=(10,8))
-    plt.scatter(states[:, 0], states[:, 1], c=states[:, 6], cmap='Reds', s=0.5)
+    fig = plt.figure(figsize=(14,8))
+    plt.scatter(states[:, 0], states[:, 1], c=states[:, 6], cmap='Reds', s=0.1)
     plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
     plt.axis("equal")
@@ -153,8 +153,8 @@ def plot_gts_traj(states, logger, step, size):
     plt.close(fig)
 
     # plot steering
-    fig = plt.figure(figsize=(10,8))
-    plt.scatter(states[:, 0], states[:, 1], c=states[:, 3], cmap='jet', s=0.5)
+    fig = plt.figure(figsize=(14,8))
+    plt.scatter(states[:, 0], states[:, 1], c=states[:, 3], cmap='jet', s=0.1)
     plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
     plt.axis("equal")
@@ -165,8 +165,8 @@ def plot_gts_traj(states, logger, step, size):
     logger.log_plot(fig, "steering_vis", step)
     plt.close(fig)
 
-    fig = plt.figure(figsize=(10,8))
-    plt.scatter(states[:, 0], states[:, 1], c=states[:, 4]-states[:, 5], cmap='jet', s=0.5)
+    fig = plt.figure(figsize=(14,8))
+    plt.scatter(states[:, 0], states[:, 1], c=states[:, 4]-states[:, 5], cmap='jet', s=0.1)
     plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
     plt.axis("equal")
@@ -179,8 +179,8 @@ def plot_gts_traj(states, logger, step, size):
 
 
 def plot_gts_value(q, states, logger, step, size, fig_name='vis'):
-    fig = plt.figure(figsize=(10,8))
-    plt.scatter(states[:, 0], states[:, 1], s=0.5, c=q, cmap='Oranges')
+    fig = plt.figure(figsize=(14,8))
+    plt.scatter(states[:, 0], states[:, 1], s=0.1, c=q, cmap='Oranges')
     plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
     plt.axis("equal")
