@@ -114,7 +114,7 @@ ll_agent_config.update(AttrDict(
 
     # td_schedule_params=AttrDict(p=10.),
     # fixed_alpha = 1,
-    fixed_alpha = 1e-6,
+    # fixed_alpha = 1e-6,
 
 ))
 
@@ -166,8 +166,8 @@ agent_config = AttrDict(
     update_ll=True,
     
     # update_iterations = 256,
-    # initial_train_stage = skill_critic_stages.HYBRID
-    initial_train_stage = skill_critic_stages.HL_TRAIN
+    initial_train_stage = skill_critic_stages.HYBRID
+    # initial_train_stage = skill_critic_stages.HL_TRAIN
 )
 
 # Dataset - Random data
