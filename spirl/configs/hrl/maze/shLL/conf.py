@@ -114,7 +114,7 @@ ll_agent_config.update(AttrDict(
 
     # td_schedule_params=AttrDict(p=10.),
     # fixed_alpha = 1,
-    fixed_alpha = 1e-6,
+    # fixed_alpha = 1e-6,
 
 ))
 
