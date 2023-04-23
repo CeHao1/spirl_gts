@@ -8,10 +8,10 @@ from spirl.rl.agents.skill_critic.hl_skill_agent import HLSKillAgent
 from spirl.rl.agents.skill_critic.hl_inherit_agent  import HLInheritAgent
 from spirl.rl.agents.skill_space_agent import SkillSpaceAgent, ACSkillSpaceAgent
 
-from spirl.rl.envs.maze import ACRandMaze0S40Env, ACmMaze1, ACmMaze2
+from spirl.rl.envs.maze import ACRandMaze0S40Env, ACmMaze1, ACmMaze2, ACmMaze3
 
 class MazeAgent:
-    chosen_maze = ACmMaze2
+    chosen_maze = ACmMaze3
     START_POS = chosen_maze.START_POS
     TARGET_POS = chosen_maze.TARGET_POS
     VIS_RANGE = chosen_maze.VIS_RANGE
@@ -163,23 +163,10 @@ class MazeHLInheritAgent(HLInheritAgent, MazeAgent):
 def plot_maze_fun(states, logger, step, size):
     fig = plt.figure(figsize=(8,8))
     plt.scatter(states[:, 0], states[:, 1], s=5, c=np.arange(size), cmap='Blues')
-    plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go')
-    plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'mo')
+    plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go', markeredgecolor='k')
+    plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'mo', markeredgecolor='k')
     plt.axis("equal")
     plt.title('replay, step ' + str(step) + ' size ' + str(size))
-    plt.xlim(MazeAgent.VIS_RANGE[0])
-    plt.ylim(MazeAgent.VIS_RANGE[1])
-    logger.log_plot(fig, "replay_vis", step)
-    plt.close(fig)
-
-    # recent
-    size= int(1e4)
-    fig = plt.figure(figsize=(8,8))
-    plt.scatter(states[-size, 0], states[-size, 1], s=5, c=np.arange(size), cmap='Blues')
-    plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go')
-    plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'mo')
-    plt.axis("equal")
-    plt.title('replay, recent 10k, step ' + str(step) + ' size ' + str(size))
     plt.xlim(MazeAgent.VIS_RANGE[0])
     plt.ylim(MazeAgent.VIS_RANGE[1])
     logger.log_plot(fig, "replay_vis", step)
@@ -194,8 +181,8 @@ def plot_maze_fun(states, logger, step, size):
     fig = plt.figure(figsize=(10,8))
     sns.histplot(x=states[show_index, 0], y=states[show_index, 1], cmap='Blues', cbar=True,
                  bins=50, pthresh=0.01)
-    plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go')
-    plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'mo')
+    plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go', markeredgecolor='k')
+    plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'mo', markeredgecolor='k')
     plt.axis("equal")
     plt.title('density, step ' + str(step) + ' size ' + str(size))
     plt.xlim(MazeAgent.VIS_RANGE[0])
@@ -203,12 +190,24 @@ def plot_maze_fun(states, logger, step, size):
     logger.log_plot(fig, "density_vis", step)
     plt.close(fig)
     
+    # recent
+    size= min(size, int(1e4))
+    fig = plt.figure(figsize=(8,8))
+    plt.scatter(states[-size:, 0], states[-size:, 1], s=5, c=np.arange(size), cmap='Blues')
+    plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go', markeredgecolor='k')
+    plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'mo', markeredgecolor='k')
+    plt.axis("equal")
+    plt.title('replay, recent 10k, step ' + str(step) + ' size ' + str(size))
+    plt.xlim(MazeAgent.VIS_RANGE[0])
+    plt.ylim(MazeAgent.VIS_RANGE[1])
+    logger.log_plot(fig, "replay_vis, , recent 10k, step", step)
+    plt.close(fig)
 
 def plot_maze_value(q, states, logger, step, size, fig_name='vis'):
     fig = plt.figure(figsize=(10,8))
     plt.scatter(states[:, 0], states[:, 1], s=5, c=q, cmap='Oranges')
-    plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go')
-    plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'mo')
+    plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go', markeredgecolor='k')
+    plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'mo', markeredgecolor='k')
     plt.axis("equal")
     plt.title(fig_name + ' step ' + str(step) + ' size ' + str(size))
     plt.xlim(MazeAgent.VIS_RANGE[0])
