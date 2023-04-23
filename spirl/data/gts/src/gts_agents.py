@@ -114,11 +114,11 @@ class GTSLLInheritAgent(LLInheritAgent, GTSAgent):
 
 def plot_gts_traj(states, logger, step, size):
 
+    steering_ratio = np.pi/6
+
     sdict = {}
     for i in range(len(GTSAgent.KEY_LIST)):
         sdict[GTSAgent.KEY_LIST[i]] = states[:, i]
-
-    sdict['steering'] /= np.pi/6
 
     # plot replay with velocity
     fig = plt.figure(figsize=(14,8))
@@ -136,7 +136,7 @@ def plot_gts_traj(states, logger, step, size):
 
     # plot replay with density
     fig = plt.figure(figsize=(14,8))
-    sns.histplot(sdict['pos[0]'], sdict['pos[2]'], cmap='Blues', cbar=True,)
+    sns.histplot(x=sdict['pos[0]'], y=sdict['pos[2]'], cmap='Blues', cbar=True,)
     plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
     plt.axis("equal")
@@ -161,7 +161,7 @@ def plot_gts_traj(states, logger, step, size):
 
     # plot steering
     fig = plt.figure(figsize=(14,8))
-    plt.scatter(sdict['pos[0]'], sdict['pos[2]'], c=sdict['steering'], cmap='jet', s=0.1)
+    plt.scatter(sdict['pos[0]'], sdict['pos[2]'], c=sdict['steering']/steering_ratio, cmap='jet', s=0.1)
     plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
     plt.axis("equal")
@@ -188,9 +188,9 @@ def plot_gts_traj(states, logger, step, size):
     # plot action dist of replay
     fs = 16
     fig = plt.figure(figsize=(10, 8))
-    sns.histplot(x=sdict['throttle'], y=sdict['brake'], bins=50, cmap='Reds', cbar=True)
-    plt.xlabel('dim_0', fontsize=fs)
-    plt.ylabel('dim_1', fontsize=fs)
+    sns.histplot(x=sdict['steering']/steering_ratio, y=sdict['throttle']-sdict['brake'], bins=50, cmap='Reds', cbar=True)
+    plt.xlabel('steering', fontsize=fs)
+    plt.ylabel('pedal', fontsize=fs)
     plt.title('2D dist of latent variables, size ' + str(size), fontsize=fs)
     logger.log_plot(fig, name= 'replay action dist', step=step)
     plt.close(fig)

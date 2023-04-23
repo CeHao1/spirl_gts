@@ -58,4 +58,4 @@ def plot_dist(action, size):
     # plt.close(fig)
     
 if __name__ == "__main__":
-    load_data('./sample/raw_data/batch_0')
+    load_data('./sample/raw_data_NoStdObs/batch_0')
