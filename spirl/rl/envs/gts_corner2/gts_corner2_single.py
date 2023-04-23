@@ -17,8 +17,8 @@ from spirl.utils.gts_utils import start_condition_formulator
 class GTSEnv_Corner2_Single(GymEnv):
 
     VIS_RANGE = [-10, 10]
-    START_POS = [[0, 0], [0, 0]]
-    TARGET_POS = [[0, 0], [0, 0]]
+    START_POS = [-420, -109]
+    TARGET_POS = [416, 499]
 
     def __init__(self, config):
         self._hp = self._default_hparams()
@@ -44,7 +44,7 @@ class GTSEnv_Corner2_Single(GymEnv):
             'do_init' : True,
             'reward_function' : corner2_spare_reward_function,
             'done_function' : corner2_done_function,
-            'standardize_observations' : True,
+            'standardize_observations' : False,
             'store_states' : False,
             'builtin_controlled': [],
             'min_frames_per_action': 6,

@@ -15,7 +15,7 @@ from functools import partial
 from spirl.components.data_loader import RandomVideoDataset
 from spirl.utils.general_utils import RecursiveAverageMeter, map_dict
 from spirl.components.checkpointer import CheckpointHandler, save_cmd, save_git, get_config_path
-from spirl.utils.general_utils import dummy_context, AttrDict, get_clipped_optimizer, \
+from spirl.utils.general_utils import dummy_context, AttrDict, get_clipped_optimizer_prior, \
                                                         AverageMeter, ParamDict
 from spirl.utils.pytorch_utils import LossSpikeHook, NanGradHook, NoneGradHook, \
                                                         DataParallelWrapper, RAdam
@@ -325,13 +325,13 @@ class ModelTrainer(BaseTrainer):
     def get_optimizer_class(self):
         optim = self._hp.optimizer
         if optim == 'adam':
-            get_optim = partial(get_clipped_optimizer, optimizer_type=Adam, betas=(self._hp.adam_beta, 0.999))
+            get_optim = partial(get_clipped_optimizer_prior, optimizer_type=Adam, betas=(self._hp.adam_beta, 0.999))
         elif optim == 'radam':
-            get_optim = partial(get_clipped_optimizer, optimizer_type=RAdam, betas=(self._hp.adam_beta, 0.999))
+            get_optim = partial(get_clipped_optimizer_prior, optimizer_type=RAdam, betas=(self._hp.adam_beta, 0.999))
         elif optim == 'rmsprop':
-            get_optim = partial(get_clipped_optimizer, optimizer_type=RMSprop, momentum=self._hp.momentum)
+            get_optim = partial(get_clipped_optimizer_prior, optimizer_type=RMSprop, momentum=self._hp.momentum)
         elif optim == 'sgd':
-            get_optim = partial(get_clipped_optimizer, optimizer_type=SGD, momentum=self._hp.momentum)
+            get_optim = partial(get_clipped_optimizer_prior, optimizer_type=SGD, momentum=self._hp.momentum)
         else:
             raise ValueError("Optimizer '{}' not supported!".format(optim))
         return partial(get_optim, gradient_clip=self._hp.gradient_clip)
