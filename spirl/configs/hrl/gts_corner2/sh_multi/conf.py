@@ -39,7 +39,10 @@ sub_env_config = AttrDict(
     reward_function = corner2_spare_reward_function,
     # reward_function = single_reward_function,
     done_function = corner2_done_function,
-    initial_velocity = 65*3.6, 
+
+    initial_velocity = 10*3.6,
+    # initial_velocity = 65*3.6, 
+    # standardize_observations = True,
 )
 
 
@@ -61,7 +64,7 @@ sampler_config = AttrDict(
 agent_config.update_iterations = num_of_sampler * 128
 # agent_config.update_iterations = num_of_sampler * 64
 # 
-agent_config.initial_train_stage = skill_critic_stages.HYBRID
+# agent_config.initial_train_stage = skill_critic_stages.HYBRID
 # agent_config.initial_train_stage = skill_critic_stages.LL_TRAIN
 # agent_config.initial_train_stage = skill_critic_stages.HL_LLVAR
 ll_policy_params.manual_log_sigma = [-3, -1.5]

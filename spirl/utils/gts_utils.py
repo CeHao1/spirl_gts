@@ -626,6 +626,7 @@ def corner2_done_function(state):
 
 def corner2_spare_reward_function(state, previous_state, course_length,  **kwargs):
     return 1 if state['course_v'] >= 2400 else 0
+    # return 1 if state['course_v'] >= 1700 else 0
 
 def single_reward_function(state, previous_state, course_length, **kwargs):
     # print('state,', state.keys())
