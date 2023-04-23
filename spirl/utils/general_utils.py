@@ -195,8 +195,8 @@ def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
     else:
         raise NotImplementedError
 
-'''
-def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
+
+def get_clipped_optimizer_prior(*args, optimizer_type=None, **kwargs):
     assert optimizer_type is not None  # need to set optimizer type!
 
     class ClipGradOptimizer(optimizer_type):
@@ -212,7 +212,7 @@ def get_clipped_optimizer(*args, optimizer_type=None, **kwargs):
             super().step(*args, **kwargs)
 
     return ClipGradOptimizer(*args, **kwargs)
-'''
+
 
 '''
 # this if fixed by chatgpt, so great!
@@ -520,7 +520,11 @@ def listdict2dictlist(LD):
 
 def listdict_mean(LD):
     """ Computes the mean of a list of dictionaries """
-    return type(LD[0])({k: np.mean([dic[k] for dic in LD]) for k in LD[0].keys()})
+    return_dict = {}
+    for key in LD[0]:
+        return_dict[key] = np.mean([dic[key] for dic in LD])
+        # print('@@ list', key,  [dic[key] for dic in LD], 'mean"', return_dict[key])
+    return return_dict
 
 def dictlist2listdict(DL):
     " Converts a dict of lists to a list of dicts "

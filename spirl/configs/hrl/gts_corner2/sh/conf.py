@@ -22,7 +22,8 @@ from spirl.rl.components.critic import MLPCritic
 # from spirl.rl.agents.skill_critic.ll_inherit_agent import LLInheritAgent
 from spirl.data.gts.src.gts_agents import GTSHLInheritAgent, GTSLLInheritAgent
 
-from spirl.utils.gts_utils import  corner2_done_function, corner2_spare_reward_function
+from spirl.utils.gts_utils import  corner2_done_function, corner2_spare_reward_function, \
+    single_reward_function
 
 # Environment
 env_config = AttrDict(
@@ -31,6 +32,7 @@ env_config = AttrDict(
     # action_standard = True,
 
     reward_function = corner2_spare_reward_function,
+    # reward_function = single_reward_function,
     done_function = corner2_done_function,
     
     ip_address = '192.168.1.104',
@@ -74,8 +76,8 @@ obs_norm_params = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    # batch_size=256,
-    batch_size=32,
+    batch_size=256,
+    # batch_size=32,
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     clip_q_target=False,
@@ -106,8 +108,8 @@ ll_policy_params = AttrDict(
                 "skill_prior_learning/gts_corner2/hierarchical_cd"),
 
     
-    manual_log_sigma=[0, 0],
-    # min_log_sigma = [-3, -1.2],
+    # manual_log_sigma=[0, 0],
+    # min_log_sigma = [1, 1],
 )
 ll_policy_params.update(ll_model_params)
 
@@ -129,8 +131,7 @@ ll_agent_config.update(AttrDict(
     critic=MLPCritic,                
     critic_params=ll_critic_params,
 
-    fixed_alpha = 0.001,
-    visualize_values = True,
+    # fixed_alpha = 1e-6,
 ))
 
 # ================= high level ====================
@@ -189,12 +190,12 @@ agent_config = AttrDict(
     ll_agent_params=ll_agent_config,
     hl_interval=ll_model_params.n_rollout_steps,
 
-    update_ll=True,
-    log_video_caption=False,
+    # update_ll=False,
+    # log_video_caption=False,
 
-    # update_iterations = 64,
-    update_iterations = 32,
-    discount_factor = 0.98 ,
+    update_iterations = 64,
+    # update_iterations = 32,
+    # discount_factor = 0.98 ,
 
     initial_train_stage = skill_critic_stages.HL_TRAIN
     # initial_train_stage = skill_critic_stages.LL_TRAIN_PI

@@ -96,15 +96,17 @@ class ActionPriorSACAgent(SACAgent):
         policy_v_sum = []
         action_sum = []
         action_nosquash_sum = []
+        action_mu = []
+        action_sig = []
 
         for i in range(batch_num):
             obs_batch = obs[i*batch_size:(i+1)*batch_size]
             obs_batch = map2torch(obs_batch, self._hp.device)
             policy_output = self._run_policy(obs_batch)
+            policy_output = self._post_process_policy_output(policy_output)
 
             with self.no_squash_mode():
                 policy_output_no_squash = self._run_policy(obs_batch)
-                
 
             act = self._prep_action(policy_output.action) # QHL(s, z), no K
             q_est = torch.min(*[critic(obs_batch, act).q for critic in self.critics])
@@ -115,13 +117,16 @@ class ActionPriorSACAgent(SACAgent):
             policy_v_sum.append(policy_v.detach().cpu().numpy())
             action_sum.append(policy_output.action.detach().cpu().numpy())
             action_nosquash_sum.append(policy_output_no_squash.action.detach().cpu().numpy())
-
+            action_mu.append(policy_output.dist.mu.detach().cpu().numpy())
+            action_sig.append(policy_output.dist.sigma.detach().cpu().numpy())
+            
         q_est = np.concatenate(q_est_sum, axis=0)
         KLD = np.concatenate(KLD_sum, axis=0)
         policy_v = np.concatenate(policy_v_sum, axis=0)
         action_sum = np.concatenate(action_sum, axis=0)
         action_nosquash_sum = np.concatenate(action_nosquash_sum, axis=0)
-        
+        action_mu = np.concatenate(action_mu, axis=0)
+        action_sig = np.concatenate(action_sig, axis=0)
         
         if plot_type == 'maze':
             from spirl.data.maze.src.maze_agents import plot_maze_value
@@ -134,6 +139,25 @@ class ActionPriorSACAgent(SACAgent):
             if 'rew' in content:
                 plot_maze_value(rew, states, logger, step, size, fig_name= prefix+'_rew')
                 
+            if 'action' in content:
+                plot_action_dist(action_sum, logger, step, size, 
+                         fig_name=prefix+'_vis squash,action')
+                plot_action_dist(action_mu, logger, step, size, 
+                        fig_name=prefix+'_vis action, mu')
+            
+                plot_action_dist(action_sig, logger, step, size, 
+                        fig_name=prefix+'_vis action, sigma')
+
+            if 'action_nosquash' in content:
+                plot_action_dist(action_sum, logger, step, size=int(1e4), 
+                            fig_name=prefix+'_vis squash, recent 10k,action')
+            if 'action_recent' in content:
+                plot_action_dist(action_nosquash_sum, logger, step, size, 
+                            fig_name=prefix+'_vis nosquash, action', xlim=[-4.5, 4.5])
+            if 'action_nosquash_recent' in content:
+                plot_action_dist(action_nosquash_sum, logger, step, size=int(1e4), 
+                            fig_name=prefix+'_vis nosquash, recent 10k, action', xlim=[-4.5, 4.5])
+                
         elif plot_type == 'gts':
             from spirl.data.gts.src.gts_agents import plot_gts_value
             if 'q' in content:
@@ -145,19 +169,27 @@ class ActionPriorSACAgent(SACAgent):
             if 'rew' in content:
                 plot_gts_value(rew, states, logger, step, size, fig_name= prefix+'_rew')
             
-        if 'action' in content:
-            plot_action_dist(action_sum, logger, step, size, 
+            if 'action' in content:
+                plot_action_dist(action_sum, logger, step, size, 
                          fig_name=prefix+'_vis squash,action')
-        if 'action_nosquash' in content:
-            plot_action_dist(action_sum, logger, step, size=int(1e4), 
-                         fig_name=prefix+'_vis squash, recent 10k,action')
-        if 'action_recent' in content:
-            plot_action_dist(action_nosquash_sum, logger, step, size, 
-                         fig_name=prefix+'_vis nosquash, action', xlim=[-4.5, 4.5])
-        if 'action_nosquash_recent' in content:
-            plot_action_dist(action_nosquash_sum, logger, step, size=int(1e4), 
-                         fig_name=prefix+'_vis nosquash, recent 10k, action', xlim=[-4.5, 4.5])
+                
+                plot_action_dist(action_mu, logger, step, size, 
+                        fig_name=prefix+'_vis action, mu')
+            
+                plot_action_dist(action_sig, logger, step, size, 
+                        fig_name=prefix+'_vis action, sigma')
+                
+            if 'action_nosquash' in content:
+                plot_action_dist(action_sum, logger, step, size=int(1e4), 
+                            fig_name=prefix+'_vis squash, recent 10k,action')
+            if 'action_recent' in content:
+                plot_action_dist(action_nosquash_sum, logger, step, size, 
+                            fig_name=prefix+'_vis nosquash, action')
+            if 'action_nosquash_recent' in content:
+                plot_action_dist(action_nosquash_sum, logger, step, size=int(1e4), 
+                            fig_name=prefix+'_vis nosquash, recent 10k, action')
 
+            
 
 def plot_action_dist(action, logger, step, size, fig_name='vis action', bw=0.5, xlim=None):
     fs = 16
@@ -173,35 +205,20 @@ def plot_action_dist(action, logger, step, size, fig_name='vis action', bw=0.5, 
         plt.close(fig)
 
     
-        fig = plt.figure(figsize=(10, 5))
-        fig.tight_layout()
-        for idx in range(len(action[0])):
-            sns.histplot(action[-size:, idx], bins=50, label='dim_' + str(idx), alpha=0.5)
-        plt.legend(loc='upper left', fontsize=14, framealpha=0.5)
-        plt.ylabel('Density', fontsize=fs)
-        plt.title('distribution of latent variables, size ' + str(size), fontsize=fs)
-        plt.grid()
-        if xlim is not None:
-            plt.xlim(xlim)
-        logger.log_plot(fig, name= fig_name, step=step)
-        plt.close(fig)
-    
-    else:
-        
-        
-        fig = plt.figure(figsize=(10, 5))
-        fig.tight_layout()
-        for idx in range(len(action[0])):
-            sns.kdeplot(action[-size:, idx], fill=True, label='dim_' + str(idx), cut=0, bw_adjust=bw)
-        # plt.legend(bbox_to_anchor=(1, 1), loc='upper left', fontsize=fs)
-        plt.legend(loc='upper left', fontsize=14, framealpha=0.5)
-        plt.ylabel('Density', fontsize=fs)
-        plt.title('distribution of latent variables, size ' + str(size), fontsize=fs)
-        plt.grid()
-        if xlim is not None:
-            plt.xlim(xlim)
-        logger.log_plot(fig, name= fig_name, step=step)
-        plt.close(fig)
+    # plot all distribution
+    fig = plt.figure(figsize=(10, 5))
+    fig.tight_layout()
+    for idx in range(len(action[0])):
+        sns.kdeplot(action[-size:, idx], fill=True, label='dim_' + str(idx), cut=0, bw_adjust=bw)
+    # plt.legend(bbox_to_anchor=(1, 1), loc='upper left', fontsize=fs)
+    plt.legend(loc='upper left', fontsize=14, framealpha=0.5)
+    plt.ylabel('Density', fontsize=fs)
+    plt.title('distribution of latent variables, size ' + str(size), fontsize=fs)
+    plt.grid()
+    if xlim is not None:
+        plt.xlim(xlim)
+    logger.log_plot(fig, name= fig_name, step=step)
+    plt.close(fig)
 
 class RandActScheduledActionPriorSACAgent(ActionPriorSACAgent):
     """Adds scheduled call to random action (aka prior execution) -> used if downstream policy trained from scratch."""
