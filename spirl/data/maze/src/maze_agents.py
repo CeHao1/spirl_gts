@@ -161,13 +161,25 @@ class MazeHLInheritAgent(HLInheritAgent, MazeAgent):
         plot_maze_fun(states, logger, step, size)
 
 def plot_maze_fun(states, logger, step, size):
-    # print('!! plot maze at step ', step, ' size ', size)
     fig = plt.figure(figsize=(8,8))
     plt.scatter(states[:, 0], states[:, 1], s=5, c=np.arange(size), cmap='Blues')
     plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go')
     plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'mo')
     plt.axis("equal")
     plt.title('replay, step ' + str(step) + ' size ' + str(size))
+    plt.xlim(MazeAgent.VIS_RANGE[0])
+    plt.ylim(MazeAgent.VIS_RANGE[1])
+    logger.log_plot(fig, "replay_vis", step)
+    plt.close(fig)
+
+    # recent
+    size= int(1e4)
+    fig = plt.figure(figsize=(8,8))
+    plt.scatter(states[-size, 0], states[-size, 1], s=5, c=np.arange(size), cmap='Blues')
+    plt.plot(MazeAgent.START_POS[0], MazeAgent.START_POS[1], 'go')
+    plt.plot(MazeAgent.TARGET_POS[0], MazeAgent.TARGET_POS[1], 'mo')
+    plt.axis("equal")
+    plt.title('replay, recent 10k, step ' + str(step) + ' size ' + str(size))
     plt.xlim(MazeAgent.VIS_RANGE[0])
     plt.ylim(MazeAgent.VIS_RANGE[1])
     logger.log_plot(fig, "replay_vis", step)
