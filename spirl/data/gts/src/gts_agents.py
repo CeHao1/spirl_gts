@@ -16,6 +16,7 @@ class GTSAgent:
     VIS_RANGE = GTSEnv_Corner2_Single.VIS_RANGE
     START_POS = GTSEnv_Corner2_Single.START_POS
     TARGET_POS = GTSEnv_Corner2_Single.TARGET_POS
+    KEY_LIST = ['pos[0]', 'pos[2]', 'vx', 'steering','throttle', 'brake', 'is_hit_wall']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -42,7 +43,7 @@ class GTSAgent:
 
     def _select_info(self, info):
         """Selects info to be stored in replay buffer."""
-        key_list = ['pos[0]', 'pos[2]', 'vx', 'steering','throttle', 'brake', 'is_hit_wall']
+        key_list = GTSAgent.KEY_LIST
         info_batch = AttrDict(
             observation = np.array([[info_t['state'][key] for key in key_list] for info_t in info])
         )
@@ -113,9 +114,15 @@ class GTSLLInheritAgent(LLInheritAgent, GTSAgent):
 
 def plot_gts_traj(states, logger, step, size):
 
+    sdict = {}
+    for i in range(len(GTSAgent.KEY_LIST)):
+        sdict[GTSAgent.KEY_LIST[i]] = states[:, i]
+
+    sdict['steering'] /= np.pi/6
+
     # plot replay with velocity
     fig = plt.figure(figsize=(14,8))
-    plt.scatter(states[:, 0], states[:, 1], c=states[:, 2], cmap='Reds', s=0.1)
+    plt.scatter(sdict['pos[0]'], sdict['pos[2]'], c=sdict['vx'], cmap='Reds', s=0.1)
     plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
     plt.axis("equal")
@@ -123,25 +130,25 @@ def plot_gts_traj(states, logger, step, size):
     # plt.xlim(GTSAgent.VIS_RANGE[0])
     # plt.ylim(GTSAgent.VIS_RANGE[1])
     plt.colorbar()
-    logger.log_plot(fig, "velocity_vis", step)
+    logger.log_plot(fig, "replay, velocity_vis", step)
     plt.close(fig)
 
 
     # plot replay with density
     fig = plt.figure(figsize=(14,8))
-    sns.histplot(x=states[:, 0], y=states[:, 1], cmap='Blues', cbar=True,)
+    sns.histplot(sdict['pos[0]'], sdict['pos[2]'], cmap='Blues', cbar=True,)
     plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
     plt.axis("equal")
     plt.title('density, step ' + str(step) + ' size ' + str(size))
     # plt.xlim(GTSAgent.VIS_RANGE[0])
     # plt.ylim(GTSAgent.VIS_RANGE[1])
-    logger.log_plot(fig, "density_vis", step)
+    logger.log_plot(fig, "replay, density_vis", step)
     plt.close(fig)
 
     # plot replay hit wall
     fig = plt.figure(figsize=(14,8))
-    plt.scatter(states[:, 0], states[:, 1], c=states[:, 6], cmap='Reds', s=0.1)
+    plt.scatter(sdict['pos[0]'], sdict['pos[2]'], c=sdict['is_hit_wall'], cmap='Reds', s=0.1)
     plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
     plt.axis("equal")
@@ -149,12 +156,12 @@ def plot_gts_traj(states, logger, step, size):
     # plt.xlim(GTSAgent.VIS_RANGE[0])
     # plt.ylim(GTSAgent.VIS_RANGE[1])
     plt.colorbar()
-    logger.log_plot(fig, "hit_wall_vis", step)
+    logger.log_plot(fig, "replay, hit_wall_vis", step)
     plt.close(fig)
 
     # plot steering
     fig = plt.figure(figsize=(14,8))
-    plt.scatter(states[:, 0], states[:, 1], c=states[:, 3], cmap='jet', s=0.1)
+    plt.scatter(sdict['pos[0]'], sdict['pos[2]'], c=sdict['steering'], cmap='jet', s=0.1)
     plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
     plt.axis("equal")
@@ -162,11 +169,12 @@ def plot_gts_traj(states, logger, step, size):
     # plt.xlim(GTSAgent.VIS_RANGE[0])
     # plt.ylim(GTSAgent.VIS_RANGE[1])
     plt.colorbar()
-    logger.log_plot(fig, "steering_vis", step)
+    logger.log_plot(fig, "replay, steering_vis", step)
     plt.close(fig)
 
+    # plot pedal
     fig = plt.figure(figsize=(14,8))
-    plt.scatter(states[:, 0], states[:, 1], c=states[:, 4]-states[:, 5], cmap='jet', s=0.1)
+    plt.scatter(sdict['pos[0]'], sdict['pos[2]'], c=sdict['throttle']-sdict['brake'], cmap='jet', s=0.1)
     plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
     plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
     plt.axis("equal")
@@ -174,8 +182,19 @@ def plot_gts_traj(states, logger, step, size):
     # plt.xlim(GTSAgent.VIS_RANGE[0])
     # plt.ylim(GTSAgent.VIS_RANGE[1])
     plt.colorbar()
-    logger.log_plot(fig, "pedal_vis", step)
+    logger.log_plot(fig, "replay, pedal_vis", step)
     plt.close(fig)
+
+    # plot action dist of replay
+    fs = 16
+    fig = plt.figure(figsize=(10, 8))
+    sns.histplot(x=sdict['throttle'], y=sdict['brake'], bins=50, cmap='Reds', cbar=True)
+    plt.xlabel('dim_0', fontsize=fs)
+    plt.ylabel('dim_1', fontsize=fs)
+    plt.title('2D dist of latent variables, size ' + str(size), fontsize=fs)
+    logger.log_plot(fig, name= 'replay action dist', step=step)
+    plt.close(fig)
+
 
 
 def plot_gts_value(q, states, logger, step, size, fig_name='vis'):
