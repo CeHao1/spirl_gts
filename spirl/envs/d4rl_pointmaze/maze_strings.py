@@ -79,7 +79,7 @@ maze_name_space= {
     'h_maze' : H_MAZE,
     'm_maze1' : M_MAZE_V7,
     'm_maze2' : M_MAZE2_V1,
-    'm_maze3' : M_MAZE3_V2,
+    'm_maze3' : M_MAZE3_V1,
 }
 
 LARGE_MAZE = \

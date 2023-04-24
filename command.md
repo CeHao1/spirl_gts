@@ -78,8 +78,8 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL  --gpu=0 \
 
 # in maze2
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m3  --gpu=0 \
---seed=0 --prefix=HL_04_2
+--seed=0 --prefix=HYB_td10
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m3  --gpu=0 \
---seed=0 --prefix=HYB_02_next \
+--seed=1 --prefix=HYB_02_next_02 \
 --resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0
