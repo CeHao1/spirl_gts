@@ -19,7 +19,7 @@ class BaseSample:
             'min_frames_per_action':    1,
             'spectator_mode':           True,
             'store_states':             False,
-            'standardize_observations': False,
+            'standardize_observations': True,
         })
         return default_dict
 

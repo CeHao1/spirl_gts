@@ -25,16 +25,16 @@ init_config = AttrDict(
 start_config = AttrDict(
     track_dir = os.path.join(os.environ["EXP_DIR"], "skill_prior_learning/gts/track.csv"),
     course_v_range = [1200, 2200],
-    speed_kmph_range = [0, 144],
-    ey_range_percent = [-0.6, 0.6], # half width
+    speed_kmph_range = [0, 40*3.6],
+    ey_range_percent = [-0.8, 0.8], # half width
     epsi_range_pi_percent = [-0.1, 0.1] # +- pi/2, positive direction
 
 )
 
 # config for the done function
 done_config = AttrDict(
-    max_course_v = 2400,
-    max_time = 20,
+    max_course_v = 3000,
+    max_time = 10,
 )
 
 # config for the sampler

@@ -44,7 +44,7 @@ class GTSEnv_Corner2_Single(GymEnv):
             'do_init' : True,
             'reward_function' : corner2_spare_reward_function,
             'done_function' : corner2_done_function,
-            'standardize_observations' : False,
+            'standardize_observations' : True,
             'store_states' : False,
             'builtin_controlled': [],
             'min_frames_per_action': 6,
