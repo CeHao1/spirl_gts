@@ -22,7 +22,7 @@ class MDLVisualizer(ModelTrainer):
         self._hp.exp_path = make_path(conf.exp_dir, args.path, args.prefix, args.new_dir)
 
         # self data dir
-        self._hp.data_dir = '/home/msc/cehao/github_space/spirl_gts/save_rollout'
+        # self._hp.data_dir = '/home/msc/cehao/github_space/spirl_gts/save_rollout'
 
         self._hp.batch_size = 8
         self.log_dir = log_dir = os.path.join(self._hp.exp_path, 'events')
@@ -44,8 +44,8 @@ class MDLVisualizer(ModelTrainer):
 
         # self.model.switch_to_prior()
         print('get model and data')
-        self.show_value_distribution()
-        # self.show_one_value()
+        # self.show_value_distribution()
+        self.show_one_value()
            
 
     def build_vizer(self, params, phase):
@@ -163,14 +163,14 @@ def plots(input, output, out_prior):
     titles = ['steering angle', 'pedal command']
 
     plt.subplot(1,2, 1)
-    # plt.plot(input[:,0] * rad2deg, 'b')
+    plt.plot(input[:,0] * rad2deg, 'b')
     plt.plot(output[:,0] *rad2deg, 'r')
     plt.plot(out_prior[:,0] *rad2deg, 'g')
     plt.title(titles[0], fontsize=15)
     # plt.ylim([-1.1, 1.1])
 
     plt.subplot(1,2, 2)
-    # plt.plot(input[:,1], 'b', label='input action series')
+    plt.plot(input[:,1], 'b', label='input action series')
     plt.plot(output[:,1], 'r', label='output reconstruction')
     plt.plot(out_prior[:,1], 'g', label='prior')
     plt.title(titles[1], fontsize=15)

@@ -98,6 +98,7 @@ ll_model_params = AttrDict(
     n_rollout_steps=10,
 
     cond_decode = True,
+    normalization = 'none'
 )
 
 # policy
