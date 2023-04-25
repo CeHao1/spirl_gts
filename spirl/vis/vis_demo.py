@@ -59,3 +59,4 @@ def plot_dist(action, size):
     
 if __name__ == "__main__":
     load_data('./sample/raw_data/batch_0')
+    # load_data('/home/msc/cehao/github_space/spirl_gts/save_rollout')

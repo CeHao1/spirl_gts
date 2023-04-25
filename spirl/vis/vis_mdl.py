@@ -21,7 +21,10 @@ class MDLVisualizer(ModelTrainer):
         self._hp.overwrite(conf.general)  # override defaults with config file
         self._hp.exp_path = make_path(conf.exp_dir, args.path, args.prefix, args.new_dir)
 
-        self._hp.batch_size = 128
+        # self data dir
+        self._hp.data_dir = '/home/msc/cehao/github_space/spirl_gts/save_rollout'
+
+        self._hp.batch_size = 8
         self.log_dir = log_dir = os.path.join(self._hp.exp_path, 'events')
         print('using log dir: ', log_dir)
 
@@ -41,8 +44,8 @@ class MDLVisualizer(ModelTrainer):
 
         # self.model.switch_to_prior()
         print('get model and data')
-        # self.show_value_distribution()
-        self.show_one_value()
+        self.show_value_distribution()
+        # self.show_one_value()
            
 
     def build_vizer(self, params, phase):
@@ -59,14 +62,15 @@ class MDLVisualizer(ModelTrainer):
     def show_one_value(self):
         for idx in range(20):
             plots(*self.get_data())
+            # plots_distribution(*self.get_data(all_data=True))
 
     def show_value_distribution(self):
         # for idx in tqdm(range(10)):
-        output = self.get_data(all_data=True)
+        output = self.get_data(get_output=True)
         plot_z_mean_var(output)
         
 
-    def get_data(self, all_data=False):
+    def get_data(self, all_data=False, get_output=False):
         # sample_batched = self.loader.dataset[0]
         
         for batch_idx, sample_batched in enumerate(self.loader):
@@ -96,11 +100,16 @@ class MDLVisualizer(ModelTrainer):
 
             break
         # print('finish')
-        if all_data:
+        if get_output:
             return output
-        else:
-            n = 0
-            return input_actions[n], output_reconstruction[n], output_prior_recon[n]
+        
+        if all_data:   
+            def flat(x):
+                return x.reshape(-1, x.shape[-1])                                                     
+            return flat(input_actions), flat(output_reconstruction), flat(output_prior_recon)
+
+        n = 0
+        return input_actions[n], output_reconstruction[n], output_prior_recon[n]
 
 
 def plot_z_mean_var(output):
@@ -154,14 +163,14 @@ def plots(input, output, out_prior):
     titles = ['steering angle', 'pedal command']
 
     plt.subplot(1,2, 1)
-    plt.plot(input[:,0] * rad2deg, 'b')
+    # plt.plot(input[:,0] * rad2deg, 'b')
     plt.plot(output[:,0] *rad2deg, 'r')
     plt.plot(out_prior[:,0] *rad2deg, 'g')
     plt.title(titles[0], fontsize=15)
     # plt.ylim([-1.1, 1.1])
 
     plt.subplot(1,2, 2)
-    plt.plot(input[:,1], 'b', label='input action series')
+    # plt.plot(input[:,1], 'b', label='input action series')
     plt.plot(output[:,1], 'r', label='output reconstruction')
     plt.plot(out_prior[:,1], 'g', label='prior')
     plt.title(titles[1], fontsize=15)
@@ -174,7 +183,7 @@ def plots(input, output, out_prior):
 def plots_distribution(input, output, out_prior):
 
 
-    range2deg = 30
+    range2deg = 1
 
     titles = ['steering angle (deg)', 'pedal command']
 

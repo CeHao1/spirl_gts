@@ -34,7 +34,7 @@ python3 spirl/rl/train.py --path=spirl/configs/rl/gts_corner2/SAC_new --seed=0 -
 
 ### HRL single
 python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/sh --seed=0 --gpu=0 \
---prefix=sac_new_t01
+--prefix=rollout_test --mode='rollout' --save_dir='./save_rollout'
 
 ### HRL multi
 python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/sh_multi --seed=0 --gpu=0 \
