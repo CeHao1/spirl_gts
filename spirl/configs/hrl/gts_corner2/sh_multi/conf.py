@@ -63,10 +63,12 @@ sampler_config = AttrDict(
 
 agent_config.update_iterations = num_of_sampler * 128
 # agent_config.update_iterations = num_of_sampler * 64
-# 
+
+
+agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
 # agent_config.initial_train_stage = skill_critic_stages.HYBRID
 # agent_config.initial_train_stage = skill_critic_stages.LL_TRAIN
-agent_config.initial_train_stage = skill_critic_stages.HL_LLVAR
+# agent_config.initial_train_stage = skill_critic_stages.HL_LLVAR
 ll_policy_params.manual_log_sigma = [-3.5, -2.5]
 # ll_agent_config.fixed_alpha = 0.1
 ll_agent_config.td_schedule_params=AttrDict(p=10.)

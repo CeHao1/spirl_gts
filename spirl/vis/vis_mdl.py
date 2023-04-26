@@ -22,9 +22,9 @@ class MDLVisualizer(ModelTrainer):
         self._hp.exp_path = make_path(conf.exp_dir, args.path, args.prefix, args.new_dir)
 
         # self data dir
-        # self._hp.data_dir = '/home/msc/cehao/github_space/spirl_gts/save_rollout'
-
+        self._hp.data_dir = '/home/msc/cehao/github_space/spirl_gts/save_rollout'
         self._hp.batch_size = 8
+        
         self.log_dir = log_dir = os.path.join(self._hp.exp_path, 'events')
         print('using log dir: ', log_dir)
 

@@ -45,7 +45,7 @@ configuration = AttrDict(    {
     
     'data_dir': '.',
     'num_epochs': 2000,
-    'max_rollout_len': 200,
+    'max_rollout_len': 600,
     # 'n_steps_per_epoch': 10000,
     # 'n_steps_per_update': 1000,
     # 'n_warmup_steps': 160000,
@@ -98,7 +98,7 @@ ll_model_params = AttrDict(
     n_rollout_steps=10,
 
     cond_decode = True,
-    normalization = 'none'
+    normalization = 'none',
 )
 
 # policy

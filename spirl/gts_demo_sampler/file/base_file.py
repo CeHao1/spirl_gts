@@ -18,7 +18,7 @@ class BaseFile:
             'feature_keys'      : chosen_feature_keys,
             'action_keys'       : action_keys,
             'save_car_id'       : [0],  # which car to save
-            'skip_hit_wall'     : True,
+            'skip_hit_wall'     : False,
             'least_length'      : 10,
         })
         return default_dict 
