@@ -41,7 +41,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL  --gpu=0 \
 # in maze1
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
---seed=0 --prefix=HL_s0
+--seed=2 --prefix=HL_s2_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
 --seed=0 --prefix=LL_td80_real \
@@ -51,7 +51,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
 
 # in maze2
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
---seed=0 --prefix=HYB_td10
+--seed=1 --prefix=HL_s1_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
 --seed=0 --prefix=HYB_LLV-1_02 \

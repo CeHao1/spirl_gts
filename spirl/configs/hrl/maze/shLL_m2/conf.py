@@ -18,10 +18,10 @@ configuration.update({
     'n_warmup_steps': 5e3,
 })
 
-# agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
-agent_config.initial_train_stage = skill_critic_stages.HYBRID
+agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
+# agent_config.initial_train_stage = skill_critic_stages.HYBRID
 
 ll_agent_config.td_schedule_params=AttrDict(p=80.)
 agent_config.update_iterations = 1
-# ll_policy_params.manual_log_sigma = [-3, -3]
-ll_policy_params.manual_log_sigma = [-10, -10]
+ll_policy_params.manual_log_sigma = [-3, -3]
+# ll_policy_params.manual_log_sigma = [-10, -10]
