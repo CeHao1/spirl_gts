@@ -55,10 +55,10 @@ configuration = AttrDict(    {
     'sampler':HierarchicalSamplerBatched,
     
     'n_steps_per_epoch': 10000,
-    'n_steps_per_update': 400,
-    'n_warmup_steps': 200,
-    'log_output_interval': 200,
-    'log_image_interval': 200,
+    'n_steps_per_update': 1200,
+    'n_warmup_steps': 600,
+    'log_output_interval': 600,
+    'log_image_interval': 600,
 
 } )
 
@@ -98,7 +98,7 @@ ll_model_params = AttrDict(
     n_rollout_steps=10,
 
     cond_decode = True,
-    normalization = 'none',
+    # normalization = 'none',
 )
 
 # policy
