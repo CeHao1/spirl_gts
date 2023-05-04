@@ -24,8 +24,8 @@ python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchic
 
 # train RL
 
-python3 spirl/rl/train.py --path=spirl/configs/rl/maze/SAC_m2 --seed=0 --gpu=0 \
---prefix=test_01
+python3 spirl/rl/train.py --path=spirl/configs/rl/maze/SAC_m1 --seed=1 --gpu=0 \
+--prefix=test_s1
 
 python3 spirl/rl/train.py --path=spirl/configs/rl/maze/prior_initialized/bc_m2 --seed=0 --gpu=0 \
 --prefix=test_01
