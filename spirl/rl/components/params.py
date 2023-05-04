@@ -51,5 +51,9 @@ def get_args():
     # Note
     parser.add_argument('--notes', default='', type=str,
                         help='Notes for the run')
+    
+    # tuning
+    # parser.add_argument('--LLVar', default=0, type=float)
+    # parser.add_argument('--LLtd', default=0, type=float)
 
     return parser.parse_args()

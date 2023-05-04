@@ -13,15 +13,26 @@ notes = 'skill critic on the maze env'
 
 configuration.update({
     'environment': ACmMaze2,
+    'num_epochs': 90,
     'max_rollout_len': 2000,
     'n_steps_per_epoch': 1e5,
     'n_warmup_steps': 5e3,
 })
 
-agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
-# agent_config.initial_train_stage = skill_critic_stages.HYBRID
+hl_replay_params.capacity *= 0.7
+ll_replay_params.capacity *= 0.7
 
-ll_agent_config.td_schedule_params=AttrDict(p=80.)
-agent_config.update_iterations = 1
+
+# agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
+agent_config.initial_train_stage = skill_critic_stages.HYBRID
+
+
+
+# ll_agent_config.td_schedule_params = AttrDict(p=10.)
+ll_agent_config.td_schedule_params = AttrDict(p=20.)
+# ll_agent_config.td_schedule_params = AttrDict(p=50.)
+# ll_agent_config.td_schedule_params = AttrDict(p=80.)
+
+# ll_policy_params.manual_log_sigma = [-1, -1]
 ll_policy_params.manual_log_sigma = [-3, -3]
-# ll_policy_params.manual_log_sigma = [-10, -10]
+# ll_policy_params.manual_log_sigma = [-5, -5]
