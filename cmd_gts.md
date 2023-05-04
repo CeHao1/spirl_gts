@@ -37,11 +37,15 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/sh --seed=0 --gpu
 --prefix=rollout_test2 --mode='rollout' --save_dir='./save_rollout'
 
 ### HRL multi
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/sh_multi --seed=0 --gpu=0 \
+--prefix=HL_s0_01
+
 python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/sh_multi --seed=0 --gpu=0 \
 --prefix=HLVar_Norm_s0_13
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/sh_multi  --gpu=0 \
---seed=1 --prefix=HYB_td80_s1_19 \
+--seed=1 --prefix=HYB_td80_s1_20 \
 --resume='latest' --strict_weight_loading=0 --resume_load_replay_buffer=0 
 
 

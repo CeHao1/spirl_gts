@@ -17,6 +17,7 @@ from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
 WANDB_PROJECT_NAME = 'gts_c2_RL'
+# WANDB_PROJECT_NAME = 'gts_formal'
 WANDB_ENTITY_NAME = 'cehao'
 
 

@@ -35,7 +35,7 @@ env_config = AttrDict(
     # reward_function = single_reward_function,
     done_function = corner2_done_function,
     
-    ip_address = '192.168.1.116',
+    ip_address = '192.168.1.123',
 )
 
 
@@ -44,7 +44,7 @@ configuration = AttrDict(    {
     'agent': JointInheritAgent,
     
     'data_dir': '.',
-    'num_epochs': 2000,
+    'num_epochs': 100,
     'max_rollout_len': 600,
     # 'n_steps_per_epoch': 10000,
     # 'n_steps_per_update': 1000,

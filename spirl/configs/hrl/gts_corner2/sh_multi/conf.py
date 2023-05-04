@@ -12,12 +12,10 @@ ip_address_list = \
                 '192.168.1.120',
                 '192.168.1.123',
                 '192.168.1.119',
+                '192.168.1.115',
                 '192.168.1.116',
 
                  ]
-
- #  '192.168.1.115',
-#  '192.168.1.114',
                 
 num_of_sampler = len(ip_address_list)
 
@@ -68,8 +66,8 @@ agent_config.update_iterations = num_of_sampler * 128
 # agent_config.update_iterations = num_of_sampler * 64
 
 
-# agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
-agent_config.initial_train_stage = skill_critic_stages.HYBRID
+agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
+# agent_config.initial_train_stage = skill_critic_stages.HYBRID
 # agent_config.initial_train_stage = skill_critic_stages.LL_TRAIN
 # agent_config.initial_train_stage = skill_critic_stages.HL_LLVAR
 ll_policy_params.manual_log_sigma = [-4.5, -3.5]
