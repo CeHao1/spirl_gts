@@ -158,7 +158,7 @@ class MazeHLInheritAgent(HLInheritAgent, MazeAgent):
         """Visualizes maze trajectories from replay buffer (if step < replay capacity)."""
         size = self.vis_replay_buffer.size
         states = self.vis_replay_buffer.get().observation[:size, :2]
-        plot_maze_fun(states, logger, step, size, prefix='hl_')
+        plot_maze_fun(states, logger, step, size, prefix='')
 
 
 
