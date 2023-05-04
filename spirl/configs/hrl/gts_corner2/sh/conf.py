@@ -28,14 +28,14 @@ from spirl.utils.gts_utils import  corner2_done_function, corner2_spare_reward_f
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    do_init = False,
+    # do_init = False,
     # action_standard = True,
 
     reward_function = corner2_spare_reward_function,
     # reward_function = single_reward_function,
     done_function = corner2_done_function,
     
-    ip_address = '192.168.1.100',
+    ip_address = '192.168.1.116',
 )
 
 
