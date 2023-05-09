@@ -1,6 +1,8 @@
 import matplotlib; matplotlib.use('Agg')
-import torch
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = '3'
+
+import torch
 import imp
 import json
 from tqdm import tqdm
@@ -343,6 +345,7 @@ class RLTrainer:
         self.device = torch.device('cuda') if self.use_cuda else torch.device('cpu')
         if self.args.gpu != -1:
             os.environ["CUDA_VISIBLE_DEVICES"] = str(self.args.gpu)
+            print('setting gpu device to {}'.format(self.args.gpu)) 
 
     def resume(self, ckpt, path=None, load_replay_buffer=True):
         path = os.path.join(self._hp.exp_path, 'weights') if path is None else os.path.join(path, 'weights')

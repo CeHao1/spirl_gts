@@ -18,8 +18,6 @@ configuration.update({
     'n_warmup_steps': 5e3,
 })
 
-hl_replay_params.capacity *= 0.5
-ll_replay_params.capacity *= 0.5
 
 # agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
 agent_config.initial_train_stage = skill_critic_stages.HYBRID
