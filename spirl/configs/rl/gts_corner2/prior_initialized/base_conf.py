@@ -1,4 +1,4 @@
-from spirl.configs.rl.gts.base_conf import *
+from spirl.configs.rl.gts_corner2.base_conf import *
 from spirl.models.bc_mdl import BCMdl
 
 policy_params.update(AttrDict(

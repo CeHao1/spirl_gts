@@ -5,17 +5,25 @@ from spirl.rl.envs.env_list import EnvList
 from spirl.rl.components.sampler_wrap import HierarchicalSamplerWrapped
 from spirl.rl.components.sampler_batched import AgentDetached_HierarchicalSamplerBatched
 
-ip_address_list = \
-                [ '192.168.1.125',
-                '192.168.1.117',
-                '192.168.1.121',
-                '192.168.1.120',
-                '192.168.1.123',
-                '192.168.1.119',
-                '192.168.1.115',
-                '192.168.1.116',
+# ip_address_list = \
+#                 [ '192.168.1.125',
+#                 '192.168.1.117',
+#                 '192.168.1.121',
+#                 '192.168.1.120',
+#                 '192.168.1.123',
+#                 '192.168.1.119',
+#                 '192.168.1.115',
+#                 '192.168.1.116',
+#                  ]
 
-                 ]
+ip_address_list = [
+    "192.168.1.125",
+    "192.168.1.117",
+    "192.168.1.121",
+    "192.168.1.120",
+    "192.168.1.123",
+    "192.168.1.119",
+    '192.168.1.115',]
                 
 num_of_sampler = len(ip_address_list)
 
@@ -27,7 +35,6 @@ configuration.update(AttrDict(
     n_steps_per_epoch= 600*num_of_sampler*2,
     n_steps_per_update= 600*num_of_sampler,
     n_warmup_steps = 600*num_of_sampler*5,
-    # n_warmup_steps = 600*num_of_sampler*1,
     
     log_output_interval = 600*num_of_sampler,
     log_image_interval = 600*num_of_sampler,
