@@ -33,8 +33,8 @@ python3 spirl/rl/train.py --path=spirl/configs/rl/gts_corner2/SAC_single --seed=
 --prefix=sac_new_t01
 
 ### SAC multi
-python3 spirl/rl/train.py --path=spirl/configs/rl/gts_corner2/SAC_new --seed=2 --gpu=0 \
---prefix=sac_formal_s2_01
+python3 spirl/rl/train.py --path=spirl/configs/rl/gts_corner2/SAC_new --seed=1 --gpu=0 \
+--prefix=dense_s1_01
 
 ### BC multi
 python3 spirl/rl/train.py --path=spirl/configs/rl/gts_corner2/prior_initialized/bc_multi --seed=4 --gpu=0 \
