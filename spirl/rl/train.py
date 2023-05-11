@@ -1,6 +1,6 @@
 import matplotlib; matplotlib.use('Agg')
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+# os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
 import torch
 import imp
@@ -18,8 +18,8 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-# WANDB_PROJECT_NAME = 'maze'
-WANDB_PROJECT_NAME = 'gts_c2_RL'
+WANDB_PROJECT_NAME = 'maze'
+# WANDB_PROJECT_NAME = 'gts_c2_RL'
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -359,6 +359,7 @@ class RLTrainer:
         if load_replay_buffer:
             self.agent.load_state(self._hp.exp_path)
         self.agent.to(self.device)
+
         return start_epoch
 
     def offline(self):

@@ -333,9 +333,12 @@ class HierarchicalAgent(BaseAgent):
     def load_state_dict(self, state_dict, *args, **kwargs):
         self.hl_agent.load_state_dict(state_dict.pop('hl_agent'), *args, **kwargs)
         self.ll_agent.load_state_dict(state_dict.pop('ll_agent'), *args, **kwargs)
-        self.set_agents()
+        self.set_agents_after_load()
         
     def set_agents(self):
+        pass
+
+    def set_agents_after_load(self):
         pass
 
     def save_state(self, save_dir):

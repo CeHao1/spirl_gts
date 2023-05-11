@@ -155,7 +155,8 @@ class LLInheritAgent(ActionPriorSACAgent):
 
         # QHL(k+1)
         q_hl_next_raw = torch.min(*[critic_target(obs, self._prep_action(hl_policy_output_next.action)).q for critic_target in self.hl_critic_targets])
-        q_hl_next = q_hl_next_raw - self.alpha * ll_policy_output_next.prior_divergence[:, None]
+        # q_hl_next = q_hl_next_raw - self.alpha * ll_policy_output_next.prior_divergence[:, None]
+        q_hl_next = q_hl_next_raw
 
         check_shape(q_ll_next, [self._hp.batch_size, 1])
         check_shape(q_hl_next, [self._hp.batch_size, 1])

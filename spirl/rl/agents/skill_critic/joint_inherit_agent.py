@@ -30,6 +30,11 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
 
     def set_agents(self):
         self.ll_agent.update_by_hl_agent(self.hl_agent)
+        # self.hl_agent.update_by_ll_agent(self.ll_agent)
+
+    def set_agents_after_load(self):
+        self.ll_agent.update_by_hl_agent(self.hl_agent)
+        self.hl_agent.update_by_ll_agent(self.ll_agent)
 
     def _default_hparams(self):
         default_dict = ParamDict({

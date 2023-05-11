@@ -22,10 +22,14 @@ class HLInheritAgent(ActionPriorSACAgent):
         self._warm_start_flat = flags[2]
 
     def update_by_ll_agent(self, ll_agent):
-        self.ll_agent = ll_agent
-        self.ll_critics = ll_agent.critics
+        # self.ll_agent = ll_agent
+        # self.ll_critics = ll_agent.critics
+        # self.ll_critic_targets = ll_agent.critic_targets
+        # self.ll_critic_opts = ll_agent.critic_opts
+
+        self.ll_policy = ll_agent.policy
+        self.ll_alpha = ll_agent.alpha
         self.ll_critic_targets = ll_agent.critic_targets
-        self.ll_critic_opts = ll_agent.critic_opts
 
     def update(self, experience_batch=None):
 
@@ -141,11 +145,12 @@ class HLInheritAgent(ActionPriorSACAgent):
                 # 1) sample a from LL Pi
                 k0 = self._get_k0_onehot(experience_batch.observation)
                 obs = torch.cat((experience_batch.observation, experience_batch.action, k0), dim=1)
-                policy_output = self.ll_agent._run_policy(obs)
+                policy_output = self.ll_policy(obs)
 
                 # 2) calculate expected Qa target
-                qa_target = torch.min(*[critic_target(obs, policy_output.action).q for critic_target in self.ll_critic_targets])# this part is
-                q_target = qa_target - self.ll_agent.alpha * policy_output.prior_divergence[:, None]
+                qa_target = torch.min(*[critic_target(obs, policy_output.action).q 
+                    for critic_target in self.ll_critic_targets])# this part is
+                q_target = qa_target - self.ll_alpha * policy_output.prior_divergence[:, None]
                 q_target = q_target.squeeze(-1)
                 q_target = q_target.detach()
                 check_shape(q_target, [self._hp.batch_size])
