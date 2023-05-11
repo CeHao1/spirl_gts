@@ -144,7 +144,7 @@ class HLInheritAgent(ActionPriorSACAgent):
             with torch.no_grad():
                 # 1) sample a from LL Pi
                 k0 = self._get_k0_onehot(experience_batch.observation)
-                obs = torch.cat((experience_batch.observation, experience_batch.action, k0), dim=1)
+                obs = torch.cat((experience_batch.observation, experience_batch.action, k0), dim=-1)
                 policy_output = self.ll_policy(obs)
 
                 # 2) calculate expected Qa target

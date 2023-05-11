@@ -15,6 +15,7 @@ class skill_critic_stages(Enum):
     LL_TRAIN_PI = 4
     HL_LLVAR = 5
     FIX_LL_PI = 6
+    NO_LLQ = 7
 
 class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
     def __init__(self, config):
@@ -30,7 +31,7 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
 
     def set_agents(self):
         self.ll_agent.update_by_hl_agent(self.hl_agent)
-        # self.hl_agent.update_by_ll_agent(self.ll_agent)
+        self.hl_agent.update_by_ll_agent(self.ll_agent)
 
     def set_agents_after_load(self):
         self.ll_agent.update_by_hl_agent(self.hl_agent)
@@ -50,8 +51,8 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             # policy: HL var, LL var
             # update: HL Q, LL Q (to convergence)
             self.hl_agent.switch_off_deterministic_action_mode()
-            self.ll_agent.switch_off_deterministic_action_mode()
-            self.hl_agent.fast_assign_flags([False, True, True])
+            self.ll_agent.switch_on_deterministic_action_mode()
+            self.hl_agent.fast_assign_flags([True, True, True])
             self.ll_agent.fast_assign_flags([False, True])
 
         elif stage == skill_critic_stages.HL_TRAIN:
@@ -60,7 +61,7 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             # update: HL Q, LL Q, HL Pi
             self.hl_agent.switch_off_deterministic_action_mode()
             self.ll_agent.switch_on_deterministic_action_mode()
-            self.hl_agent.fast_assign_flags([True, True, True])
+            self.hl_agent.fast_assign_flags([True, True, False])
             self.ll_agent.fast_assign_flags([False, True])
 
         elif stage == skill_critic_stages.LL_TRAIN:
@@ -88,12 +89,12 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
             self.hl_agent.fast_assign_flags([True, True, False])
             self.ll_agent.fast_assign_flags([False, True])
             
-        elif stage == skill_critic_stages.SC_WO_LLVAR:
-        # 6) only train LL policy, without LL variance
+        elif stage == skill_critic_stages.NO_LLQ:
+        # 6) only train LL policy, without LL Q
             self.hl_agent.switch_off_deterministic_action_mode()
             self.ll_agent.switch_on_deterministic_action_mode()
             self.hl_agent.fast_assign_flags([True, True, False])
-            self.ll_agent.fast_assign_flags([True, True])
+            self.ll_agent.fast_assign_flags([False, False])
 
         else:
             self.hl_agent.switch_off_deterministic_action_mode()

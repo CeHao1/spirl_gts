@@ -16,13 +16,14 @@ configuration.update({
     'max_rollout_len': 2000,
     'n_steps_per_epoch': 1e5,
     'n_warmup_steps': 5e3,
-
-    # 'n_warmup_steps': 5e2,
 })
 
 
+
+agent_config.initial_train_stage = skill_critic_stages.WARM_START
 # agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
-agent_config.initial_train_stage = skill_critic_stages.HYBRID
+# agent_config.initial_train_stage = skill_critic_stages.HYBRID
+# agent_config.initial_train_stage = skill_critic_stages.NO_LLQ
 
 # ll_agent_config.td_schedule_params = AttrDict(p=5.)
 # ll_agent_config.td_schedule_params = AttrDict(p=10.)
@@ -42,3 +43,7 @@ ll_agent_config.td_schedule_params = AttrDict(p=80.)
 # ll_policy_params.manual_log_sigma = [-2, -2]
 ll_policy_params.manual_log_sigma = [-3, -3]
 # ll_policy_params.manual_log_sigma = [-5, -5]
+
+# agent_config.update_iterations = 2
+# hl_agent_config.reward_scale = 5.0
+# ll_agent_config.reward_scale = 5.0
