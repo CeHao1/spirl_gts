@@ -1,6 +1,6 @@
 import matplotlib; matplotlib.use('Agg')
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '3'
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
 import torch
 import imp

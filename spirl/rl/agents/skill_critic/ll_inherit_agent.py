@@ -104,6 +104,7 @@ class LLInheritAgent(ActionPriorSACAgent):
             ll_pi_KLD=policy_output.prior_divergence.mean(),
             # ll_policy_entropy=policy_output.dist.entropy().mean(),
             ll_avg_sigma = policy_output.dist.sigma.mean(),
+            ll_target_divergence = self._target_divergence(self.schedule_steps),
             ll_avg_reward=experience_batch.reward.mean(),
         ))
         info.update(self._aux_info(experience_batch, policy_output))
