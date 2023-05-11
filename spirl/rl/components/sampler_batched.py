@@ -38,6 +38,8 @@ class SamplerBatched:
         """Samples an experience batch of the required size."""
         experience_batch = []
         step = 0
+        self._success_num, self._rollout_num = 0, 0
+
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
@@ -76,13 +78,16 @@ class SamplerBatched:
 
                         # reset if episode ends
                         if np.any(done) or self._episode_step >= self._max_episode_len:
+                            self._rollout_num += len(done)
+                            self._success_num += np.sum(self._episode_reward > 0)
+
                             if np.any(done):
                                 print('restart, done one sample')
                             if self._episode_step >= self._max_episode_len:
                                 print(f'restart, step {self._episode_step} exceed max episode len {self._max_episode_len}')
                             if not np.all(done):    # force done to be True for timeout
                                 for exp in experience_batch[-1].done:
-                                    exp = True
+                                    exp = True 
                             self._episode_reset(global_step)
 
         return batch_listdict2dictlist(experience_batch), step
@@ -133,7 +138,9 @@ class SamplerBatched:
     def get_episode_info(self):
         episode_info = AttrDict(episode_reward=self._episode_reward,
                                 episode_length=self._episode_step,
-                                episode_success=np.clip(self._episode_reward, 0, 1))
+                                episode_success=self._success_num/self._rollout_num,
+                                rollout_num=self._rollout_num,
+                                success_num=self._success_num,)
         if hasattr(self._env, "get_episode_info"):
             episode_info.update(self._env.get_episode_info())
         return episode_info
@@ -193,6 +200,8 @@ class HierarchicalSamplerBatched(SamplerBatched):
         """Samples the required number of high-level transitions. Number of LL transitions can be higher."""
         hl_experience_batch, ll_experience_batch = [], []
         env_steps, hl_step = 0, 0
+        self._success_num, self._rollout_num = 0, 0
+
         with self._env.val_mode() if not is_train else contextlib.suppress():
             with self._agent.val_mode() if not is_train else contextlib.suppress():
                 with self._agent.rollout_mode():
@@ -239,10 +248,10 @@ class HierarchicalSamplerBatched(SamplerBatched):
                                     info=info,
                                 ))
                                 hl_step += batch_length
-                                if np.any(done):
-                                    # add terminal reward
-                                    for exp, r in zip(hl_experience_batch[-1].reward, reward):
-                                        exp += r
+                                # if np.any(done):
+                                #     # add terminal reward
+                                #     for exp, r in zip(hl_experience_batch[-1].reward, reward):
+                                #         exp += r
                                 # if hl_step % 1000 == 0:
                                 #     print("Sample step {}".format(hl_step))
                             self.last_hl_obs = self._obs if self._episode_step == 0 else obs
@@ -254,10 +263,15 @@ class HierarchicalSamplerBatched(SamplerBatched):
                         env_steps += batch_length; 
                         self._episode_step += 1; 
                         self._episode_reward += np.mean(reward)
-                        self.reward_since_last_hl += np.array(reward)
+                        self.reward_since_last_hl += np.array(reward, dtype=np.int32)
 
                         # reset if episode ends
                         if np.any(done) or self._episode_step >= self._max_episode_len:
+                            self._rollout_num += len(done)
+                            self._success_num += (self._episode_reward > 0)
+
+                            hl_experience_batch[-1].reward += self.reward_since_last_hl
+
                             if not np.all(done):    # force done to be True for timeout
                                 for exp in ll_experience_batch[-1].done:
                                     exp = True

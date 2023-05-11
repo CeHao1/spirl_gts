@@ -86,14 +86,32 @@ for json args
 
 python spirl/gts_demo_sampler/sample_demo.py \
     --path spirl/configs/data_collect/gts/time_trial/c2 \
-    --ip_address '192.168.1.118' \
-    --prefix 'batch_0'
+    --ip_address '192.168.1.109' \
+    --prefix 'batch_17'
+
+
+[ '192.168.1.105',
+'192.168.1.100',
+'192.168.1.106',
+'192.168.1.110',
+'192.168.1.107',
+'192.168.1.101',
+'192.168.1.108',
+'192.168.1.109',
+]
 '''
 
 if __name__ == '__main__':
     sampler = SampleDemo(args=get_args())
     sampler.sample_rollout()
-    sampler.convert_rollout()
+    # sampler.convert_rollout()
 
     # sampler.init.init_gts()
     # raw_data = sampler.sample_raw_data()
+
+    # arg = get_args()
+    # for i in range(8):
+    #     prefix = 'batch_' + str(i)
+    #     arg.prefix = prefix
+    #     sampler = SampleDemo(args=arg)
+    #     sampler.convert_rollout()

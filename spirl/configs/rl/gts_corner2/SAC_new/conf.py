@@ -17,15 +17,25 @@ from spirl.rl.components.sampler_batched import AgentDetached_SampleBatched
 
 from spirl.rl.components.normalization import Normalizer
 from spirl.configs.default_data_configs.gts import data_spec
-from spirl.utils.gts_utils import  corner2_done_function, corner2_spare_reward_function
+from spirl.utils.gts_utils import corner2_done_function, corner2_spare_reward_function
+from spirl.utils.gts_utils import single_reward_function
 
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 notes = 'non-hierarchical RL experiments in gts env'
 
+ip_address_list = [
+    "192.168.1.125",
+    "192.168.1.117",
+    "192.168.1.121",
+    "192.168.1.120",
+    "192.168.1.123",
+    "192.168.1.119",
+    '192.168.1.115',]
 
 
+# ip_address_list = ["192.168.1.125"]
 
 configuration = {
     'seed': 2,
@@ -55,18 +65,31 @@ configuration = {
 }
 
 configuration = AttrDict(configuration)
+num_of_sampler = len(ip_address_list)
 
+configuration.update(AttrDict(
+    
+    max_rollout_len = 600,
+    n_steps_per_epoch= 600*num_of_sampler*2,
+    n_steps_per_update= 600*num_of_sampler,
+    n_warmup_steps = 600*num_of_sampler*5,
+    
+    log_output_interval = 600*num_of_sampler,
+    log_image_interval = 600*num_of_sampler,
+))
 
 # Environment
 sub_env_config = AttrDict(
     reward_norm=1.,
-    # do_init = False,
-    reward_function = corner2_spare_reward_function,
+    do_init = False,
+    # reward_function = corner2_spare_reward_function,
+    reward_function = single_reward_function,
     done_function = corner2_done_function,
-    initial_velocity = 65*3.6, 
+    # initial_velocity = 65*3.6, 
+    initial_velocity = 10*3.6,
 )
 
-ip_address_list = ['192.168.1.104', '192.168.1.106']
+
 
 sub_env_config_list = []
 for ip in ip_address_list:

@@ -34,7 +34,7 @@ model_config = AttrDict(
     nz_mid=128,
     n_processing_layers=5,
     cond_decode=True,
-
+    # normalization = 'none',
     n_rollout_steps = 10,
     nz_vae = 10,
 

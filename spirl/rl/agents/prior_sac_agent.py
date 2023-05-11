@@ -178,6 +178,8 @@ class ActionPriorSACAgent(SACAgent):
             
                 plot_action_dist(action_sig, logger, step, size, 
                         fig_name=prefix+'_vis action, sigma')
+
+                plot_gts_action_map(states, action_sum, logger, step, size)
                 
             if 'action_nosquash' in content:
                 plot_action_dist(action_sum, logger, step, size=int(1e4), 
@@ -194,7 +196,6 @@ class ActionPriorSACAgent(SACAgent):
 def plot_action_dist(action, logger, step, size, fig_name='vis action', bw=0.5, xlim=None):
     fs = 16
     
-    
     if len(action[0]) == 2: # plot 2 d distribution
         fig = plt.figure(figsize=(10, 8))
         sns.histplot(x=action[-size:, 0], y=action[-size:, 1], bins=50, cmap='Reds', cbar=True)
@@ -203,7 +204,6 @@ def plot_action_dist(action, logger, step, size, fig_name='vis action', bw=0.5, 
         plt.title('2D dist of latent variables, size ' + str(size), fontsize=fs)
         logger.log_plot(fig, name= fig_name + '_2D', step=step)
         plt.close(fig)
-
     
     # plot all distribution
     fig = plt.figure(figsize=(10, 5))
@@ -218,6 +218,37 @@ def plot_action_dist(action, logger, step, size, fig_name='vis action', bw=0.5, 
     if xlim is not None:
         plt.xlim(xlim)
     logger.log_plot(fig, name= fig_name, step=step)
+    plt.close(fig)
+
+
+def plot_gts_action_map(states, action, logger, step, size):
+    from spirl.data.gts.src.gts_agents import GTSAgent
+    fs = 16
+
+    # plot steering
+    fig = plt.figure(figsize=(14,8))
+    plt.scatter(states[:, 0], states[:, 1], c=action[:, 0], cmap='jet', s=0.1)
+    plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
+    plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
+    plt.axis("equal")
+    plt.title('steering Blue(-right), Red(+left), step ' + str(step) + ' size ' + str(size))
+    # plt.xlim(GTSAgent.VIS_RANGE[0])
+    # plt.ylim(GTSAgent.VIS_RANGE[1])
+    plt.colorbar()
+    logger.log_plot(fig, "value, steering_vis", step)
+    plt.close(fig)
+
+    # plot pedal
+    fig = plt.figure(figsize=(14,8))
+    plt.scatter(states[:, 0], states[:, 1], c=action[:, 1], cmap='jet', s=0.1)
+    plt.plot(GTSAgent.START_POS[0], GTSAgent.START_POS[1], 'go')
+    plt.plot(GTSAgent.TARGET_POS[0], GTSAgent.TARGET_POS[1], 'mo')
+    plt.axis("equal")
+    plt.title('Pedal Blue(-dec), Red(+acc), step ' + str(step) + ' size ' + str(size))
+    # plt.xlim(GTSAgent.VIS_RANGE[0])
+    # plt.ylim(GTSAgent.VIS_RANGE[1])
+    plt.colorbar()
+    logger.log_plot(fig, "value, pedal_vis", step)
     plt.close(fig)
 
 class RandActScheduledActionPriorSACAgent(ActionPriorSACAgent):
