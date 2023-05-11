@@ -28,14 +28,14 @@ from spirl.utils.gts_utils import  corner2_done_function, corner2_spare_reward_f
 # Environment
 env_config = AttrDict(
     reward_norm=1.,
-    do_init = False,
+    # do_init = False,
     # action_standard = True,
 
     reward_function = corner2_spare_reward_function,
     # reward_function = single_reward_function,
     done_function = corner2_done_function,
     
-    ip_address = '192.168.1.104',
+    ip_address = '192.168.1.115',
 )
 
 
@@ -44,8 +44,8 @@ configuration = AttrDict(    {
     'agent': JointInheritAgent,
     
     'data_dir': '.',
-    'num_epochs': 2000,
-    'max_rollout_len': 200,
+    'num_epochs': 100,
+    'max_rollout_len': 600,
     # 'n_steps_per_epoch': 10000,
     # 'n_steps_per_update': 1000,
     # 'n_warmup_steps': 160000,
@@ -55,10 +55,10 @@ configuration = AttrDict(    {
     'sampler':HierarchicalSamplerBatched,
     
     'n_steps_per_epoch': 10000,
-    'n_steps_per_update': 400,
-    'n_warmup_steps': 200,
-    'log_output_interval': 200,
-    'log_image_interval': 200,
+    'n_steps_per_update': 1200,
+    'n_warmup_steps': 600,
+    'log_output_interval': 600,
+    'log_image_interval': 600,
 
 } )
 
@@ -98,6 +98,7 @@ ll_model_params = AttrDict(
     n_rollout_steps=10,
 
     cond_decode = True,
+    # normalization = 'none',
 )
 
 # policy

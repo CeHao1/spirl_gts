@@ -61,7 +61,6 @@ class CDModelPolicy(Policy):
 
         # concatenate_obs = obs
         act = self.net.decoder(concatenate_obs)
-
         return self._get_constrainted_distribution(act)
 
     def _get_constrainted_distribution(self, act, deterministic=False):

@@ -5,16 +5,25 @@ from spirl.rl.envs.env_list import EnvList
 from spirl.rl.components.sampler_wrap import HierarchicalSamplerWrapped
 from spirl.rl.components.sampler_batched import AgentDetached_HierarchicalSamplerBatched
 
-ip_address_list = \
-                [ '192.168.1.105',
-                 '192.168.1.100',
-                 '192.168.1.106',
-                 '192.168.1.110',
-                 '192.168.1.107',
-                 '192.168.1.101',
-                 '192.168.1.108',
-                 '192.168.1.109',
-                 ]
+# ip_address_list = \
+#                 [ '192.168.1.125',
+#                 '192.168.1.117',
+#                 '192.168.1.121',
+#                 '192.168.1.120',
+#                 '192.168.1.123',
+#                 '192.168.1.119',
+#                 '192.168.1.115',
+#                 '192.168.1.116',
+#                  ]
+
+ip_address_list = [
+    "192.168.1.125",
+    "192.168.1.117",
+    "192.168.1.121",
+    "192.168.1.120",
+    "192.168.1.123",
+    "192.168.1.119",
+    '192.168.1.115',]
                 
 num_of_sampler = len(ip_address_list)
 
@@ -26,7 +35,6 @@ configuration.update(AttrDict(
     n_steps_per_epoch= 600*num_of_sampler*2,
     n_steps_per_update= 600*num_of_sampler,
     n_warmup_steps = 600*num_of_sampler*5,
-    # n_warmup_steps = 600*num_of_sampler*1,
     
     log_output_interval = 600*num_of_sampler,
     log_image_interval = 600*num_of_sampler,
@@ -63,13 +71,15 @@ sampler_config = AttrDict(
 
 agent_config.update_iterations = num_of_sampler * 128
 # agent_config.update_iterations = num_of_sampler * 64
-# 
+
+
+agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
 # agent_config.initial_train_stage = skill_critic_stages.HYBRID
 # agent_config.initial_train_stage = skill_critic_stages.LL_TRAIN
 # agent_config.initial_train_stage = skill_critic_stages.HL_LLVAR
-ll_policy_params.manual_log_sigma = [-3, -1.5]
+ll_policy_params.manual_log_sigma = [-4.5, -3.5]
 # ll_agent_config.fixed_alpha = 0.1
-ll_agent_config.td_schedule_params=AttrDict(p=10.)
+ll_agent_config.td_schedule_params=AttrDict(p=80.)
 
 '''
 exp()
@@ -78,5 +88,7 @@ exp()
 -2: 0.1353352832366127
 -2.5: 0.0820849986238988
 -3: 0.049787068367863944
-
+-3.5: 0.0301973834223185
+-4: 0.01831563888873418
+-4.5: 0.011108996538242306
 '''
