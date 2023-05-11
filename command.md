@@ -3,6 +3,10 @@
 export EXP_DIR=./experiments
 export DATA_DIR=./data
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/cehao/.mujoco/mujoco210/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/nvidia
+
+
 export DISPLAY=:1
 
 python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchical --val_data_size=160 \
@@ -10,6 +14,11 @@ python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchic
 
 
 # train skill
+python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/flat --val_data_size=160 \
+--gpu=0 --prefix=flat_maze_01
+
+
+
 python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchical_cl --val_data_size=160 \
 --gpu=0 --prefix=cl_maze_init01
 
@@ -18,68 +27,88 @@ python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchic
 
 
 # train RL
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=1 --gpu=0 \
---prefix=cl_paper199_seed0_01
 
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl --seed=0 --gpu=0 \
---prefix=ol_nosquash_s0_01
+python3 spirl/rl/train.py --path=spirl/configs/rl/maze/SAC_m2 --seed=1 --gpu=0 \
+--prefix=test_s2
 
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=0 --gpu=0 \
---prefix=cl_vis_s0
+python3 spirl/rl/train.py --path=spirl/configs/rl/maze/prior_initialized/bc_m1 --seed=0 --gpu=0 \
+--prefix=test_01
 
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sc  --gpu=0 \
---seed=1 --prefix=sc_nosquash_s1_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh  --gpu=0 \
 --seed=1 --prefix=m1_s1_05
-
-# train noT skill
-
-python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze_bar/hierarchical --val_data_size=160 \
---gpu=0 --prefix=ol_mazeB_init01
-
-python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze_bar/hierarchical_cl --val_data_size=160 \
---gpu=0 --prefix=cl_mazeB_init01
-
-python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze_bar/hierarchical_cd --val_data_size=160 \
---gpu=0 --prefix=cd_mazeB_init01
-
-
-# test new maze1 env
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh_m1  --gpu=0 \
---seed=0 --prefix=mo_md_s0_01
-
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_bar/sh_m1  --gpu=0 \
---seed=0 --prefix=mb_md_s0_01
-
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_h/sh_m1  --gpu=0 \
---seed=0 --prefix=mh_md_s0_01
-
-# train LL as well
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL  --gpu=0 \
---seed=2 --prefix=log-3_s2_02
-
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze_h/shLL  --gpu=0 \
---seed=0 --prefix=mh_s0_01
-
-# in maze1
-
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
---seed=0 --prefix=mo_topmid_HLsLLQ
-
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
---seed=4 --prefix=mo_topmid_LLP_s4 \
---resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0
-
 
 # in maze0
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL  --gpu=0 \
 --seed=0 --prefix=m0lv2_HLsLLQ_s0_02
 
+# in maze1
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
+--seed=2 --prefix=HL_s2_01
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
+--seed=7 --prefix=LL10_s7_01 \
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0
+
+
 # in maze2
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
---seed=1 --prefix=mr_HLsLLQ_s1_01
+--seed=1 --prefix=HL_s1_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
---seed=0 --prefix=mr_HYB_td80_2 \
---resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
+--prefix=LL10_Ltd10-80_s1_01 --seed=1
+
+
+## 
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
+--prefix=LL_td10_Var-3_s0_01 --seed=0
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
+--prefix=LL_td20_Var-3_s0_01 --seed=0
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
+--prefix=LL_td50_Var-3_s0_01 --seed=0
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
+--prefix=LL_td80_Var-3_s0_01 --seed=0
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
+--prefix=LL_td80_Var-1_s0_01 --seed=0
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
+--prefix=LL_td80_Var-5_s0_01 --seed=0
+
+rests 3x6 = 18
+
+td 10, 20, 50, 80
+Var -5, -3, -1
+
+
+
+
+sh scripts/m2LLtd10Var-3.sh
+
+
+sh scripts/m2LLtd20Var-3.sh
+
+
+sh scripts/m2LLtd50Var-3.sh
+
+
+sh scripts/m2LLtd80Var-3.sh
+
+
+sh scripts/m2LLtd80Var-1.sh
+
+
+sh scripts/m2LLtd80Var-5.sh
+
+

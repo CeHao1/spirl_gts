@@ -12,3 +12,5 @@ save_rollout/*
 rollout/*
 sample/*
 wandb/*
+*.mp4
+*.h5
