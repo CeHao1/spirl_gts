@@ -48,7 +48,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
 --seed=0 --prefix=v3_HL_topleft_s0_03
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
---seed=1 --prefix=v3_warm_s0_01 \
+--seed=0 --prefix=v3_HYB_s0_03 \
 --resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0
 
 

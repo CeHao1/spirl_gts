@@ -176,6 +176,8 @@ class RLTrainer:
                                                log_images=self.log_images_now, step=self.global_step)
                         self.print_train_update(epoch, agent_outputs, timers)
 
+            self.agent.end_update()
+
     def train_epoch_with_after_sampling_rollout(self, epoch):
         # initialize timing
         timers = defaultdict(lambda: AverageTimer())
@@ -206,7 +208,7 @@ class RLTrainer:
         with timers['log'].time():
             # if self.is_chef and self.log_outputs_now:
             self.agent.log_outputs(agent_outputs, None, self.logger,
-                                    log_images=False, step=self.global_step)
+                                    log_images=True, step=self.global_step)
             self.print_train_update(epoch, agent_outputs, timers)
 
 

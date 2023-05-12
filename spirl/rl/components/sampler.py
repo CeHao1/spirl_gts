@@ -116,6 +116,7 @@ class Sampler:
     def _episode_reset(self, global_step=None):
         """Resets sampler at the end of an episode."""
         if global_step is not None and self._logger is not None:    # logger is none in non-master threads
+            # print('!! log episode info at step', global_step, '!!')
             self._logger.log_scalar_dict(self.get_episode_info(),
                                          prefix='train' if self._agent._is_train else 'val',
                                          step=global_step)
@@ -148,6 +149,7 @@ class HierarchicalSampler(Sampler):
 
     def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True):
         """Samples the required number of high-level transitions. Number of LL transitions can be higher."""
+        print('sampler hl batch size is', batch_size)
         hl_experience_batch, ll_experience_batch = [], []
 
         env_steps, hl_step = 0, 0
@@ -288,8 +290,9 @@ class TrainAfterSampler:
     def _episode_reset(self, global_step=None):
         if global_step is not None:
             in_batch_global_step = global_step + self.in_batch_step
-            super()._episode_reset(in_batch_global_step)
             self.in_batch_step += self._episode_step
+            # print('!! in_batch_global_step: {}'.format(in_batch_global_step))
+            super()._episode_reset(in_batch_global_step) 
         else:
             super()._episode_reset(global_step)
 

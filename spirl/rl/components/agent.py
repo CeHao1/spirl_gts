@@ -354,6 +354,9 @@ class HierarchicalAgent(BaseAgent):
         self.hl_agent.reset()
         self.ll_agent.reset()
 
+    def end_update(self):
+        pass
+
     @contextmanager
     def rand_act_mode(self):
         """Performs random actions within context. To be used like: with agent.rand_act_mode(): ...<do something>..."""
