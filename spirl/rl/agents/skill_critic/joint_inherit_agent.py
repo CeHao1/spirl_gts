@@ -155,8 +155,8 @@ class JointInheritAgent(FixedIntervalTimeIndexedHierarchicalAgent):
 
         return update_outputs
 
-    def end_update(self):
-        # on-policy if not warm-starting
-        if not self.hl_agent._warm_start_flat:
-            print('!! Reset replay buffer for HL agent')
-            self.hl_agent.replay_buffer.reset()
+    # def end_update(self):
+    #     # on-policy if not warm-starting
+    #     if not self.hl_agent._warm_start_flat:
+    #         print('!! Reset replay buffer for HL agent')
+    #         self.hl_agent.replay_buffer.reset()

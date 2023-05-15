@@ -127,20 +127,20 @@ class HLInheritAgent(ActionPriorSACAgent):
     # ================================ hl critic ================================
     def _compute_hl_q_target(self, experience_batch):
 
-        # if self._warm_start_flat:
+        if self._warm_start_flat:
         # for HL update using r_tilde
-        with torch.no_grad():
-            policy_output_next = self._run_policy(experience_batch.observation_next)
-            value_next = self._compute_next_value(experience_batch, policy_output_next)
-            q_target = experience_batch.reward * self._hp.reward_scale + \
-                            (1 - experience_batch.done) * self._hp.discount_factor * value_next
-            if self._hp.clip_q_target:
-                q_target = self._clip_q_target(q_target)
-            q_target = q_target.detach()
-            check_shape(q_target, [self._hp.batch_size])
+            with torch.no_grad():
+                policy_output_next = self._run_policy(experience_batch.observation_next)
+                value_next = self._compute_next_value(experience_batch, policy_output_next)
+                q_target = experience_batch.reward * self._hp.reward_scale + \
+                                (1 - experience_batch.done) * self._hp.discount_factor * value_next
+                if self._hp.clip_q_target:
+                    q_target = self._clip_q_target(q_target)
+                q_target = q_target.detach()
+                check_shape(q_target, [self._hp.batch_size])
 
-        # else:
-            '''
+        else:
+            # '''
             # for LL update using E[Qa]
             with torch.no_grad():
                 # 1) sample a from LL Pi
@@ -155,7 +155,7 @@ class HLInheritAgent(ActionPriorSACAgent):
                 q_target = q_target.squeeze(-1)
                 q_target = q_target.detach()
                 check_shape(q_target, [self._hp.batch_size])
-            '''
+            # '''
         return q_target
     
     def _compute_hl_critic_loss(self, experience_batch, q_target):

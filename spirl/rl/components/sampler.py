@@ -149,7 +149,7 @@ class HierarchicalSampler(Sampler):
 
     def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True):
         """Samples the required number of high-level transitions. Number of LL transitions can be higher."""
-        print('sampler hl batch size is', batch_size)
+        # print('sampler hl batch size is', batch_size)
         hl_experience_batch, ll_experience_batch = [], []
 
         env_steps, hl_step = 0, 0
