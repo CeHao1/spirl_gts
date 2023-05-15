@@ -135,9 +135,9 @@ class DecoderRegu_TimeIndexedCDMdlPolicy(TimeIndexedCDMdlPolicy):
 
     def forward(self, obs):
         policy_output = super().forward(obs)
-        if not self._rollout_mode:
-            raw_decoder_divergence, policy_output.prior_dist = self._compute_decoder_divergence(policy_output, obs)
-            policy_output.prior_divergence = self.clamp_divergence(raw_decoder_divergence)
+        # if not self._rollout_mode:
+        raw_decoder_divergence, policy_output.prior_dist = self._compute_decoder_divergence(policy_output, obs)
+        policy_output.prior_divergence = self.clamp_divergence(raw_decoder_divergence)
 
         return policy_output
 

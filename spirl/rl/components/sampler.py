@@ -145,6 +145,8 @@ class HierarchicalSampler(Sampler):
         super().__init__(*args, **kwargs)
         self.last_hl_obs, self.last_hl_action = None, None  # stores observation when last hl action was taken
         self.reward_since_last_hl = 0  # accumulates the reward since the last HL step for HL transition
+        self.kld_since_last_hl = 0
+        self.log_prob_since_last_hl = 0
 
     def sample_batch(self, batch_size, is_train=True, global_step=None, store_ll=True):
         """Samples the required number of high-level transitions. Number of LL transitions can be higher."""
@@ -187,6 +189,8 @@ class HierarchicalSampler(Sampler):
                                     done=done,
                                     action=self.last_hl_action,
                                     observation_next=obs,
+                                    LL_kld = self.kld_since_last_hl,
+                                    LL_log_prob = self.log_prob_since_last_hl,
                                 ))
                                 hl_step += 1
                                 if done:
@@ -196,11 +200,18 @@ class HierarchicalSampler(Sampler):
                             self.last_hl_obs = self._obs if self._episode_step == 0 else obs
                             self.last_hl_action = agent_output.hl_action
                             self.reward_since_last_hl = 0
+                            self.kld_since_last_hl = 0
+                            self.log_prob_since_last_hl = 0
 
                         # update stored observation
                         self._obs = obs
                         env_steps += 1; self._episode_step += 1; self._episode_reward += reward
-                        self.reward_since_last_hl += reward
+
+                        # cumulative and with gamma - KLD
+                        # self.reward_since_last_hl += reward
+                        self.reward_since_last_hl = self._agent.ll_agent.alpha * self.reward_since_last_hl + reward
+                        self.kld_since_last_hl = self._agent.ll_agent.alpha * self.kld_since_last_hl + agent_output.prior_divergence
+                        self.log_prob_since_last_hl += agent_output.log_prob
 
                         # reset if episode ends
                         if done or self._episode_step >= self._max_episode_len:
@@ -221,6 +232,8 @@ class HierarchicalSampler(Sampler):
         super()._episode_reset(global_step)
         self.last_hl_obs, self.last_hl_action = None, None
         self.reward_since_last_hl = 0
+        self.kld_since_last_hl = 0
+        self.log_prob_since_last_hl = 0
 
 
 class ImageAugmentedSampler(Sampler):

@@ -1,4 +1,5 @@
 
+from cmath import exp
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,6 +20,10 @@ class HLInheritAgent(ActionPriorSACAgent):
     def fast_assign_flags(self, flags):
         self._update_hl_policy_flag = flags[0]
         self._update_hl_q_flag = flags[1]
+
+    def update_by_ll_agent(self, ll_agent):
+        self.ll_policy = ll_agent.policy
+        self.ll_alpha = ll_agent.alpha
 
     def update(self, experience_batch=None):
 
@@ -118,13 +123,24 @@ class HLInheritAgent(ActionPriorSACAgent):
         with torch.no_grad():
             policy_output_next = self._run_policy(experience_batch.observation_next)
             value_next = self._compute_next_value(experience_batch, policy_output_next)
-            q_target = experience_batch.reward * self._hp.reward_scale + \
+
+            rew = self._compute_reward(experience_batch)
+            q_target = rew * self._hp.reward_scale + \
                             (1 - experience_batch.done) * self._hp.discount_factor * value_next
             if self._hp.clip_q_target:
                 q_target = self._clip_q_target(q_target)
             q_target = q_target.detach()
             check_shape(q_target, [self._hp.batch_size])
         return q_target
+
+    def _compute_reward(self, experience_batch):
+        # discounted reward - ll_alpha * discounted LL kld
+        r_tilde = experience_batch.reward - self.ll_alpha * experience_batch.LL_kld
+        return r_tilde
+
+    def _compute_importance_sampling_weight(self):
+        pass
+
     
     def _compute_hl_critic_loss(self, experience_batch, q_target):
         qs = self._compute_q_estimates(experience_batch)
