@@ -45,10 +45,10 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL  --gpu=0 \
 # in maze1
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
---seed=2 --prefix=HL_s2_01
+--seed=0 --prefix=v3_warm_center_s0_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
---seed=7 --prefix=LL10_s7_01 \
+--seed=0 --prefix=v3_HL_cenwarm_s0_01 \
 --resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0
 
 

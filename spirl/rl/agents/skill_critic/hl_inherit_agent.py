@@ -19,6 +19,17 @@ class HLInheritAgent(ActionPriorSACAgent):
     def fast_assign_flags(self, flags):
         self._update_hl_policy_flag = flags[0]
         self._update_hl_q_flag = flags[1]
+        self._warm_start_flat = flags[2]
+
+    def update_by_ll_agent(self, ll_agent):
+        # self.ll_agent = ll_agent
+        # self.ll_critics = ll_agent.critics
+        # self.ll_critic_targets = ll_agent.critic_targets
+        # self.ll_critic_opts = ll_agent.critic_opts
+
+        self.ll_policy = ll_agent.policy
+        self.ll_alpha = ll_agent.alpha
+        self.ll_critic_targets = ll_agent.critic_targets
 
     def update(self, experience_batch=None):
 
@@ -115,15 +126,36 @@ class HLInheritAgent(ActionPriorSACAgent):
     
     # ================================ hl critic ================================
     def _compute_hl_q_target(self, experience_batch):
-        with torch.no_grad():
-            policy_output_next = self._run_policy(experience_batch.observation_next)
-            value_next = self._compute_next_value(experience_batch, policy_output_next)
-            q_target = experience_batch.reward * self._hp.reward_scale + \
-                            (1 - experience_batch.done) * self._hp.discount_factor * value_next
-            if self._hp.clip_q_target:
-                q_target = self._clip_q_target(q_target)
-            q_target = q_target.detach()
-            check_shape(q_target, [self._hp.batch_size])
+
+        if self._warm_start_flat:
+        # for HL update using r_tilde
+            with torch.no_grad():
+                policy_output_next = self._run_policy(experience_batch.observation_next)
+                value_next = self._compute_next_value(experience_batch, policy_output_next)
+                q_target = experience_batch.reward * self._hp.reward_scale + \
+                                (1 - experience_batch.done) * self._hp.discount_factor * value_next
+                if self._hp.clip_q_target:
+                    q_target = self._clip_q_target(q_target)
+                q_target = q_target.detach()
+                check_shape(q_target, [self._hp.batch_size])
+
+        else:
+            # '''
+            # for LL update using E[Qa]
+            with torch.no_grad():
+                # 1) sample a from LL Pi
+                k0 = self._get_k0_onehot(experience_batch.observation)
+                obs = torch.cat((experience_batch.observation, experience_batch.action, k0), dim=-1)
+                policy_output = self.ll_policy(obs)
+
+                # 2) calculate expected Qa target
+                qa_target = torch.min(*[critic_target(obs, policy_output.action).q 
+                    for critic_target in self.ll_critic_targets])# this part is
+                q_target = qa_target - self.ll_alpha * policy_output.prior_divergence[:, None]
+                q_target = q_target.squeeze(-1)
+                q_target = q_target.detach()
+                check_shape(q_target, [self._hp.batch_size])
+            # '''
         return q_target
     
     def _compute_hl_critic_loss(self, experience_batch, q_target):
@@ -132,6 +164,11 @@ class HLInheritAgent(ActionPriorSACAgent):
         critic_losses = [0.5 * (q - q_target).pow(2).mean() for q in qs]
         return critic_losses, qs
 
+    def _get_k0_onehot(self, obs):
+        # generate one-hot, length=high-level steps, index=0
+        idx = torch.tensor([0], device=self.device)
+        k0 = make_one_hot(idx, self.n_rollout_steps).repeat(obs.shape[0], 1)
+        return k0
 
     # =================== visualize =================
     def visualize_actions(self, experience_batch):
