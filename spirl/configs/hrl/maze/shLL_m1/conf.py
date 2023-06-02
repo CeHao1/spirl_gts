@@ -20,6 +20,7 @@ configuration.update({
 
 
 # agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
+# agent_config.initial_train_stage = skill_critic_stages.LL_TRAIN
 agent_config.initial_train_stage = skill_critic_stages.HYBRID
 
 # ll_agent_config.td_schedule_params = AttrDict(p=5.)
