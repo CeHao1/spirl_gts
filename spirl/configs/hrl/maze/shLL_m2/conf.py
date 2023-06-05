@@ -24,8 +24,8 @@ configuration.update({
 
 
 # agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
-# agent_config.initial_train_stage = skill_critic_stages.HYBRID
-agent_config.initial_train_stage = skill_critic_stages.LL_TRAIN
+agent_config.initial_train_stage = skill_critic_stages.HYBRID
+# agent_config.initial_train_stage = skill_critic_stages.LL_TRAIN
 
 # from spirl.utils.general_utils import DelayedLinearSchedule
 # ll_agent_config.td_schedule = DelayedLinearSchedule
@@ -40,7 +40,7 @@ agent_config.initial_train_stage = skill_critic_stages.LL_TRAIN
 (12e5) -> 10 ->(5e5) -> 80
 '''
 
-# ll_agent_config.td_schedule_params = AttrDict(p=10.)
+ll_agent_config.td_schedule_params = AttrDict(p=10.)
 # ll_agent_config.td_schedule_params = AttrDict(p=20.)
 # ll_agent_config.td_schedule_params = AttrDict(p=50.)
 # ll_agent_config.td_schedule_params = AttrDict(p=80.)
