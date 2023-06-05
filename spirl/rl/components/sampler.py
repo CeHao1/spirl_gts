@@ -175,7 +175,7 @@ class HierarchicalSampler(Sampler):
                                 done=done,
                                 action=agent_output.action,
                                 observation_next=obs,       # this will get updated in the next step
-                                last_hl_obs=self.last_hl_obs,
+                                # last_hl_obs=self.last_hl_obs,
                             ))
 
                         # store HL experience batch if this was HL action or episode is done
