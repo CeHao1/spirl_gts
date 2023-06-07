@@ -151,10 +151,10 @@ class LLInheritAgent(ActionPriorSACAgent):
         # QLL(k+1)
         q_ll_next_raw = torch.min(*[critic_target(experience_batch.observation_next, self._prep_action(ll_policy_output_next.action)).q 
                             for critic_target in self.critic_targets])
-        # q_ll_next = q_ll_next_raw - self.alpha * ll_policy_output_next.prior_divergence[:, None]
+        q_ll_next = q_ll_next_raw - self.alpha * ll_policy_output_next.prior_divergence[:, None]
 
         # for ablation study. LL with entropy
-        q_ll_next = q_ll_next_raw - self.alpha * ll_policy_output_next.log_prob[:, None]
+        # q_ll_next = q_ll_next_raw - self.alpha * ll_policy_output_next.log_prob[:, None]
 
         # QHL(k+1)
         q_hl_next_raw = torch.min(*[critic_target(obs, self._prep_action(hl_policy_output_next.action)).q for critic_target in self.hl_critic_targets])
@@ -214,18 +214,18 @@ class LLInheritAgent(ActionPriorSACAgent):
 
 
     # ======================== for ablation study ====================
-    def _compute_alpha_loss(self, policy_output):
-        self._target_entropy = -2
-        return -1 * (self.alpha * (self._target_entropy + policy_output.log_prob).detach()).mean()
+    # def _compute_alpha_loss(self, policy_output):
+    #     self._target_entropy = -2
+    #     return -1 * (self.alpha * (self._target_entropy + policy_output.log_prob).detach()).mean()
 
 
-    def _compute_policy_loss(self, experience_batch, policy_output):
-        """Computes loss for policy update."""
-        q_est = torch.min(*[critic(experience_batch.observation, self._prep_action(policy_output.action)).q
-                                      for critic in self.critics])
-        policy_loss = -1 * q_est + self.alpha * policy_output.log_prob[:, None]
-        check_shape(policy_loss, [self._hp.batch_size, 1])
-        return policy_loss.mean()
+    # def _compute_policy_loss(self, experience_batch, policy_output):
+    #     """Computes loss for policy update."""
+    #     q_est = torch.min(*[critic(experience_batch.observation, self._prep_action(policy_output.action)).q
+    #                                   for critic in self.critics])
+    #     policy_loss = -1 * q_est + self.alpha * policy_output.log_prob[:, None]
+    #     check_shape(policy_loss, [self._hp.batch_size, 1])
+    #     return policy_loss.mean()
     
 
 

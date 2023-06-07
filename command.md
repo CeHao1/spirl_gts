@@ -48,8 +48,8 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
 --seed=2 --prefix=HL_s2_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
---seed=0 --prefix=abl1_HYB_test_01 \
---resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
+--prefix=abl2_HYB_LLH_s0_01 --seed=0
 
 
 # in maze2
@@ -58,7 +58,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
 --resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
---prefix=abl1_LL_correct_s0_01 --seed=0
+--prefix=abl2_HYB_LLH_s2_01 --seed=2
 
 
 ## 
