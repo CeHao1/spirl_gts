@@ -17,18 +17,19 @@ To sample demonstration, we can use the following command. We should change the 
 ```python spirl/gts_demo_sampler/sample_demo.py \
     --path spirl/configs/data_collect/gts/time_trial/c2 \
     --ip_address '192.168.1.xxx' \
-    --prefix 'batch_0'```
+    --prefix 'batch_0'
+```
 
 Please copy the sampled demo to the data directory. Details are in spirl_readme.md.
 
 ## Learning priors
 We train flat and hierarchical priors using the following commands.
 
-``` python3 spirl/train.py --path=spirl/configs/skill_prior_learning/gts_corner2/flat --val_data_size=160 \
-    --gpu=0 --prefix=flat_priors
+``` 
+python3 spirl/train.py --path=spirl/configs/skill_prior_learning/gts_corner2/flat --val_data_size=160 --gpu=0 --prefix=flat_priors 
 
-    python3 spirl/train.py --path=spirl/configs/skill_prior_learning/gts_corner2/hierarchical_cd --val_data_size=160 \
-    --gpu=0 --prefix=HRL_priors```
+python3 spirl/train.py --path=spirl/configs/skill_prior_learning/gts_corner2/hierarchical_cd --val_data_size=160 --gpu=0 --prefix=HRL_priors 
+```
 
 After training, we need to copy the learned weights to the expeirment directory.
 
@@ -43,7 +44,9 @@ In config.py, we only train high-level policy if ```agent_config.initial_train_s
 ## SAC methods
 We can further test SAC and BC+SAC by
 
-```python3 spirl/rl/train.py --path=spirl/configs/rl/gts_corner2/SAC_new --seed=0 --gpu=0 --prefix=sac ```
-```python3 spirl/rl/train.py --path=spirl/configs/rl/gts_corner2/prior_initialized/bc_multi --seed=0 --gpu=0 --prefix=bc ```
+```
+python3 spirl/rl/train.py --path=spirl/configs/rl/gts_corner2/SAC_new --seed=0 --gpu=0 --prefix=sac  
+python3 spirl/rl/train.py --path=spirl/configs/rl/gts_corner2/prior_initialized/bc_multi --seed=0 --gpu=0 --prefix=bc 
+```
 
 Please also change the ip_address in their config.py to every PlayStation.
