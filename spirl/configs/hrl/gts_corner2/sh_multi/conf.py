@@ -5,27 +5,16 @@ from spirl.rl.envs.env_list import EnvList
 from spirl.rl.components.sampler_wrap import HierarchicalSamplerWrapped
 from spirl.rl.components.sampler_batched import AgentDetached_HierarchicalSamplerBatched
 
-# ip_address_list = \
-#                 [ '192.168.1.125',
-#                 '192.168.1.117',
-#                 '192.168.1.121',
-#                 '192.168.1.120',
-#                 '192.168.1.123',
-#                 '192.168.1.119',
-#                 '192.168.1.115',
-#                 '192.168.1.116',
-#                  ]
 
-# ip_address_list = [
-#     "192.168.1.125",
-#     "192.168.1.117",
-#     "192.168.1.121",
-#     "192.168.1.120",
-#     "192.168.1.123",
-#     "192.168.1.119",
-#     '192.168.1.115',]
+ip_address_list = [
+    "192.168.1.125",
+    "192.168.1.117",
+    "192.168.1.121",
+    "192.168.1.120",
+    "192.168.1.123",
+    "192.168.1.119",
+    '192.168.1.115',]
 
-ip_address_list = ["192.168.1.107"]
                 
 num_of_sampler = len(ip_address_list)
 
@@ -75,8 +64,8 @@ agent_config.update_iterations = num_of_sampler * 128
 # agent_config.update_iterations = num_of_sampler * 64
 
 
-agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
-# agent_config.initial_train_stage = skill_critic_stages.HYBRID
+# agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
+agent_config.initial_train_stage = skill_critic_stages.HYBRID
 # agent_config.initial_train_stage = skill_critic_stages.LL_TRAIN
 # agent_config.initial_train_stage = skill_critic_stages.HL_LLVAR
 ll_policy_params.manual_log_sigma = [-4.5, -3.5]
