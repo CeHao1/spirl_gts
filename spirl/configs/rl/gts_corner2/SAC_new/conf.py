@@ -25,17 +25,17 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 notes = 'non-hierarchical RL experiments in gts env'
 
-ip_address_list = [
-    "192.168.1.125",
-    "192.168.1.117",
-    "192.168.1.121",
-    "192.168.1.120",
-    "192.168.1.123",
-    "192.168.1.119",
-    '192.168.1.115',]
+# ip_address_list = [
+#     "192.168.1.104",
+# "192.168.1.109",
+# "192.168.1.102",
+# "192.168.1.101",
+# "192.168.1.108",
+# "192.168.1.107",
+# "192.168.1.106",]
 
 
-# ip_address_list = ["192.168.1.125"]
+ip_address_list = ["192.168.1.107"]
 
 configuration = {
     'seed': 2,
