@@ -49,10 +49,37 @@ M_MAZE2_V1 = \
 "#################"
 
 
+M_MAZE3_V1 = \
+"##########\\"+\
+"#OOOOOOOO#\\"+\
+"#OO#####O#\\"+\
+"#OOO####O#\\"+\
+"#O#OO###O#\\"+\
+"#O##OO##O#\\"+\
+"#O###OO#O#\\"+\
+"#O####OOO#\\"+\
+"#O#####OO#\\"+\
+"#OOOOOOOO#\\"+\
+"##########"
+
+M_MAZE3_V2 = \
+"##########\\"+\
+"#OOOOOOOO#\\"+\
+"#OO##OO#O#\\"+\
+"#OOO##OOO#\\"+\
+"#O#OO##OO#\\"+\
+"#OO#OO##O#\\"+\
+"#OOO#OO#O#\\"+\
+"#O#OO#OOO#\\"+\
+"#O##OO#OO#\\"+\
+"#OOOOOOOO#\\"+\
+"##########"
+
 maze_name_space= {
     'h_maze' : H_MAZE,
     'm_maze1' : M_MAZE_V7,
     'm_maze2' : M_MAZE2_V1,
+    'm_maze3' : M_MAZE3_V1,
 }
 
 LARGE_MAZE = \

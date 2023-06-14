@@ -1,6 +1,8 @@
 import matplotlib; matplotlib.use('Agg')
-import torch
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+
+import torch
 import imp
 import json
 from tqdm import tqdm
@@ -16,8 +18,8 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'gts_c2_RL'
-# WANDB_PROJECT_NAME = 'gts_formal'
+# WANDB_PROJECT_NAME = 'maze'
+WANDB_PROJECT_NAME = 'gts_c2_RL
 WANDB_ENTITY_NAME = 'cehao'
 
 
@@ -344,6 +346,7 @@ class RLTrainer:
         self.device = torch.device('cuda') if self.use_cuda else torch.device('cpu')
         if self.args.gpu != -1:
             os.environ["CUDA_VISIBLE_DEVICES"] = str(self.args.gpu)
+            print('setting gpu device to {}'.format(self.args.gpu)) 
 
     def resume(self, ckpt, path=None, load_replay_buffer=True):
         path = os.path.join(self._hp.exp_path, 'weights') if path is None else os.path.join(path, 'weights')

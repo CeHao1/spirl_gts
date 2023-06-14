@@ -11,13 +11,14 @@ torch
 torchvision
 tensorboard
 tensorboardX
-gym
+gym==0.23.1
 pandas
 
 # RL
 wandb
-mpi4py
+# mpi4py
 mujoco_py
 
 scikit-learn
 seaborn
+
