@@ -95,23 +95,3 @@ td 10, 20, 50, 80
 Var -5, -3, -1
 
 
-
-
-sh scripts/m2LLtd10Var-3.sh
-
-
-sh scripts/m2LLtd20Var-3.sh
-
-
-sh scripts/m2LLtd50Var-3.sh
-
-
-sh scripts/m2LLtd80Var-3.sh
-
-
-sh scripts/m2LLtd80Var-1.sh
-
-
-sh scripts/m2LLtd80Var-5.sh
-
-
