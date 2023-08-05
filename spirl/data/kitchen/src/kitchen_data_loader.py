@@ -3,6 +3,7 @@ import gym
 import numpy as np
 import itertools
 
+import spirl.envs.d4rl.kitchen
 from spirl.components.data_loader import Dataset
 from spirl.utils.general_utils import AttrDict
 

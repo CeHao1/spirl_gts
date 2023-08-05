@@ -102,7 +102,7 @@ class LLInheritAgent(ActionPriorSACAgent):
         info.update(AttrDict(       # misc
             ll_alpha=self.alpha,
             ll_pi_KLD=policy_output.prior_divergence.mean(),
-            # ll_policy_entropy=policy_output.dist.entropy().mean(),
+            ll_policy_entropy=policy_output.dist.entropy().mean(),
             ll_avg_sigma = policy_output.dist.sigma.mean(),
             ll_target_divergence = self._target_divergence(self.schedule_steps),
             ll_avg_reward=experience_batch.reward.mean(),
@@ -153,9 +153,16 @@ class LLInheritAgent(ActionPriorSACAgent):
                             for critic_target in self.critic_targets])
         q_ll_next = q_ll_next_raw - self.alpha * ll_policy_output_next.prior_divergence[:, None]
 
+        # for ablation study. LL with entropy
+        # q_ll_next = q_ll_next_raw - self.alpha * ll_policy_output_next.log_prob[:, None]
+
         # QHL(k+1)
         q_hl_next_raw = torch.min(*[critic_target(obs, self._prep_action(hl_policy_output_next.action)).q for critic_target in self.hl_critic_targets])
         q_hl_next = q_hl_next_raw - self.alpha * ll_policy_output_next.prior_divergence[:, None]
+
+        # for ablation study. conventional Qa.
+        # q_hl_next = q_ll_next
+
 
         check_shape(q_ll_next, [self._hp.batch_size, 1])
         check_shape(q_hl_next, [self._hp.batch_size, 1])
@@ -204,6 +211,22 @@ class LLInheritAgent(ActionPriorSACAgent):
     @property
     def action_dim(self):
         return self._hp.policy_params.policy_model_params.action_dim
+
+
+    # ======================== for ablation study ====================
+    # def _compute_alpha_loss(self, policy_output):
+    #     self._target_entropy = -2
+    #     return -1 * (self.alpha * (self._target_entropy + policy_output.log_prob).detach()).mean()
+
+
+    # def _compute_policy_loss(self, experience_batch, policy_output):
+    #     """Computes loss for policy update."""
+    #     q_est = torch.min(*[critic(experience_batch.observation, self._prep_action(policy_output.action)).q
+    #                                   for critic in self.critics])
+    #     policy_loss = -1 * q_est + self.alpha * policy_output.log_prob[:, None]
+    #     check_shape(policy_loss, [self._hp.batch_size, 1])
+    #     return policy_loss.mean()
+    
 
 
 class MazeLLInheritAgent(LLInheritAgent):

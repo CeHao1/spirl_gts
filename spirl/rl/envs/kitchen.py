@@ -1,7 +1,7 @@
 import numpy as np
 from collections import defaultdict
 
-
+import spirl.envs.d4rl.kitchen
 from spirl.utils.general_utils import AttrDict
 from spirl.utils.general_utils import ParamDict
 from spirl.rl.components.environment import GymEnv

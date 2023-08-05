@@ -13,7 +13,7 @@ notes = 'skill critic on the maze env'
 
 configuration.update({
     'environment': ACmMaze2,
-    'num_epochs': 150,
+    'num_epochs': 100,
     'max_rollout_len': 2000,
     'n_steps_per_epoch': 1e5,
     'n_warmup_steps': 5e3,
@@ -24,14 +24,15 @@ configuration.update({
 
 
 # agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
-agent_config.initial_train_stage = skill_critic_stages.HYBRID
+# agent_config.initial_train_stage = skill_critic_stages.HYBRID
+agent_config.initial_train_stage = skill_critic_stages.LL_TRAIN
 
-from spirl.utils.general_utils import DelayedLinearSchedule
-ll_agent_config.td_schedule = DelayedLinearSchedule
-ll_agent_config.td_schedule_params = AttrDict(initial_p=1.,
-                                final_p=80.,
-                                schedule_timesteps=int(5e5),
-                                delay = int(10e5))
+# from spirl.utils.general_utils import DelayedLinearSchedule
+# ll_agent_config.td_schedule = DelayedLinearSchedule
+# ll_agent_config.td_schedule_params = AttrDict(initial_p=1.,
+#                                 final_p=80.,
+#                                 schedule_timesteps=int(5e5),
+#                                 delay = int(10e5))
 
 '''
 (12e5) -> 5 ->(5e5) -> 80
@@ -42,7 +43,7 @@ ll_agent_config.td_schedule_params = AttrDict(initial_p=1.,
 # ll_agent_config.td_schedule_params = AttrDict(p=10.)
 # ll_agent_config.td_schedule_params = AttrDict(p=20.)
 # ll_agent_config.td_schedule_params = AttrDict(p=50.)
-# ll_agent_config.td_schedule_params = AttrDict(p=80.)
+ll_agent_config.td_schedule_params = AttrDict(p=80.)
 
 # ll_policy_params.manual_log_sigma = [-1, -1]
 # ll_policy_params.manual_log_sigma = [-2, -2]

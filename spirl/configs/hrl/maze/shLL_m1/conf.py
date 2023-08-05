@@ -13,6 +13,7 @@ notes = 'skill critic on the maze env'
 
 configuration.update({
     'environment': ACmMaze1,
+    'num_epochs': 25,
     'max_rollout_len': 2000,
     'n_steps_per_epoch': 1e5,
     'n_warmup_steps': 5e3,
@@ -20,6 +21,7 @@ configuration.update({
 
 
 # agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
+# agent_config.initial_train_stage = skill_critic_stages.LL_TRAIN
 agent_config.initial_train_stage = skill_critic_stages.HYBRID
 
 # ll_agent_config.td_schedule_params = AttrDict(p=5.)

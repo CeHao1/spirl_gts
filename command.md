@@ -48,8 +48,8 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
 --seed=2 --prefix=HL_s2_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m1  --gpu=0 \
---seed=7 --prefix=LL10_s7_01 \
---resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
+--prefix=abl2_HYB_LLH_s0_01 --seed=0
 
 
 # in maze2
@@ -57,8 +57,11 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
 --seed=1 --prefix=HL_s1_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
+--seed=0 --prefix=HYB_Noinit_s0_01
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/shLL_m2  --gpu=0 \
 --resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
---prefix=LL10_Ltd10-80_s1_01 --seed=1
+--prefix=pureLL_s2_01 --seed=2
 
 
 ## 
@@ -90,25 +93,5 @@ rests 3x6 = 18
 
 td 10, 20, 50, 80
 Var -5, -3, -1
-
-
-
-
-sh scripts/m2LLtd10Var-3.sh
-
-
-sh scripts/m2LLtd20Var-3.sh
-
-
-sh scripts/m2LLtd50Var-3.sh
-
-
-sh scripts/m2LLtd80Var-3.sh
-
-
-sh scripts/m2LLtd80Var-1.sh
-
-
-sh scripts/m2LLtd80Var-5.sh
 
 
