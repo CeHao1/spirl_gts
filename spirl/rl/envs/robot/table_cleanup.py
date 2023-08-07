@@ -5,7 +5,7 @@ from spirl.rl.components.environment import GymEnv
 from spirl.utils.general_utils import ParamDict, AttrDict
 # import torch
 
-class TabelClearnup(GymEnv):
+class TableCleanup(GymEnv):
     """Tiny wrapper around GymEnv for robot tasks."""
     def _default_hparams(self):
         return super()._default_hparams().overwrite(ParamDict({

@@ -5,9 +5,9 @@ from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.policies.mlp_policies import MLPPolicy
 from spirl.rl.components.critic import MLPCritic
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
-from spirl.rl.envs.robot.table_clearnup import TabelClearnup
+from spirl.rl.envs.robot.table_cleanup import TableCleanup
 from spirl.rl.components.normalization import Normalizer
-from spirl.configs.default_data_configs.table_clearnup import data_spec
+from spirl.configs.default_data_configs.table_cleanup import data_spec
 
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -17,7 +17,7 @@ notes = 'non-hierarchical RL experiments in kitchen env'
 configuration = {
     'seed': 42,
     'agent': SACAgent,
-    'environment': TabelClearnup,
+    'environment': TableCleanup,
     'data_dir': '.',
     'num_epochs': 100,
     'max_rollout_len': 280,
