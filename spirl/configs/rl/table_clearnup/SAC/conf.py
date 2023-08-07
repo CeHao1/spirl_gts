@@ -1,0 +1,1 @@
+from spirl.configs.rl.table_clearnup.base_conf import *
