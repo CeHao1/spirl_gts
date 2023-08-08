@@ -90,6 +90,11 @@ python spirl/gts_demo_sampler/sample_demo.py \
     --prefix 'batch_17'
 
 
+python spirl/gts_demo_sampler/sample_demo.py \
+    --path spirl/configs/data_collect/gts/time_trial/test \
+    --ip_address '192.168.1.107' \
+    --prefix 'batch_21'
+
 [ '192.168.1.105',
 '192.168.1.100',
 '192.168.1.106',
@@ -104,7 +109,7 @@ python spirl/gts_demo_sampler/sample_demo.py \
 if __name__ == '__main__':
     sampler = SampleDemo(args=get_args())
     sampler.sample_rollout()
-    sampler.convert_rollout()
+    # sampler.convert_rollout()
 
     # sampler.init.init_gts()
     # raw_data = sampler.sample_raw_data()

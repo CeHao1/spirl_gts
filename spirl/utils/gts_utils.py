@@ -622,7 +622,7 @@ def eval_time_trial_reward_function(state, previous_state, course_length, **kwar
 
 def corner2_done_function(state):
     # course > 2400 or time > 60 seconds
-    # return state['course_v'] >= 3000 or state['frame_count'] > 120 * 60
+    # return state['course_v'] >= 2400 or state['frame_count'] > 120 * 60
     return state['course_v'] >= 2400 
 
 def corner2_spare_reward_function(state, previous_state, course_length,  **kwargs):

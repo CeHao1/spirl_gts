@@ -3,7 +3,7 @@ import reskill.rl.envs
 env = gym.make("FetchCleanUp-v0")
 env.reset()
 print('123')
-# gym                     0.23.1
+# gym==0.23.1
 # gym==0.12.1
 
 

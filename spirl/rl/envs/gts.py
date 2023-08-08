@@ -72,6 +72,7 @@ class GTSEnv_Base(GymEnv):
             feature_keys = RL_OBS_1, 
             # feature_keys = DEFAULT_FEATURE_KEYS,
 
+            # store_states = True,
             fast_mode = self._hp.fast_mode,
             builtin_controlled = self._hp.builtin_controlled, 
             spectator_mode = self._hp.spectator_mode,
