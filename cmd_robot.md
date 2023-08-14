@@ -29,4 +29,24 @@ python3 spirl/train.py --path=spirl/configs/skill_prior_learning/table_cleanup/h
 
 # train agent
 python3 spirl/rl/train.py --path=spirl/configs/hrl/table_cleanup/spirl  --gpu=0 \
---seed=0 --prefix=HL_s2_01
+--seed=0 --prefix=spirl_s0_03
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/table_cleanup/sh  --gpu=0 \
+--seed=0 --prefix=HL_s0_03
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/table_cleanup/sh  --gpu=0 \
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
+--seed=0 --prefix=LL_s0_kl100+_HL5_03
+
+## without warm-start LL
+python3 spirl/rl/train.py --path=spirl/configs/hrl/table_cleanup/sh  --gpu=0 \
+--seed=0 --prefix=LLNoWarm_s0_kl50+_sig-3_01 
+
+<!-- ============= slippery push =================-->
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/slippery_push/sh  --gpu=0 \
+--seed=2 --prefix=push_HL_s2_01
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/slippery_push/sh  --gpu=0 \
+--resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
+--seed=0 --prefix=push_LL_kl100_s0_14

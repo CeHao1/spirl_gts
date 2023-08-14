@@ -5,26 +5,26 @@ from spirl.utils.general_utils import AttrDict
 from spirl.rl.components.agent import FixedIntervalHierarchicalAgent
 from spirl.rl.policies.mlp_policies import MLPPolicy
 from spirl.rl.components.critic import MLPCritic
-from spirl.rl.envs.robot.table_cleanup import TableCleanup
+from spirl.rl.envs.robot.slippery_push import SlipperyPush
 from spirl.rl.components.sampler import HierarchicalSampler
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.agents.skill_space_agent import SkillSpaceAgent
 from spirl.models.skill_prior_mdl import SkillPriorMdl
-from spirl.configs.default_data_configs.table_cleanup import data_spec
+from spirl.configs.default_data_configs.slippery_push import data_spec
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
-notes = 'hierarchical RL on the table_cleanup env'
+notes = 'hierarchical RL on the slippery_push env'
 
 configuration = {
     'seed': 42,
     'agent': FixedIntervalHierarchicalAgent,
-    'environment': TableCleanup,
+    'environment': SlipperyPush,
     'sampler': HierarchicalSampler,
     'data_dir': '.',
     'num_epochs': 50,
-    'max_rollout_len': 50,
+    'max_rollout_len': 100,
     'n_steps_per_epoch': 100000,
     'n_warmup_steps': 5e3,
 }

@@ -5,8 +5,8 @@ import copy
 from spirl.utils.general_utils import AttrDict
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
 
-from spirl.rl.envs.robot.table_cleanup import TableCleanup
-from spirl.configs.default_data_configs.table_cleanup import data_spec
+from spirl.rl.envs.robot.slippery_push import SlipperyPush
+from spirl.configs.default_data_configs.slippery_push import data_spec
 from spirl.rl.components.sampler import HierarchicalSampler
 
 from spirl.models.cond_dec_spirl_mdl import TimeIndexCDSPiRLMDL
@@ -21,11 +21,11 @@ from spirl.rl.agents.skill_critic.ll_inherit_agent  import LLInheritAgent
 configuration = {
     'seed': 42,
     'agent': JointInheritAgent,
-    'environment': TableCleanup,
+    'environment': SlipperyPush,
     'sampler': HierarchicalSampler,
     'data_dir': '.',
     'num_epochs': 50,
-    'max_rollout_len': 50,
+    'max_rollout_len': 100,
     'n_steps_per_epoch': 100000,
     'n_warmup_steps': 5e3,
 }
@@ -163,8 +163,8 @@ env_config = AttrDict(
 
 # ====================
 
-agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
-# agent_config.initial_train_stage = skill_critic_stages.HYBRID
+# agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
+agent_config.initial_train_stage = skill_critic_stages.HYBRID
 
 # ll_agent_config.td_schedule_params = AttrDict(p=10.)
 # ll_agent_config.td_schedule_params = AttrDict(p=30.)
@@ -172,4 +172,4 @@ agent_config.initial_train_stage = skill_critic_stages.HL_TRAIN
 # ll_agent_config.td_schedule_params = AttrDict(p=80.)
 ll_agent_config.td_schedule_params = AttrDict(p=100.)
 
-# ll_policy_params.manual_log_sigma = [-3] * 4
+ll_policy_params.manual_log_sigma = [-3] * 4
