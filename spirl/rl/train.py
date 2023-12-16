@@ -19,7 +19,7 @@ from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
 
-WANDB_PROJECT_NAME = 'robot'
+WANDB_PROJECT_NAME = 'robot_debug'
 WANDB_ENTITY_NAME = 'cehao'
 
 

@@ -17,10 +17,6 @@ for idx in tqdm(range(len(seqs))):
     image = np.zeros((len(action), 1, 1, 3))
     done = [False for _ in image]
     done[-1] = True
-    # print(action.shape, observation.shape)
-
-    # if idx == 1387:
-    #     print(action.shape, observation.shape)
 
     done = np.array(done)
     episode = AttrDict( observation=observation, action=action , image = image, done=done)

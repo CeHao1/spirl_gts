@@ -45,8 +45,9 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/table_cleanup/sh  --gpu=0 \
 <!-- ============= slippery push =================-->
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/slippery_push/sh  --gpu=0 \
---seed=2 --prefix=push_HL_s2_01
+--seed=0 --prefix=push_HL_s2_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/slippery_push/sh  --gpu=0 \
 --resume='latest' --resume_load_replay_buffer=0 --strict_weight_loading=0 \
 --seed=0 --prefix=push_LL_kl100_s0_14
+

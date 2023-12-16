@@ -86,10 +86,11 @@ class GymEnv(BaseEnvironment):
 
         return self._wrap_observation(obs), reward, np.array(done), info
 
-    def render(self, mode='rgb_array'):
+    def render(self, mode='rgb_array', **kwargs):
         # TODO make env render in the correct size instead of downsizing after for performance
-        img = Resize((self._hp.screen_height, self._hp.screen_width))(Image.fromarray(self._render_raw(mode=mode)))
-        return np.array(img) / 255.
+        # img = Resize((self._hp.screen_height, self._hp.screen_width))(Image.fromarray(self._render_raw(mode=mode)))
+        # return np.array(img) / 255.
+        return self._render_raw(mode=mode, **kwargs)
 
     def _make_env(self, id):
         """Instantiates the environment given the ID."""
@@ -107,6 +108,6 @@ class GymEnv(BaseEnvironment):
             return self._env.get_episode_info()
         return AttrDict()
 
-    def _render_raw(self, mode):
+    def _render_raw(self, mode, **kwarg):
         """Returns rendering as uint8 in range [0...255]"""
-        return self._env.render(mode=mode)
+        return self._env.render(mode=mode,  **kwarg)
