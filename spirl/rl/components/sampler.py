@@ -150,8 +150,8 @@ class HierarchicalSampler(Sampler):
         """Samples the required number of high-level transitions. Number of LL transitions can be higher."""
         hl_experience_batch, ll_experience_batch = [], []
 
-        print("================= start sample batch ===================")
-        video_image = []
+        # print("================= start sample batch ===================")
+        # video_image = []
 
         env_steps, hl_step = 0, 0
         self.last_hl_obs = self._obs
@@ -165,9 +165,9 @@ class HierarchicalSampler(Sampler):
                         obs, reward, done, info = self._env.step(agent_output.action)
                         obs = self._postprocess_obs(obs)
 
-                        resolution = 512
-                        img = self._env.render(mode='rgb_array', width=resolution, height=resolution)
-                        video_image.append(img)
+                        # resolution = 512
+                        # img = self._env.render(mode='rgb_array', width=resolution, height=resolution)
+                        # video_image.append(img)
 
                         # update last step's 'observation_next' with HL action
                         if store_ll:
@@ -218,8 +218,8 @@ class HierarchicalSampler(Sampler):
                             # print('!! done any, then reset, _episode_step: {}, hl_step: {}'.format(self._episode_step, hl_step))
                             self._episode_reset(global_step)
 
-                            from spirl.gts_demo_sampler.file.file_operation import save_video
-                            save_video("video_{}.mp4".format(env_steps), video_image)
+                            # from spirl.gts_demo_sampler.file.file_operation import save_video
+                            # save_video("video_{}.mp4".format(env_steps), video_image)
                             
         return AttrDict(
             hl_batch=listdict2dictlist(hl_experience_batch),
