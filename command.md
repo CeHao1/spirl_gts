@@ -38,7 +38,7 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl --seed=0 --gpu=0 \
 --prefix=test_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/reskill --seed=0 --gpu=0 \
---prefix=test_01
+--prefix=m2_01
 
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh  --gpu=0 \

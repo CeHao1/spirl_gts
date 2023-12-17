@@ -3,8 +3,8 @@ import copy
 
 from spirl.utils.general_utils import AttrDict
 from spirl.rl.components.agent import FixedIntervalHierarchicalAgent
-from spirl.rl.policies.mlp_policies import SplitObsMLPPolicy
-from spirl.rl.components.critic import SplitObsMLPCritic
+from spirl.rl.policies.mlp_policies import SplitObsMLPPolicy, MLPPolicy
+from spirl.rl.components.critic import SplitObsMLPCritic, MLPCritic
 from spirl.rl.envs.maze import ACRandMaze0S40Env
 from spirl.rl.components.sampler import ACMultiImageAugmentedHierarchicalSampler
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
@@ -31,9 +31,9 @@ configuration = {
     'num_epochs': 30,
     'max_rollout_len': 2000,
     'n_steps_per_epoch': 100000,
-    'n_warmup_steps': 5e3,
+    # 'n_warmup_steps': 5e3,
 
-    # 'n_warmup_steps': 500,
+    'n_warmup_steps': 500,
 }
 configuration = AttrDict(configuration)
 
@@ -72,6 +72,22 @@ ll_model_params = AttrDict(
     n_rollout_steps=10,
 )
 
+ll_policy_params = AttrDict(    
+    action_dim=data_spec.n_actions,
+    input_dim=data_spec.state_dim,
+    max_action_range=2.,        # prior is Gaussian with unit variance
+    # unused_obs_size=10,
+)
+
+ll_critic_params = AttrDict(
+    action_dim=ll_policy_params.action_dim,
+    input_dim=ll_policy_params.input_dim,
+    output_dim=1,
+    n_layers=2,  # number of policy network layers
+    nz_mid=256,
+    action_input=True,
+)
+
 # LL Agent
 ll_agent_config = copy.deepcopy(base_agent_params)
 ll_agent_config.update(AttrDict(
@@ -79,6 +95,11 @@ ll_agent_config.update(AttrDict(
     model_params=ll_model_params,
     model_checkpoint=os.path.join(os.environ["EXP_DIR"],
                                   "skill_prior_learning/maze/hierarchical"),
+    # policy = SplitObsMLPPolicy,
+    policy = MLPPolicy,
+    policy_params = ll_policy_params,
+    critic = MLPCritic,
+    critic_params = ll_critic_params,
 ))
 
 
@@ -89,7 +110,7 @@ hl_policy_params = AttrDict(
     action_dim=10,       # z-dimension of the skill VAE
     input_dim=data_spec.state_dim,
     max_action_range=2.,        # prior is Gaussian with unit variance
-    unused_obs_size=ll_model_params.prior_input_res **2 * 3 * ll_model_params.n_input_frames,
+    # unused_obs_size=ll_model_params.prior_input_res **2 * 3 * ll_model_params.n_input_frames,
 )
 
 # update policy to use learned prior
@@ -108,7 +129,7 @@ hl_critic_params = AttrDict(
     n_layers=2,  # number of policy network layers
     nz_mid=256,
     action_input=True,
-    unused_obs_size=hl_policy_params.unused_obs_size,
+    unused_obs_size=ll_model_params.prior_input_res **2 * 3 * ll_model_params.n_input_frames,
 )
 
 # HL Agent
