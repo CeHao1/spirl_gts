@@ -35,7 +35,10 @@ python3 spirl/rl/train.py --path=spirl/configs/rl/maze/prior_initialized/bc_m1 -
 --prefix=test_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl --seed=0 --gpu=0 \
---prefix=test_01
+--prefix=rand_maze_01
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=0 --gpu=0 \
+--prefix=cl_01
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/reskill --seed=0 --gpu=0 \
 --prefix=m2_01
