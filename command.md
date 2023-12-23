@@ -26,6 +26,17 @@ python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchic
 --gpu=0 --prefix=cd_maze_init01
 
 
+## train reskill
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_m2 --seed=0 --gpu=0 \
+--prefix=ol_s0
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=0 --gpu=0 \
+--prefix=again4
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/reskill_m2 --seed=0 --gpu=0 \
+--prefix=re2
+
 # train RL
 
 python3 spirl/rl/train.py --path=spirl/configs/rl/maze/SAC_m2 --seed=1 --gpu=0 \
