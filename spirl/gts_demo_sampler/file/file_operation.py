@@ -78,3 +78,19 @@ def load_rollout(index, file_dir= './rollout/'):
 
     F =  h5py.File(save_path, 'r') 
     return F
+
+def save_video(file_name, frames, fps=20, video_format='mp4'):
+    import skvideo.io
+    
+    skvideo.io.vwrite(
+        file_name,
+        frames,
+        inputdict={
+            '-r': str(int(fps)),
+        },
+        outputdict={
+            '-f': video_format,
+            '-pix_fmt': 'yuv420p', # '-pix_fmt=yuv420p' needed for osx https://github.com/scikit-video/scikit-video/issues/74
+        }
+    )
+    print('save video to', file_name)

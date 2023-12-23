@@ -7,6 +7,7 @@ from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
 from spirl.rl.agents.skill_critic.hl_skill_agent import HLSKillAgent
 from spirl.rl.agents.skill_critic.hl_inherit_agent  import HLInheritAgent
 from spirl.rl.agents.skill_space_agent import SkillSpaceAgent, ACSkillSpaceAgent
+from spirl.rl.agents.residual_agent import ResidualAgent, ACResidualAgent
 
 from spirl.rl.envs.maze import ACRandMaze0S40Env, ACmMaze1, ACmMaze2, ACmMaze3
 
@@ -70,6 +71,11 @@ class MazeActionPriorSACAgent(ActionPriorSACAgent, MazeAgent):
         MazeAgent.visualize(self, logger, rollout_storage, step)
         ActionPriorSACAgent.visualize(self, logger, rollout_storage, step)
 
+class MazeResidualAgent(ResidualAgent, MazeAgent):
+    def visualize(self, logger, rollout_storage, step):
+        MazeAgent.visualize(self, logger, rollout_storage, step)
+        ResidualAgent.visualize(self, logger, rollout_storage, step)
+
 
 class MazeNoUpdateAgent(MazeAgent, SACAgent):
     """Only logs rollouts, does not update policy."""
@@ -108,6 +114,10 @@ class MazeACActionPriorSACAgent(ActionPriorSACAgent, MazeAgent):
         size = self.vis_replay_buffer.size
         states = self.vis_replay_buffer.get().observation[:size, :2]
         plot_maze_fun(states, logger, step, size)
+
+class MazeACResidualAgent(ACResidualAgent, MazeAgent):
+    pass
+    
 
 class MazeHLSkillAgent(HLSKillAgent, MazeAgent):
     def __init__(self, *args, **kwargs):

@@ -14,8 +14,8 @@ hl_policy_params.update(AttrDict(
 hl_agent_config.policy = ACLearnedPriorAugmentedPIPolicy
 
 # update agent to regularize with prior, set target divergence
-# agent_config.hl_agent = ActionPriorSACAgent
-agent_config.hl_agent = MazeACActionPriorSACAgent
+agent_config.hl_agent = ActionPriorSACAgent
+# agent_config.hl_agent = MazeACActionPriorSACAgent
 agent_config.hl_agent_params.update(AttrDict(
     td_schedule_params=AttrDict(p=1.),
 ))

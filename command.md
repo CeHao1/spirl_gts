@@ -29,10 +29,19 @@ python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchic
 # train RL
 
 python3 spirl/rl/train.py --path=spirl/configs/rl/maze/SAC_m2 --seed=1 --gpu=0 \
---prefix=test_s2
+--prefix=test_maze
 
 python3 spirl/rl/train.py --path=spirl/configs/rl/maze/prior_initialized/bc_m1 --seed=0 --gpu=0 \
 --prefix=test_01
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl --seed=0 --gpu=0 \
+--prefix=rand_maze_01
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=0 --gpu=0 \
+--prefix=cl_01
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/reskill --seed=0 --gpu=0 \
+--prefix=m2_01
 
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/sh  --gpu=0 \

@@ -60,6 +60,7 @@ class BaseSample:
             # check done
             done_feature = self._get_done_feature(gts_state_list)
             if done_function(done_feature):
+                # self.env.close()
                 break
 
 

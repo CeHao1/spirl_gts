@@ -19,14 +19,16 @@ agent_config.update(AttrDict(
 agent_config.policy = LearnedPriorAugmentedPIPolicy
 configuration.agent = ActionPriorSACAgent
 
-ip_address_list = [
-    "192.168.1.125",
-    "192.168.1.117",
-    "192.168.1.121",
-    "192.168.1.120",
-    "192.168.1.123",
-    "192.168.1.119",
-    '192.168.1.115',]
+# ip_address_list = [
+#     "192.168.1.125",
+#     "192.168.1.117",
+#     "192.168.1.121",
+#     "192.168.1.120",
+#     "192.168.1.123",
+#     "192.168.1.119",
+#     '192.168.1.115',]
+
+ip_address_list = ["192.168.1.107"]
 
 num_of_sampler = len(ip_address_list)
 
