@@ -818,6 +818,22 @@ class DelayedLinearSchedule(LinearSchedule):
             return super().__call__(t - self._hp.delay)
 
 
+class LogisicSchedule(Schedule):
+    def __init__(self, config):
+        """Logistic interpolation between initial_p and final_p over schedule_timesteps."""
+        super().__init__(config)
+        self.k = self._hp.k
+        self.C = self._hp.C
+
+    def _default_hparams(self):
+        return super()._default_hparams().overwrite(AttrDict(
+            k=0.001,
+            C=18000,
+        ))
+
+    def __call__(self, t):
+        return 1/(1 + np.exp(-self.k * (t-self.C)))
+
 class DictFlattener:
     """Flattens all elements in ordered dict into single vector, remembers structure and can unflatten back."""
     def __init__(self):

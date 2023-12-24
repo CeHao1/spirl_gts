@@ -76,16 +76,18 @@ ll_policy_params = AttrDict(
     action_dim=data_spec.n_actions,
     input_dim=data_spec.state_dim,
     max_action_range=2.,        # prior is Gaussian with unit variance
-    # unused_obs_size=10,
+    unused_obs_size= ll_model_params.prior_input_res **2 * 3 * ll_model_params.n_input_frames + 10,
 )
 
 ll_critic_params = AttrDict(
     action_dim=ll_policy_params.action_dim,
-    input_dim=ll_policy_params.input_dim,
+    input_dim=data_spec.state_dim,
     output_dim=1,
     n_layers=2,  # number of policy network layers
     nz_mid=256,
     action_input=True,
+
+    unused_obs_size= ll_model_params.prior_input_res **2 * 3 * ll_model_params.n_input_frames + 10,
 )
 
 # LL Agent
@@ -95,11 +97,12 @@ ll_agent_config.update(AttrDict(
     model_params=ll_model_params,
     model_checkpoint=os.path.join(os.environ["EXP_DIR"],
                                   "skill_prior_learning/maze/hierarchical"),
-    # policy = SplitObsMLPPolicy,
-    policy = MLPPolicy,
+    policy = SplitObsMLPPolicy,
     policy_params = ll_policy_params,
-    critic = MLPCritic,
+    critic=SplitObsMLPCritic,
     critic_params = ll_critic_params,
+
+    damp_schedule_params = AttrDict(p=0.),
 ))
 
 
@@ -139,6 +142,7 @@ hl_agent_config.update(AttrDict(
     policy_params=hl_policy_params,
     critic=SplitObsMLPCritic,
     critic_params=hl_critic_params,
+    td_schedule_params=AttrDict(p=1.),
 ))
 
 
@@ -168,10 +172,10 @@ env_config = AttrDict(
 )
 
 # reduce replay capacity because we are training image-based, do not dump (too large)
-from spirl.rl.components.replay_buffer import SplitObsUniformReplayBuffer
-agent_config.ll_agent_params.replay = SplitObsUniformReplayBuffer
-agent_config.ll_agent_params.replay_params.unused_obs_size = ll_model_params.prior_input_res**2*3 * 2 + \
-                                                             hl_agent_config.policy_params.action_dim   # ignore HL action
+# from spirl.rl.components.replay_buffer import SplitObsUniformReplayBuffer
+# agent_config.ll_agent_params.replay = SplitObsUniformReplayBuffer
+# agent_config.ll_agent_params.replay_params.unused_obs_size = ll_model_params.prior_input_res**2*3 * 2 + \
+#                                                              hl_agent_config.policy_params.action_dim   # ignore HL action
 agent_config.ll_agent_params.replay_params.dump_replay = False
 agent_config.hl_agent_params.replay_params.dump_replay = False
 

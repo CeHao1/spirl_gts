@@ -5,6 +5,7 @@ import contextlib
 
 import numpy as np
 from spirl.utils.general_utils import ParamDict, split_along_axis, AttrDict
+from spirl.utils.general_utils import ConstantSchedule
 from spirl.utils.pytorch_utils import map2torch, map2np, no_batchnorm_update
 
 
@@ -21,6 +22,7 @@ class ResidualAgent(SACAgent):
         self.load_model_weights(self._policy, self._hp.model_checkpoint, self._hp.model_epoch)
 
         self.action_plan = deque()
+        self._action_damp = self._hp.damp_schedule(self._hp.damp_schedule_params)
 
     def _default_hparams(self):
         default_dict = ParamDict({
@@ -28,9 +30,18 @@ class ResidualAgent(SACAgent):
             'model_params': None,       # parameters for the policy class
             'model_checkpoint': None,   # checkpoint path of the model
             'model_epoch': 'latest',    # epoch that checkpoint should be loaded for (defaults to latest)
+
+            'damp_schedule': ConstantSchedule,      # dampening schedule for residual action
+            'damp_schedule_params': ParamDict(p=1),    # parameters for dampening schedule
+
         })
         return super()._default_hparams().overwrite(default_dict)
     
+    def update(self, experience_batch):
+        info =  super().update(experience_batch)
+        info.action_damp = self._action_damp(self.schedule_steps)
+        return info
+
     def _base_policy_act(self, obs):
         assert len(obs.shape) == 2 and obs.shape[0] == 1  # assume single-observation batches with leading 1-dim
         if not self.action_plan:
@@ -52,7 +63,7 @@ class ResidualAgent(SACAgent):
         sac_policy_output = super()._act(obs)
 
         # return combined action
-        sac_policy_output.action = sac_policy_output.action + base_policy_output.action
+        sac_policy_output.action = base_policy_output.action  + self._action_damp(self.schedule_steps) * sac_policy_output.action
         return sac_policy_output
     
     def reset(self):
@@ -79,7 +90,7 @@ class ResidualAgent(SACAgent):
         policy_output = super()._act_rand(obs)
     
         # return combined action
-        policy_output.action = policy_output.action + base_action.action
+        policy_output.action = base_action.action + self._action_damp(self.schedule_steps) *  policy_output.action
         return policy_output
     
 
