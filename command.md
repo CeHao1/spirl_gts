@@ -31,11 +31,11 @@ python3 spirl/train.py --path=spirl/configs/skill_prior_learning/maze/hierarchic
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_m2 --seed=0 --gpu=0 \
 --prefix=ol_s0
 
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl --seed=0 --gpu=0 \
---prefix=again4
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl_m2 --seed=0 --gpu=0 \
+--prefix=cl_s0
 
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/reskill_m2 --seed=0 --gpu=0 \
---prefix=re2
+--prefix=re_s0
 
 # train RL
 
