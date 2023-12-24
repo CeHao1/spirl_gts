@@ -49,7 +49,7 @@ class ResidualAgent(SACAgent):
         base_policy_output = self._base_policy_act(obs)
 
         # part 2, sac policy
-        sac_policy_output = super()._act_rand(obs)
+        sac_policy_output = super()._act(obs)
 
         # return combined action
         sac_policy_output.action = sac_policy_output.action + base_policy_output.action
