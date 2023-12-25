@@ -1,7 +1,7 @@
 import os
 import copy
 
-from spirl.utils.general_utils import AttrDict
+from spirl.utils.general_utils import AttrDict, LogisicSchedule
 from spirl.rl.components.agent import FixedIntervalHierarchicalAgent
 from spirl.rl.policies.mlp_policies import SplitObsMLPPolicy, MLPPolicy
 from spirl.rl.components.critic import SplitObsMLPCritic, MLPCritic
@@ -16,6 +16,7 @@ from spirl.data.maze.src.maze_agents import MazeACSkillSpaceAgent
 from spirl.rl.policies.prior_policies import ACLearnedPriorAugmentedPIPolicy
 from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
 from spirl.data.maze.src.maze_agents import MazeACActionPriorSACAgent, MazeACResidualAgent
+
 
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -102,7 +103,10 @@ ll_agent_config.update(AttrDict(
     critic=SplitObsMLPCritic,
     critic_params = ll_critic_params,
 
-    damp_schedule_params = AttrDict(p=0.),
+    # damp_schedule_params = AttrDict(p=0.),
+    damp_schedule = LogisicSchedule,
+    damp_schedule_params = AttrDict(k=0.001, C=500000,),
+
 ))
 
 
