@@ -41,6 +41,7 @@ configuration = AttrDict(configuration)
 
 # Replay Buffer
 replay_params = AttrDict(
+    capacity = 5e5,
 )
 
 # Observation Normalization
@@ -103,9 +104,9 @@ ll_agent_config.update(AttrDict(
     critic=SplitObsMLPCritic,
     critic_params = ll_critic_params,
 
-    # damp_schedule_params = AttrDict(p=0.),
+
     damp_schedule = LogisicSchedule,
-    damp_schedule_params = AttrDict(k=0.001, C=500000,),
+    damp_schedule_params = AttrDict(k=1e-4, C=200000,),
 
 ))
 

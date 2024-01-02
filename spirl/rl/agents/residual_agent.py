@@ -40,6 +40,7 @@ class ResidualAgent(SACAgent):
     def update(self, experience_batch):
         info =  super().update(experience_batch)
         info.action_damp = self._action_damp(self.schedule_steps)
+        info.schedule_steps = self.schedule_steps
         return info
 
     def _base_policy_act(self, obs):

@@ -832,6 +832,7 @@ class LogisicSchedule(Schedule):
         ))
 
     def __call__(self, t):
+        # print("k: {}, C: {}".format(self.k, self.C), 'step:', t, 'value:', 1/(1 + np.exp(-self.k * (t-self.C))))
         return 1/(1 + np.exp(-self.k * (t-self.C)))
 
 class DictFlattener:
