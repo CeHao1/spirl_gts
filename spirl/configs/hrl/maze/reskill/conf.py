@@ -29,7 +29,7 @@ configuration = {
     'environment': ACRandMaze0S40Env,
     'sampler': ACMultiImageAugmentedHierarchicalSampler,
     'data_dir': '.',
-    'num_epochs': 30,
+    'num_epochs': 25,
     'max_rollout_len': 2000,
     'n_steps_per_epoch': 100000,
     'n_warmup_steps': 5e3,
@@ -106,7 +106,7 @@ ll_agent_config.update(AttrDict(
 
 
     damp_schedule = LogisicSchedule,
-    damp_schedule_params = AttrDict(k=1e-4, C=200000,),
+    damp_schedule_params = AttrDict(k=1e-4, C=50000,),
 
 ))
 
