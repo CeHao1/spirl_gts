@@ -34,8 +34,11 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_m2 --seed=0 --gpu=
 python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/spirl_cl_m2 --seed=0 --gpu=0 \
 --prefix=cl_s0
 
-python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/reskill_m2 --seed=0 --gpu=0 \
---prefix=k-4_c05_s1_21
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/reskill_m2 --seed=2 --gpu=0 \
+--prefix=k-4_c05_s2_21
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/maze/reskill_m2 --seed=3 --gpu=0 \
+--prefix=k-4_c05_s3_21
 
 # train RL
 
