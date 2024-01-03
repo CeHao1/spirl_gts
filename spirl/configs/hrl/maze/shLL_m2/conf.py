@@ -13,7 +13,7 @@ notes = 'skill critic on the maze env'
 
 configuration.update({
     'environment': ACmMaze2,
-    'num_epochs': 100,
+    'num_epochs': 80,
     'max_rollout_len': 2000,
     'n_steps_per_epoch': 1e5,
     'n_warmup_steps': 5e3,
@@ -50,3 +50,5 @@ ll_agent_config.td_schedule_params = AttrDict(p=80.)
 ll_policy_params.manual_log_sigma = [-3, -3]
 # ll_policy_params.manual_log_sigma = [-4, -4]
 # ll_policy_params.manual_log_sigma = [-5, -5]
+
+ll_agent_config.discount_factor = 0.9999
