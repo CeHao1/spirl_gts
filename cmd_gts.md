@@ -21,6 +21,8 @@ python3 spirl/train.py --path=spirl/configs/skill_prior_learning/gts_corner2/hie
 python3 spirl/train.py --path=spirl/configs/skill_prior_learning/gts_corner2/flat --val_data_size=160 \
 --gpu=0 --prefix=flat
 
+python3 spirl/train.py --path=spirl/configs/skill_prior_learning/gts_corner2/hierarchical --val_data_size=160 \
+--gpu=0 --prefix=ol
 
 
 ## vis demo states
@@ -57,4 +59,9 @@ python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/sh_multi  --gpu=0
 --resume='latest' --strict_weight_loading=0 --resume_load_replay_buffer=0 
 
 
+
+# train spirl skill & train pure spirl & reskill
+
+python3 spirl/rl/train.py --path=spirl/configs/hrl/gts_corner2/spirl --seed=0 --gpu=0 \
+--prefix=sp_01 --mode='rollout' --save_dir='./save_rollout'
 

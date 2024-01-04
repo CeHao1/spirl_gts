@@ -28,7 +28,7 @@ env_config = AttrDict(
 
     reward_function = corner2_spare_reward_function,
     done_function = corner2_done_function,
-    
+    ip_address = '192.168.1.108',
 )
 
 configuration = {

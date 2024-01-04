@@ -23,7 +23,7 @@ from spirl.components.trainer_base import BaseTrainer
 from spirl.utils.wandb import WandBLogger
 from spirl.components.params import get_args
 
-WANDB_PROJECT_NAME = 'kitchen_skill'
+WANDB_PROJECT_NAME = 'gts_c2'
 WANDB_ENTITY_NAME = 'cehao'
 
 
