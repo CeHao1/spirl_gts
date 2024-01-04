@@ -1,4 +1,4 @@
-from spirl.configs.hrl.gts.no_prior.conf import * 
+from spirl.configs.hrl.gts_corner2.no_prior.conf import * 
 from spirl.rl.policies.prior_policies import LearnedPriorAugmentedPIPolicy
 from spirl.rl.agents.prior_sac_agent import ActionPriorSACAgent
 

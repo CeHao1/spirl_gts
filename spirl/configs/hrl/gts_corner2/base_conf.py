@@ -31,26 +31,30 @@ env_config = AttrDict(
     ip_address = '192.168.1.108',
 )
 
-configuration = {
+configuration = AttrDict(    {
     'seed': 2,
     'agent': FixedIntervalHierarchicalAgent,
     
     'data_dir': '.',
-    'num_epochs': 2000,
-    'max_rollout_len': 10000,
-    'n_steps_per_epoch': 10000,
-    'n_warmup_steps': 160000,
-    'use_update_after_sampling':True,
+    'num_epochs': 100,
+    'max_rollout_len': 600,
+    # 'n_steps_per_epoch': 10000,
+    # 'n_steps_per_update': 1000,
+    # 'n_warmup_steps': 160000,
+    # 'use_update_after_sampling':True,
 
     'environment': GTSEnv_Corner2_Single,
     'sampler':HierarchicalSamplerBatched,
+    
+    'n_steps_per_epoch': 10000,
+    'n_steps_per_update': 1200,
+    'n_warmup_steps': 600,
+    'log_output_interval': 600,
+    'log_image_interval': 600,
+
+} )
 
 
-    # 'n_steps_per_epoch': 200,
-    # 'n_warmup_steps': 200,
-
-}
-configuration = AttrDict(configuration)
 
 sampler_config = AttrDict(
     number_of_agents = 20,
@@ -82,9 +86,8 @@ ll_model_params = AttrDict(
     nz_enc=128,
     nz_mid=128,
     n_processing_layers=5,
-    # nz_vae=10,
-    nz_vae = 6,
-    n_rollout_steps=4,
+    nz_vae=10,
+    n_rollout_steps=10,
 )
 
 

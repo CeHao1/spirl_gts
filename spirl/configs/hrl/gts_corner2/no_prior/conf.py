@@ -1,1 +1,1 @@
-from spirl.configs.hrl.gts.base_conf import *
+from spirl.configs.hrl.gts_corner2.base_conf import *
